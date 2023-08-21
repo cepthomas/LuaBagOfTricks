@@ -38,12 +38,25 @@ function M.dump_table(tbl, indent)
     return M.strjoin('\n', res)
 end                
 
+-----------------------------------------------------------------------------
+-- Gets the file and line of the test script.
+-- @param level Where to look.
+-- @return array of info or nil if invalid
+function M.get_caller_info(level)
+    ret = nil
+    s = debug.getinfo(level, 'S')
+    l = debug.getinfo(level, 'l')
+    if s ~= nil or l ~= nil then
+        ret = { s.source:gsub("@", ""), l.currentline }
+    end
+    return ret
+end
 
 
 -----------------------------------------------------------------------------
---- Generate a sequence of values from the source table.
---  @param source Source table.
---  @return next() - Function that returns value.
+-- Generate a sequence of values from the source table.
+-- @param source Source table.
+-- @return next() - Function that returns value.
 function M.array_seq(source)
     -- Init our copies of the args.
     local t = source
@@ -65,7 +78,7 @@ end
 
 
 -----------------------------------------------------------------------------
---- Get array from a file.
+-- Get array from a file.
 -- Will coerce to number if all are valid - TODO3 Doesn't appear to be true - test/repair.
 -- Adds an array value for each LF and each csv value.
 -- @param filename Filename.
@@ -91,7 +104,7 @@ function M.array_from_file(filename, rem_blanks)
 end
 
 -----------------------------------------------------------------------------
---- Concat the contents of the parameter list, separated by the string delimiter.
+-- Concat the contents of the parameter list, separated by the string delimiter.
 -- Example: strjoin(", ", {"Anna", "Bob", "Charlie", "Dolores"})
 -- Borrowed from http://lua-users.org/wiki/SplitJoin.
 -- @param delimiter Delimiter.
@@ -110,10 +123,10 @@ function M.strjoin(delimiter, list)
 end
 
 -----------------------------------------------------------------------------
---- Split text into a list.
+-- Split text into a list.
 -- Consisting of the strings in text, separated by strings matching delimiter (which may be a pattern).
---  Example: strsplit(",%s*", "Anna, Bob, Charlie,Dolores")
---  Borrowed from http://lua-users.org/wiki/SplitJoin.
+--   Example: strsplit(",%s*", "Anna, Bob, Charlie,Dolores")
+--   Borrowed from http://lua-users.org/wiki/SplitJoin.
 -- @param delimiter Delimiter.
 -- @param text The string to split.
 -- @return list Split input.
@@ -137,27 +150,12 @@ function M.strsplit(delimiter, text)
 end
 
 -----------------------------------------------------------------------------
---- Trims whitespace from both ends of a string.
+-- Trims whitespace from both ends of a string.
 -- Borrowed from http://lua-users.org/wiki/SplitJoin.
 -- @param s The string to clean up.
 -- @return string Cleaned up input string.
 function M.strtrim(s)
     return (s:gsub("^%s*(.-)%s*$", "%1"))
-end
-
------------------------------------------------------------------------------
---- Remove bad actors from html string.
--- @param s The string to fix.
--- @return s Cleaned string.
-function M.escape_html(s)
-    local tt =
-    {
-        ['<'] = '&lt;',
-        ['>'] = '&gt;'
-    }
-    str = string.gsub(s, '&', '&amp;')
-    str = string.gsub(s, '[<>]', tt)
-    return str
 end
 
 -----------------------------------------------------------------------------

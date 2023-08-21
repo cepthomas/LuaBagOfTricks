@@ -14,12 +14,14 @@ local app_fail = false
 local script_fail = false
 
 
+-----------------------------------------------------------------------------
 -- Errors not associated with test cases.
 local function internal_error(msg)
     pn.UT_ERROR(msg)
     print(msg)
-end    
+end
 
+-----------------------------------------------------------------------------
 -- Report writer.
 local rf = nil
 local report_fn = nil -- "default_report.txt"
@@ -36,7 +38,7 @@ end
 -- Get the cmd line args.
 -- TODO1 need to specify extra paths: package.path = string.Join(';', additional); .. package.path <<>> s = $"package.path = \"{s}\"";
 -- TODO2 sel write to stdout/file
-report_fn = "default_report.txt"
+-- report_fn = "default_report.txt"
 
 if #arg < 1 then
     -- log a message and exit.
@@ -49,7 +51,26 @@ end
 for i = 1, #arg do
     -- load script
     mfn = arg[i]
+
+
     mut = require(mfn) -- loads into global
+
+
+    -- vv = loadfile(mfn) -- loads file
+    -- mut = vv() -- executes it returning the module
+
+    
+    -- -- print(mut)
+    -- print("mut:", ut.dump_table(mut, 0))
+    -- -- print("mut:", ut.dump_table(mut, 0))
+    -- -- print(mut, mut.test())
+    -- print("+++++", mut.test())
+    -- -- mut = dofile(mfn)
+    -- print("-----------------------")
+    -- print("_G:", ut.dump_table(_G, 0))
+    -- -- print(ut.dump_table(res, 0))
+    -- -- print(_G.mfn)
+
 
     if mut == nil then
         -- log a message and exit.
@@ -97,7 +118,9 @@ local end_time = os.clock()
 local dur = (end_time - start_time)
 
 -- Open the report file.
-rf = io.open (report_fn, "w+")
+if report_fn ~= nil then
+    rf = io.open (report_fn, "w+")
+end
 
 -- Overall status.
 if app_fail then pf_run = "Runner Fail"
@@ -121,7 +144,9 @@ report_line("")
 -- Add the accumulated text.
 for i, v in ipairs(pn.result_text) do
     report_line(v)
-end        
+end
 
--- Close the report file.
-rf:close()
+-- Close the report file
+if rf ~= nil then
+    rf:close()
+end

@@ -2,6 +2,8 @@
 Core module for executing the test suites themselves. Has all the assert functions.
 --]]
 
+local ut = require("utils")
+
 -- Create the namespace/module.
 local M = {}
 
@@ -17,32 +19,31 @@ M.result_text = {}
 local curr_suite_pass = true
 
 
------------------------------------------------------------------------------
---- Gets the file and line of the test script.
-local function get_caller_info()
-    return string.format("%s(%s)", debug.getinfo(4, 'S').source, debug.getinfo(4, 'l').currentline)
-end
 
 -----------------------------------------------------------------------------
---- General msg output to file and log.
+-- General msg output to file and log.
 -- @param msg The info to write.
 local function write_line(msg)
     table.insert(M.result_text, msg)
 end
 
 -----------------------------------------------------------------------------
---- Error msg output to file and log.
+-- Error msg output to file and log.
 -- @param msg The info to write.
 local function write_error(msg)
     write_line("! " .. msg)
 end
 
+-- -----------------------------------------------------------------------------
+-- --- Gets the file and line of the test script.
+-- local function get_caller_info()
+--     return string.format("%s(%s)", debug.getinfo(4, 'S').source, debug.getinfo(4, 'l').currentline)
+-- end
+
 -----------------------------------------------------------------------------
---- A case has failed so update all states and counts.
+-- A case has failed so update all states and counts.
 -- @param msg message.
 local function case_failed(msg)
-    caller = get_caller_info()
-
     -- Update the states and counts.
     if curr_suite_pass then
         curr_suite_pass = false
@@ -52,12 +53,12 @@ local function case_failed(msg)
     M.cases_failed = M.cases_failed + 1
 
     -- Print failure information.
-    write_error(caller .. ": " .. msg)
+    caller = ut.get_caller_info(4)
+    write_error(caller[1] .. "(" .. caller[2] .. "): " .. msg)
 end
 
-
 -----------------------------------------------------------------------------
---- Start a new suite.
+-- Start a new suite.
 -- @param desc Free text.
 function M.do_suite(desc)
     write_line("\nRunning Suite: " .. desc)
@@ -71,21 +72,21 @@ function M.do_suite(desc)
 end
 
 -----------------------------------------------------------------------------
---- Add a general comment line to the report.
+-- Add a general comment line to the report.
 -- @param info free text.
 function M.UT_INFO(info)
     write_line(info)
 end
 
 -----------------------------------------------------------------------------
---- Add an error comment line to the report.
+-- Add an error comment line to the report.
 -- @param info free text.
 function M.UT_ERROR(info)
     write_error(info)
 end
 
 -----------------------------------------------------------------------------
---- Tests expression and registers a failure if not true.
+-- Tests expression and registers a failure if not true.
 -- @param expr Boolean expression.
 function M.UT_TRUE(expr)
     M.cases_run = M.cases_run + 1
@@ -95,7 +96,7 @@ function M.UT_TRUE(expr)
 end
 
 -----------------------------------------------------------------------------
---- Tests expression and registers a failure if not true.
+-- Tests expression and registers a failure if not true.
 -- @param expr Boolean expression.
 function M.UT_FALSE(expr)
     M.cases_run = M.cases_run + 1
@@ -105,7 +106,7 @@ function M.UT_FALSE(expr)
 end
 
 -----------------------------------------------------------------------------
---- Tests expression and registers a failure if not true.
+-- Tests expression and registers a failure if not true.
 -- @param expr Boolean expression.
 function M.UT_NOT_NIL(expr)
     M.cases_run = M.cases_run + 1
@@ -115,7 +116,7 @@ function M.UT_NOT_NIL(expr)
 end
 
 -----------------------------------------------------------------------------
---- Tests expression and registers a failure if not true.
+-- Tests expression and registers a failure if not true.
 -- @param expr Boolean expression.
 function M.UT_NIL(expr)
     M.cases_run = M.cases_run + 1
@@ -125,7 +126,7 @@ function M.UT_NIL(expr)
 end
 
 -----------------------------------------------------------------------------
---- Tests expression and registers a failure if not equal.
+-- Tests expression and registers a failure if not equal.
 -- @param val1 First value.
 -- @param val2 Second value.
 function M.UT_EQUAL(val1, val2)
@@ -136,7 +137,7 @@ function M.UT_EQUAL(val1, val2)
 end
 
 -----------------------------------------------------------------------------
---- Tests expression and registers a failure if equal.
+-- Tests expression and registers a failure if equal.
 -- @param val1 First value.
 -- @param val2 Second value.
 function M.UT_NOT_EQUAL(val1, val2)
@@ -147,7 +148,7 @@ function M.UT_NOT_EQUAL(val1, val2)
 end
 
 -----------------------------------------------------------------------------
---- Tests expression and registers a failure if not less than.
+-- Tests expression and registers a failure if not less than.
 -- @param val1 First value.
 -- @param val2 Second value.
 function M.UT_LESS(val1, val2)
@@ -158,7 +159,7 @@ function M.UT_LESS(val1, val2)
 end
 
 -----------------------------------------------------------------------------
---- Tests expression and registers a failure if not less than or equal.
+-- Tests expression and registers a failure if not less than or equal.
 -- @param val1 First value.
 -- @param val2 Second value.
 function M.UT_LESS_OR_EQUAL(val1, val2)
@@ -169,7 +170,7 @@ function M.UT_LESS_OR_EQUAL(val1, val2)
 end
 
 -----------------------------------------------------------------------------
---- Tests expression and registers a failure if not greater than.
+-- Tests expression and registers a failure if not greater than.
 -- @param val1 First value.
 -- @param val2 Second value.
 function M.UT_GREATER(val1, val2)
@@ -180,7 +181,7 @@ function M.UT_GREATER(val1, val2)
 end
 
 -----------------------------------------------------------------------------
---- Tests expression and registers a failure if not greater than or equal.
+-- Tests expression and registers a failure if not greater than or equal.
 -- @param val1 First value.
 -- @param val2 Second value.
 function M.UT_GREATER_OR_EQUAL(val1, val2)
@@ -191,7 +192,7 @@ function M.UT_GREATER_OR_EQUAL(val1, val2)
 end
 
 -----------------------------------------------------------------------------
---- Tests expression and registers a failure if not close to each other.
+-- Tests expression and registers a failure if not close to each other.
 -- @param val1 First value.
 -- @param val2 Second value.
 -- @param tol Within tolerance.
