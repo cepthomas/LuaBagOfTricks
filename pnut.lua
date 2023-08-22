@@ -13,11 +13,9 @@ M.suites_failed = 0
 M.cases_run = 0
 M.cases_failed = 0
 M.result_text = {}
--- M.result_format = "readable" -- "xml"  TODO2
 
 -- Current states.
 local curr_suite_pass = true
-
 
 
 -----------------------------------------------------------------------------
@@ -34,12 +32,6 @@ local function write_error(msg)
     write_line("! " .. msg)
 end
 
--- -----------------------------------------------------------------------------
--- --- Gets the file and line of the test script.
--- local function get_caller_info()
---     return string.format("%s(%s)", debug.getinfo(4, 'S').source, debug.getinfo(4, 'l').currentline)
--- end
-
 -----------------------------------------------------------------------------
 -- A case has failed so update all states and counts.
 -- @param msg message.
@@ -53,14 +45,14 @@ local function case_failed(msg)
     M.cases_failed = M.cases_failed + 1
 
     -- Print failure information.
-    caller = ut.get_caller_info(4)
+    local caller = ut.get_caller_info(4)
     write_error(caller[1] .. "(" .. caller[2] .. "): " .. msg)
 end
 
 -----------------------------------------------------------------------------
 -- Start a new suite.
 -- @param desc Free text.
-function M.do_suite(desc)
+function M.start_suite(desc)
     write_line("\nRunning Suite: " .. desc)
     write_line("-----------------------------------------------------------")
 

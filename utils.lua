@@ -1,57 +1,53 @@
+--[[
+GP utilities, some mainly for unit tests.
+--]]
 
-local api = require("neb_api_sim") -- TODO1 do better
 
 -- Create the namespace/module.
 local M = {}
 
--- Defs from the C# logger side.
-M.LOG_TRACE = 0
-M.LOG_DEBUG = 1
-M.LOG_INFO = 2
-M.LOG_WARN = 3
-M.LOG_ERROR = 4
-
--- Convenience functions.
-function M.error(msg) api.log(M.LOG_ERROR, msg) end
-function M.warn(msg) api.log(M.LOG_WARN, msg) end
-function M.info(msg) api.log(M.LOG_INFO, msg) end
-function M.debug(msg) api.log(M.LOG_DEBUG, msg) end
-
-
 
 -----------------------------------------------------------------------------
--- TODO1 fix/test this
+-- @param tbl What to dump.
+-- @param indent Nesting.
+-- @return string array dump.
 function M.dump_table(tbl, indent)
-    res = {}
+    local res = {}
 
-    for k, v in pairs(tbl) do
-        table.insert(res, k .. ":" .. "(" .. type(v) .. ")")
+    if type(tbl) == "table" then
+        local sindent = string.rep("    ", indent)
+
+        for k, v in pairs(tbl) do
+            if type(v) == "table" then
+                table.insert(res, sindent .. k .. "(table):")
+                t2 = M.dump_table(v, indent + 1) -- recursion!
+                for _,v in ipairs(t2) do 
+                    table.insert(res, v)
+                end
+            else
+                table.insert(res, sindent .. k .. ":" .. tostring(v) .. "(" .. type(v) .. ")")
+            end
+        end
+    else
+        table.insert(res, "Not a table")
     end
 
-    -- for k, v in pairs(tbl) do
-    --     if type(v) == "table" then
-    --         table.insert(res, M.dump_table(v, indent + 1)) -- recursion!
-    --     else
-    --         table.insert(res, k .. ":" .. "(" .. type(v) .. ")")
-    --     end
-    -- end
-    return M.strjoin('\n', res)
+    return res
 end                
 
 -----------------------------------------------------------------------------
--- Gets the file and line of the test script.
+-- Gets the file and line of the caller.
 -- @param level Where to look.
 -- @return array of info or nil if invalid
 function M.get_caller_info(level)
-    ret = nil
-    s = debug.getinfo(level, 'S')
-    l = debug.getinfo(level, 'l')
+    local ret = nil
+    local s = debug.getinfo(level, 'S')
+    local l = debug.getinfo(level, 'l')
     if s ~= nil or l ~= nil then
         ret = { s.source:gsub("@", ""), l.currentline }
     end
     return ret
 end
-
 
 -----------------------------------------------------------------------------
 -- Generate a sequence of values from the source table.
@@ -63,36 +59,32 @@ function M.array_seq(source)
     local n = 1 -- next value
 
     -- The accessor function.
-    local next =
-    function()
+    local next = function()
         -- Save the return value.
-        ret = t[n]
+        local ret = t[n]
         -- Calc the next index.
         n = n + 1
         if n > #t then n = 1 end
         return ret
     end
 
-    return {next = next}
+    return {next=next}
 end
-
 
 -----------------------------------------------------------------------------
 -- Get array from a file.
--- Will coerce to number if all are valid - TODO3 Doesn't appear to be true - test/repair.
+-- Will coerce to number if all are valid?
 -- Adds an array value for each LF and each csv value.
 -- @param filename Filename.
--- @param rem_blanks True if blank fields should be removed (optional).
+-- @param rem_blanks True if blank fields should be removed.
 -- @return table File data.
 function M.array_from_file(filename, rem_blanks)
-    if rem_blanks == nil then rem_blanks = false end
-
-    t = {}
+    local t = {}
     for line in io.lines(filename) do
-        vals = M.strsplit(",", line)
+        local vals = M.strsplit(",", line)
         if vals ~= nil then
             for i, v in ipairs(vals) do
-                s = M.strtrim(v)
+                local s = M.strtrim(v)
                 if rem_blanks == false or #s > 0 then
                     table.insert(t, M.strtrim(v))
                 end
@@ -157,6 +149,7 @@ end
 function M.strtrim(s)
     return (s:gsub("^%s*(.-)%s*$", "%1"))
 end
+
 
 -----------------------------------------------------------------------------
 -- Return the module.

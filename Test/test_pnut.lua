@@ -3,7 +3,6 @@ Unit tests for the tester itself.
 Run like: lua pnut_runner.lua test_pnut
 --]]
 
-print("test_pnut.lua is loaded >>>>>>>>>>>>>>>>>>>>>>>>>")
 
 -- Create the namespace/module.
 local M = {}

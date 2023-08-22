@@ -1,10 +1,13 @@
 --[[
 Performs test run discovery, management, report generation.
-TODO1 run/debug lua.
+TODO run/debug lua, exec in sublime better? close temp windows. https://github.com/slembcke/debugger.lua
+TODO opts: write to file, xml format.
 --]]
 
 local pn = require("pnut")
 local ut = require("utils")
+local l = require("logger")
+
 
 local start_time = os.clock()
 local start_date = os.date()
@@ -18,28 +21,23 @@ local script_fail = false
 -- Errors not associated with test cases.
 local function internal_error(msg)
     pn.UT_ERROR(msg)
-    print(msg)
+    l.error(msg)
 end
 
 -----------------------------------------------------------------------------
 -- Report writer.
 local rf = nil
-local report_fn = nil -- "default_report.txt"
+local report_fn = nil -- or from user
 local function report_line(line)
     if rf ~= nil then
         rf:write(line, "\n")
     else
-        print(line)
+        l.info(line)
     end
 end
 
-
 -----------------------------------------------------------------------------
 -- Get the cmd line args.
--- TODO1 need to specify extra paths: package.path = string.Join(';', additional); .. package.path <<>> s = $"package.path = \"{s}\"";
--- TODO2 sel write to stdout/file
--- report_fn = "default_report.txt"
-
 if #arg < 1 then
     -- log a message and exit.
     internal_error("No files supplied")
@@ -47,34 +45,19 @@ if #arg < 1 then
     goto done
 end
 
--- for each script filename
+-- Process each script filename.
 for i = 1, #arg do
     -- load script
-    mfn = arg[i]
+    local mfn = arg[i]
 
-
-    mut = require(mfn) -- loads into global
-
-
+    local mut = require(mfn) -- loads into global
+    -- or:::
     -- vv = loadfile(mfn) -- loads file
     -- mut = vv() -- executes it returning the module
 
-    
-    -- -- print(mut)
-    -- print("mut:", ut.dump_table(mut, 0))
-    -- -- print("mut:", ut.dump_table(mut, 0))
-    -- -- print(mut, mut.test())
-    -- print("+++++", mut.test())
-    -- -- mut = dofile(mfn)
-    -- print("-----------------------")
-    -- print("_G:", ut.dump_table(_G, 0))
-    -- -- print(ut.dump_table(res, 0))
-    -- -- print(_G.mfn)
-
-
     if mut == nil then
         -- log a message and exit.
-        internal_error("Invalid file name: " .. mfn)
+        internal_error("Invalid file: " .. mfn)
         app_fail = true
         goto done
     end
@@ -83,9 +66,9 @@ for i = 1, #arg do
     for k, v in pairs(mut) do
         if type(v) == "function" and k:match("suite_") then
             -- Found something to do. Run it in between optional test boilerplate.
-            pn.do_suite(k .. " in " .. mfn)
+            pn.start_suite(k .. " in " .. mfn)
 
-            ok, result = pcall(mut["setup"], pn) -- optional
+            local ok, result = pcall(mut["setup"], pn) -- optional
             if not ok then
                 internal_error(result)
                 script_fail = true
