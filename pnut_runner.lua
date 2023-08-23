@@ -1,6 +1,5 @@
 --[[
 Performs test run discovery, management, report generation.
-TODO run/debug lua, exec in sublime better? close temp windows. https://github.com/slembcke/debugger.lua
 TODO opts: write to file, xml format.
 --]]
 

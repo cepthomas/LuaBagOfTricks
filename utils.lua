@@ -1,5 +1,5 @@
 --[[
-GP utilities, some mainly for unit tests.
+GP utilities.
 --]]
 
 
@@ -47,52 +47,6 @@ function M.get_caller_info(level)
         ret = { s.source:gsub("@", ""), l.currentline }
     end
     return ret
-end
-
------------------------------------------------------------------------------
--- Generate a sequence of values from the source table.
--- @param source Source table.
--- @return next() - Function that returns value.
-function M.array_seq(source)
-    -- Init our copies of the args.
-    local t = source
-    local n = 1 -- next value
-
-    -- The accessor function.
-    local next = function()
-        -- Save the return value.
-        local ret = t[n]
-        -- Calc the next index.
-        n = n + 1
-        if n > #t then n = 1 end
-        return ret
-    end
-
-    return {next=next}
-end
-
------------------------------------------------------------------------------
--- Get array from a file.
--- Will coerce to number if all are valid?
--- Adds an array value for each LF and each csv value.
--- @param filename Filename.
--- @param rem_blanks True if blank fields should be removed.
--- @return table File data.
-function M.array_from_file(filename, rem_blanks)
-    local t = {}
-    for line in io.lines(filename) do
-        local vals = M.strsplit(",", line)
-        if vals ~= nil then
-            for i, v in ipairs(vals) do
-                local s = M.strtrim(v)
-                if rem_blanks == false or #s > 0 then
-                    table.insert(t, M.strtrim(v))
-                end
-            end
-        end
-    end
-
-    return t
 end
 
 -----------------------------------------------------------------------------

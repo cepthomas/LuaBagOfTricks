@@ -61,7 +61,16 @@ function M.suite_pnut_basic(pn)
     pn.UT_CLOSE(555.15, 555.16, 0.01) -- pass
     pn.UT_CLOSE(432.02, 432.01, 0.009) -- fail
 
-    -- 13 pass 12 fail
+    -- Check summary. Cache values first.
+    suites_run = pn.suites_run
+    suites_failed = pn.suites_failed
+    cases_run = pn.cases_run
+    cases_failed = pn.cases_failed
+    pn.UT_EQUAL(suites_run, 2)
+    pn.UT_EQUAL(suites_failed, 1)
+    pn.UT_EQUAL(cases_run, 36)
+    pn.UT_EQUAL(cases_failed, 12)
+
 end
 
 -----------------------------------------------------------------------------
