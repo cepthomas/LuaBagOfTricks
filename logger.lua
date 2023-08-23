@@ -1,5 +1,5 @@
 --[[
-Simple logger, will get more.
+Simple logger, will get more capabilities: user supplied streams, filtering,...
 --]]
 
 
@@ -16,11 +16,11 @@ M.LOG_ERROR = 4
 -- Main function.
 function M.log(level, msg)
     marker = ""
-    if level == M.LOG_WARN then maker = "? "
-    elseif level == M.LOG_ERROR then maker = "! "
+    if level == M.LOG_WARN then marker = "? "
+    elseif level == M.LOG_ERROR then marker = "! "
     end
 
-    print(marker .. msg) -- TODO support user supplied streams.
+    print(marker .. msg)
 end
 
 -- Convenience functions.
