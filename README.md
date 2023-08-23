@@ -1,17 +1,15 @@
 # LuaBagOfTricks
 
-Making lua life easier.
+- Applying the KISS principle.
+- Making lua life easier. For me.
+- Uses Lua 5.4 on Windows. It's pure Lua so far so *should* work anywhere.
 
+## pnut
+`pnut\pnut_runner.lua` comprise a minimalist unit test framework based on implementations in other languages (C/C++/C#).
+See the Test directory as example of how to use it.
 
-TODO run/debug lua, exec in sublime better? close temp windows. https://github.com/slembcke/debugger.lua
+## utils.lua
+Handy collected odds and ends.
 
-
-|   logger.lua
-|   pnut.lua
-|   pnut_runner.lua
-|   utils.lua
-|   
-+---Test
-|   |   go.cmd
-|   |   test_pnut.lua
-|   |   test_utils.lua
+## logger.lua
+Start of a minimalist logger that only does `print()` right now.
