@@ -1,5 +1,5 @@
 --[[
-Simple logger, will get more capabilities: user supplied streams, filtering,...
+Simple logger. TODO1 will get more capabilities: user supplied streams, filtering,...
 --]]
 
 

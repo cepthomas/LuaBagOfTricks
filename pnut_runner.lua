@@ -1,15 +1,12 @@
 --[[
 Performs test run discovery, management, report generation.
-TODO opts: write to file, xml format.
+TODOF opts: write to file, xml format.
 --]]
 
 local pn = require("pnut")
 local ut = require("utils")
 local l = require("logger")
-local available, dbg = pcall(require, "debugger")
-if not available then
-    print("You are not using debugger module!")
-end
+
 
 local start_time = os.clock()
 local start_date = os.date()
