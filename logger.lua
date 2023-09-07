@@ -1,5 +1,5 @@
 --[[
-Simple logger. TODOF will get more capabilities: user supplied streams, filtering,...
+Simple logger. FUTURE will get more capabilities: user supplied streams, filtering,...
 --]]
 
 

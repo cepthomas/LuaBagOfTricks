@@ -1,6 +1,6 @@
 --[[
 Performs test run discovery, management, report generation.
-TODOF opts: write to file, xml format.
+FUTURE opts: write to file, xml format.
 --]]
 
 local pn = require("pnut")
