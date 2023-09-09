@@ -10,6 +10,3 @@ See the Test directory as example of how to use it.
 
 ## utils.lua
 Handy collected odds and ends.
-
-## logger.lua
-Start of a minimalist logger that only does `print()` right now.

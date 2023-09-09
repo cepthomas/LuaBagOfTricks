@@ -5,7 +5,6 @@ FUTURE opts: write to file, xml format.
 
 local pn = require("pnut")
 local ut = require("utils")
-local l = require("logger")
 
 
 local start_time = os.clock()
@@ -20,7 +19,6 @@ local script_fail = false
 -- Errors not associated with test cases.
 local function internal_error(msg)
     pn.UT_ERROR(msg)
-    l.error(msg)
 end
 
 -----------------------------------------------------------------------------
@@ -30,8 +28,6 @@ local report_fn = nil -- or from user
 local function report_line(line)
     if rf ~= nil then
         rf:write(line, "\n")
-    else
-        l.info(line)
     end
 end
 
