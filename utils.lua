@@ -52,7 +52,7 @@ end
 -----------------------------------------------------------------------------
 -- Concat the contents of the parameter list, separated by the string delimiter.
 -- Example: strjoin(", ", {"Anna", "Bob", "Charlie", "Dolores"})
--- Borrowed from http://lua-users.org/wiki/SplitJoin. TODO update to table.concat().
+-- Borrowed from http://lua-users.org/wiki/SplitJoin.
 -- @param delimiter Delimiter.
 -- @param list The pieces parts.
 -- @return string Concatenated list.
@@ -61,10 +61,11 @@ function M.strjoin(delimiter, list)
     if len == 0 then
         return ""
     end
-    local string = list[1]
-    for i = 2, len do
-        string = string .. delimiter .. list[i]
-    end
+    local string = table.concat(list, delimiter)
+    -- local string = list[1]
+    -- for i = 2, len do
+    --     string = string .. delimiter .. list[i]
+    -- end
     return string
 end
 
