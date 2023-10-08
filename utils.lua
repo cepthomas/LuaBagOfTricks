@@ -107,5 +107,101 @@ end
 
 
 -----------------------------------------------------------------------------
+----------------------------- new TODO1 -------------------------------------------
+-----------------------------------------------------------------------------
+
+
+-----------------------------------------------------------------------------
+-- Description
+-- Description
+-- @param name type desc
+-- @return type desc
+
+
+-- Remap a value to new coordinates.
+-- @param val ??
+-- @param start1 ??
+-- @param stop1 ??
+-- @param start2 ??
+-- @param stop2 ??
+-- @return ??
+function M.map(val, start1, stop1, start2, stop2)
+    return start2 + (stop2 - start2) * (val - start1) / (stop1 - start1)
+
+-- Bounds limits a value.
+-- @param val ??
+-- @param min ??
+-- @param max ??
+-- @return ??
+function M.constrain(val, min, max)
+    val = math.max(val, min)
+    val = math.min(val, max)
+    return val
+
+-- Ensure integral multiple of resolution, GTE min, LTE max.
+-- @param val ??
+-- @param min ??
+-- @param max ??
+-- @param resolution ??
+-- @return ??
+function M.constrain(val, min, max, resolution)
+    rval = constrain(val, min, max)
+    rval = math.round(rval / resolution) * resolution
+    return rval
+
+-- Snap to closest neighbor.
+-- @param val ??
+-- @param granularity">The neighbors property line.
+-- @param round">Round or truncate.
+-- @return ??
+function M.clamp(val, granularity, round)
+    res = (val / granularity) * granularity
+    if (round && val % granularity > granularity / 2) then
+        res += granularity
+    end        
+    return res
+
+
+
+-----------------------------------------------------------------------------
+----------------------------- errors ----------------------------------------
+-----------------------------------------------------------------------------
+
+-----------------------------------------------------------------------------
+--- is this number an integer? from penlight
+-- @param x a number
+-- @raise error if x is not a number
+-- @return boolean
+function M.is_integer(x)
+    return math.ceil(x) == x
+end
+
+
+--TODO1 errors: need gp arg checker: type, optional, range?
+-- is_number(val)  is_string(val)  is_number_opt(val)  etc
+
+-- error (message [, level])
+-- Raises an error with message as the error object. This function never returns.
+-- Usually, error adds some information about the error position at the beginning of the message, if the message is a string.
+-- The level argument specifies how to get the error position. With level 1 (the default), the error position is where
+-- the error function was called. Level 2 points the error to where the function that called error was called; and so on.
+-- Passing a level 0 avoids the addition of error position information to the message.
+
+-- If there are no errors during the call, lua_pcall behaves exactly like lua_call. However, if there is any error, 
+-- lua_pcall catches it, pushes a single value on the stack (the error object), and returns an error code. 
+-- Like lua_call, lua_pcall always removes the function and its arguments from the stack.
+
+-- My_Error()
+--     --Error Somehow
+-- end
+-- local success,err = pcall(My_Error)
+-- if not success then
+--     error(err)
+-- end
+
+
+
+
+-----------------------------------------------------------------------------
 -- Return the module.
 return M

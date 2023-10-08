@@ -7,7 +7,7 @@ rem Set the lua path to:
 rem   - the lbot dir
 rem   - where your test script lives
 rem   - where your packages live
-rem   . Note the double semi-colon includes the standard lua path.
+rem   . Note the double semicolon includes the standard lua path.
 set LUA_PATH=%LUA_PATH%;C:\Dev\repos\LuaBagOfTricks\?.lua;C:\Dev\repos\LuaBagOfTricks\Test\?.lua;C:\Dev\lua\pkg\?.lua;;
 
 rem Run the tests. test_pnut
