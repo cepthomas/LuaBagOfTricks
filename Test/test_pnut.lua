@@ -1,7 +1,6 @@
 --[[
 Unit tests for the tester itself.
-Run like: lua pnut_runner.lua test_pnut
---]]
+]]
 
 
 -- Create the namespace/module.
@@ -18,8 +17,8 @@ function M.teardown(pn)
 end
 
 -----------------------------------------------------------------------------
-function M.suite_pnut_basic(pn)
-    pn.UT_INFO("Test all UT_xxx() functions")
+function M.suite_xxx(pn)
+    pn.UT_INFO("Test all UT_XXX() functions")
 
     pn.UT_INFO("Verify that this info line appears in the report file.")
     pn.UT_ERROR("Verify that this error line appears in the report file.")

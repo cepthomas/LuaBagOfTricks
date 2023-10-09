@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<DataDif xmlns:xsd="http://www.w3.org/2001/XMLSchema-instance" xsd:noNamespaceSchemaLocation="DataDif.xsd">
+    <meta namespace="testns" url="$URL: http://ocdusrow3rndd3:8686/NEPTUNE_SANDBOX/trunk/Source/common_libs/unit_test/dif/test_files/Test1_DataDif.xml $" revision="$Revision: 1157 $" date="$Date: 2015-01-21 10:57:45 -0500 (Wed, 21 Jan 2015) $" author="$Author: cthoma54 $" />
+    <directive include="Test3_DataDif" />
+    <enum name="StatusType_Enum" desc="Program statuses.">
+        <value name="Ready" number="1" desc="Ready to be scheduled." />
+        <value name="InProcess" number="2" desc="Scheduled or running" />
+        <value name="Done" number="3" desc="All done" />
+    </enum>
+    <data name="ProgramTest" desc="Describes a sample program test">
+        <property name="Flag" type="Bool" desc="Simple binary." default="true" />
+        <property name="When" type="DateTime" desc="Ask Doctor Who." />
+        <property name="Status" type="StatusType_Enum" default="StatusType_Enum::Ready" req="true" desc="The current test status." />
+        <property name="Params" type="Double" qualifier="array" desc="A bunch of numbers." />
+    </data>
+</DataDif>
+
+<?xml version="1.0" encoding="iso-8859-1"?>
+<DataDif xmlns:xsd="http://www.w3.org/2001/XMLSchema-instance" xsd:noNamespaceSchemaLocation="DataDif.xsd">
+    <meta namespace="pgmns" url="$URL: http://ocdusrow3rndd3:8686/NEPTUNE_SANDBOX/trunk/Source/common_libs/unit_test/dif/test_files/Test2_DataDif.xml $" revision="$Revision: 1157 $" date="$Date: 2015-01-21 10:57:45 -0500 (Wed, 21 Jan 2015) $" author="$Author: cthoma54 $" />
+    <directive include="Test1_DataDif" />
+    <data name="Program" desc="Describes a sample program">
+        <property name="PatientId" type="String" desc="Encrypted patient ID." />
+        <property name="SampleId" type="Int" req="true" desc="The barcoded sample ID." />
+        <property name="Status" type="testns::StatusType_Enum" default="testns::StatusType_Enum::Ready" req="true" desc="The current program status." />
+        <property name="StatusList" type="testns::StatusType_Enum" qualifier="array" req="true" desc="The current program status." />
+        <property name="Complete" type="DateTime" desc="Ask Doctor Who." />
+        <property name="TestUno" type="testns::ProgramTest" desc="A single test." />
+        <property name="TestList" type="testns::ProgramTest" qualifier="array" desc="All the tests in this program." />
+    </data>
+</DataDif>
+
+<?xml version="1.0" encoding="iso-8859-1"?>
+<DataDif xmlns:xsd="http://www.w3.org/2001/XMLSchema-instance" xsd:noNamespaceSchemaLocation="DataDif.xsd">
+    <meta namespace="appsvc" url="$URL: http://ocdusrow3rndd3:8686/NEPTUNE_SANDBOX/trunk/Source/common_libs/unit_test/dif/test_files/Test3_DataDif.xml $" revision="$Revision: 1029 $" date="$Date: 2015-01-07 16:43:14 -0500 (Wed, 07 Jan 2015) $" author="$Author: cthoma54 $" />
+    <enum name="AssayType_Enum" desc="Enum of supported assays">
+        <value name="None" number="0" desc="Default" />
+        <value name="Glu" number="1" desc="Sugary assay" />
+        <value name="Na" number="2" desc="Salty assay" />
+        <value name="Chol" number="3" desc="Fatty assay" />
+    </enum>
+</DataDif>

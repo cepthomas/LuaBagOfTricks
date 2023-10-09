@@ -1,7 +1,6 @@
 --[[
 Unit tests for the utils.
-Run like: lua pnut_runner.lua test_utils
---]]
+]]
 
 
 ut = require("utils")

@@ -105,61 +105,54 @@ function M.strtrim(s)
     return (s:gsub("^%s*(.-)%s*$", "%1"))
 end
 
-
 -----------------------------------------------------------------------------
------------------------------ new TODO1 -------------------------------------------
------------------------------------------------------------------------------
-
-
------------------------------------------------------------------------------
--- Description
--- Description
--- @param name type desc
--- @return type desc
-
-
 -- Remap a value to new coordinates.
--- @param val ??
--- @param start1 ??
--- @param stop1 ??
--- @param start2 ??
--- @param stop2 ??
--- @return ??
+-- @param val
+-- @param start1
+-- @param stop1
+-- @param start2
+-- @param stop2
+-- @return
 function M.map(val, start1, stop1, start2, stop2)
     return start2 + (stop2 - start2) * (val - start1) / (stop1 - start1)
+end
 
+-----------------------------------------------------------------------------
 -- Bounds limits a value.
--- @param val ??
--- @param min ??
--- @param max ??
--- @return ??
+-- @param val
+-- @param min
+-- @param max
+-- @return
 function M.constrain(val, min, max)
     val = math.max(val, min)
     val = math.min(val, max)
     return val
+end
 
+-----------------------------------------------------------------------------
 -- Ensure integral multiple of resolution, GTE min, LTE max.
--- @param val ??
--- @param min ??
--- @param max ??
--- @param resolution ??
--- @return ??
+-- @param val
+-- @param min
+-- @param max
+-- @param resolution
+-- @return
 function M.constrain(val, min, max, resolution)
     rval = constrain(val, min, max)
     rval = math.round(rval / resolution) * resolution
     return rval
+end
 
+-----------------------------------------------------------------------------
 -- Snap to closest neighbor.
--- @param val ??
+-- @param val
 -- @param granularity">The neighbors property line.
 -- @param round">Round or truncate.
--- @return ??
+-- @return
 function M.clamp(val, granularity, round)
     res = (val / granularity) * granularity
-    if (round && val % granularity > granularity / 2) then
-        res += granularity
-    end        
+    if round and val % granularity > granularity / 2 then res = res + granularity end        
     return res
+end
 
 
 
@@ -177,7 +170,7 @@ function M.is_integer(x)
 end
 
 
---TODO1 errors: need gp arg checker: type, optional, range?
+--TODO1 errors: need gp arg checker: type, optional, range? General error handling/processing.
 -- is_number(val)  is_string(val)  is_number_opt(val)  etc
 
 -- error (message [, level])
