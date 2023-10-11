@@ -1,65 +1,74 @@
 
+-- TODOGEN extra include/using.
 
-host_calls_lua =
+export_lua_funcs = --host_calls_lua =
 {
-    description = "booga",
-    lua_func_name = "my_lua_func",
-    host_func_name = "HostCallLua",
-    args =
     {
+        lua_func_name = "my_lua_func",
+        host_func_name = "interop_HostCallLua",
+        description = "booga",
+        args =
         {
-            name = "arg_one",
-            type = "string",
-            required = true,
-            description = "1 rererere"
+            {
+                name = "arg_one",
+                type = "string",
+                required = true,
+                description = "1 sssssss"
+            },
+            {
+                name = "arg_two",
+                type = "integer",
+                required = true,
+                description = "2 iiiiiiiii"
+            },
+            {
+                name = "arg_three",
+                type = "dictionary", -- TODOGEN intlist numberlist stringlist
+                required = true,
+                description = "3 ddddddddd"
+            },
         },
+        ret =
         {
-            name = "arg_two",
-            type = "integer",
-            required = true,
-            description = "2 rererere"
-        },
-        {
-            name = "arg_three",
-            type = "table",
-            required = true,
-            description = "3 rererere"
-        },
+            type = "dictionary",
+            description = "a returned thing"
+        }
     },
-    ret =
     {
-        type = "table",
-        description = "a returned thing"
-    },
+        -- next function
+    }
 }
 
-lua_calls_host =
+export_host_funcs = --lua_calls_host =
 {
-    description = "fooga",
-    lua_func_name = "my_lua_func",
-    host_func_name = "LuaCallHost",
-    work_func = "LuaCallHost_work",
-
-
-
-    args =
     {
+        lua_func_name = "my_lua_func",
+        host_func_name = "interop_LuaCallHost",
+        work_func = "interop_LuaCallHost_work", -- gets passed the args and ret below
+        description = "fooga",
+
+        args =
         {
-            name = "arg_one",
-            type = "integer",
-            required = true,
-            description = "1 rererere"
+            {
+                name = "arg_one",
+                type = "integer",
+                required = true,
+                description = "1 rererere"
+            },
+            {
+                name = "arg_two",
+                type = "string",
+                required = true,
+                description = "2 ttttttttt"
+            },
         },
+        ret =
         {
-            name = "arg_two",
-            type = "string",
-            required = true,
-            description = "2 rererere"
-        },
+            type = "number",
+            description = "a returned thing again"
+        }
     },
-    ret =
     {
-        type = "table",
-        description = "a returned thing again"
-    },
+        -- next function
+    }
 }
