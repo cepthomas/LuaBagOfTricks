@@ -1,54 +1,30 @@
 --[[
-Generate lua interop for C, C++, C#. Also html doc. From spec file ()lua, json, ???)
+TODO1 Generate lua interop for C, C++, C#. Also html doc. From spec file ()lua, json, ???)
 
 Looks like:
-
-
 VALUE_TYPE = { STRING=1, INT=2, NUMBER=2, BOOLEAN=3, TABLE=4, FUNCTION=5 }
 
-host_calls_lua =
-{
-    lua_func_name = "my_lua_func",
-    host_func_name = "HostCallLua",
-    ret_type: VALUE_TYPE.TABLE,
-    arg_types = { VALUE_TYPE.STRING, VALUE_TYPE.INT, VALUE_TYPE.TABLE } -- req/opt?
-}
 
-lua_calls_host =
-{
-    lua_func_name = "my_lua_func",
-    host_func_name = "LuaCallHost",
-    ret_type: VALUE_TYPE.TABLE,
-    arg_types = { VALUE_TYPE.INT, VALUE_TYPE.STRING }, -- req/opt?
-    work_func = "LuaCallHost_work"
-}
-
-
-
-
---]]
-
-
-
+]]
 
 
 -- Setup environment.
-local dc = require('dif_common')
+-- local dc = require('dif_common')
 
-local tmpl = require('pl.template')
-local xml = require('pl.xml')
-local pp = require('pl.path')
-local pd = require('pl.dir')
-local pretty = require('pl.pretty')
+-- local tmpl = require('pl.template')
+-- local xml = require('pl.xml')
+-- local pp = require('pl.path')
+-- local pd = require('pl.dir')
+-- local pretty = require('pl.pretty')
 local utils = require('utils')
 
--- Qt C++ type mappings.
-local simple_types = { }
-simple_types["Int"] = "int"
-simple_types["Double"] = "double"
-simple_types["String"] = "QString"
-simple_types["Bool"] = "bool"
-simple_types["DateTime"] = "QDateTime"
+-- -- Qt C++ type mappings.
+-- local simple_types = { }
+-- simple_types["Int"] = "int"
+-- simple_types["Double"] = "double"
+-- simple_types["String"] = "QString"
+-- simple_types["Bool"] = "bool"
+-- simple_types["DateTime"] = "QDateTime"
 
 
 --[[ .css
@@ -82,6 +58,7 @@ code{background:#eee}
 .footer p{margin-top:1em}
 ]]
 
+-- TODO2 enums?
 
 
 -- Convert generic data type into language specific string.

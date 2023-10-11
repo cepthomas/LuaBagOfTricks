@@ -8,10 +8,10 @@ rem   - the lbot dir
 rem   - where your test script lives
 rem   - where your packages live
 rem   . Note the double semicolon includes the standard lua path.
-set LUA_PATH=%LUA_PATH%;C:\Dev\repos\LuaBagOfTricks\?.lua;C:\Dev\repos\LuaBagOfTricks\Test\?.lua;C:\Dev\lua\pkg\?.lua;;
+set LUA_PATH=%LUA_PATH%;;C:\Dev\repos\LuaBagOfTricks\?.lua;C:\Dev\repos\LuaBagOfTricks\Test\?.lua;C:\Dev\repos\Lua\lualibs;
 
-rem Run the tests. test_pnut
-lua C:\Dev\repos\LuaBagOfTricks\pnut_runner.lua test_utils test_pnut
+rem Run the tests. test_pnut test_utils test_interop
+lua C:\Dev\repos\LuaBagOfTricks\pnut_runner.lua test_interop
 rem or like this ->
 rem cd C:\Dev\repos\LuaBagOfTricks
 rem lua pnut_runner.lua test_pnut

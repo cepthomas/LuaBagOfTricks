@@ -19,7 +19,7 @@ function M.teardown(pn)
 end
 
 -----------------------------------------------------------------------------
-function M.suite_utils(pn)
+function M.suite_interop(pn)
     pn.UT_INFO("Test all functions in process_interop.lua")
 
     a = 1
