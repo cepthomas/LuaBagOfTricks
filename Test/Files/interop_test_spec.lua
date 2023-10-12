@@ -2,8 +2,7 @@
 -- TODOGEN extra include/using.
 -- TODOGEN required?
 
--- TODOGEN IN: boolean int number string intlist numberlist stringlist
--- OUT: boolean int number string
+-- TODOGEN ARGS: boolean int number string intlist numberlist stringlist   RETURN: boolean int number string table
 
 export_lua_funcs = --host_calls_lua =
 {
@@ -17,13 +16,13 @@ export_lua_funcs = --host_calls_lua =
                 name = "arg_one",
                 type = "string",
                 required = true, -- TBD
-                description = "1 sssssss"
+                description = "some strings"
             },
             {
                 name = "arg_two",
                 type = "integer",
                 required = true,
-                description = "2 iiiiiiiii"
+                description = "a nice integer"
             },
             {
                 name = "arg_three",
@@ -42,6 +41,9 @@ export_lua_funcs = --host_calls_lua =
         -- next function
     }
 }
+
+
+-- TODOGEN ARGS: boolean int number string table   RETURN: boolean int number string table
 
 export_host_funcs = --lua_calls_host =
 {
