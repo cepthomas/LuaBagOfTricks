@@ -4,6 +4,7 @@ TODO1 Generate lua interop for C, C++, C#. Also html doc. From spec file ()lua, 
 Looks like:
 VALUE_TYPE = { STRING=1, INT=2, NUMBER=2, BOOLEAN=3, TABLE=4, FUNCTION=5 }
 
+TODOGEN md instead of html
 
 ]]
 

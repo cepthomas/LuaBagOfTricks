@@ -4,27 +4,36 @@
 #include "lauxlib.h"
 #include "luaex.h"
 
-// TODO2 Create C version of the C# core.
+// TODO2 Create C version of the C# functionality.
 
-bool lua_LuaError(lua_State* l, const char* fn, int line, int err, const char* format, ...)
-{
-    return false;
-}
-
+lua_tableex _t;
 
 void lua_pushtableex(lua_State* l, lua_tableex* tbl)
 {
-
 }
 
-lua_tableex t;
 lua_tableex* lua_totableex(lua_State* l, int ind)
 {
-    return &t;
+    return &_t;
 }
 
-
-int luaL_docall(lua_State* l, int num_args, int num_ret) // optionally throws
+int luaL_docall(lua_State* l, int num_args, int num_ret)
 {
     return 0;
+}
+
+bool lua_LuaError(lua_State* l, const char* fn, int line, int err, const char* format, ...)
+{
+    #define BUFF_LEN 100
+    char buff[BUFF_LEN];
+
+    va_list args;
+    va_start(args, format);
+    vsnprintf(buff, BUFF_LEN - 1, format, args);
+    va_end(args);
+
+    luaL_error(l, "Error %d! %s(%d) %s", err, fn, line, buff);
+    // never returns
+
+    return false;
 }

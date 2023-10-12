@@ -25,21 +25,18 @@
 lua_tableex* interop_HostCallLua(lua_State* l, char* arg1, int arg2, lua_tableex* arg3) // all these
 {
     $lua_tableex*$ ret = NULL;
-    bool ok = true;
     // function
     int ltype = lua_getglobal(l, $my_lua_func_name_1$);
-    if (ltype != LUA_TFUNCTION) { ok = ErrorHandler(l, LUA_ERRSYNTAX, "Bad lua function: $my_lua_func_name_1$"); }
-    if (!ok) return 0;
-    // all args
+    if (ltype != LUA_TFUNCTION) { ErrorHandler(l, LUA_ERRSYNTAX, $"Bad lua function: {my_lua_func_name_1}"); }
+    // args
     lua_pushstring(l, $arg1$);
     lua_pushinteger(l, $arg2$);
     lua_pushtableex(l, $arg3$);
-    // work and return
+    // do work and return
     int lstat = luaL_docall(l, num_args, num_ret);
-    if (lstat >= LUA_ERRRUN) { ok = ErrorHandler(l, lstat, "luaL_docall() failed"); }
-    if (!ok) return 0;
+    if (lstat >= LUA_ERRRUN) { ErrorHandler(l, lstat, "luaL_docall() failed"); }
     ret = $lua_totableex$(l, -1);
-    if (ret == NULL) { ok = ErrorHandler(l, LUA_ERRSYNTAX, "Return is not a $table$"); }
+    if (ret == NULL) { ErrorHandler(l, LUA_ERRSYNTAX, "Return value is not a $table$"); }
     lua_pop(l, num_ret);
     return ret;
 }
@@ -47,25 +44,20 @@ lua_tableex* interop_HostCallLua(lua_State* l, char* arg1, int arg2, lua_tableex
 //---------------- Call host functions from Lua -------------//
 static int interop_LuaCallHost(lua_State* l)
 {
-    bool ok = true;
     int arg1;
     const char* arg2;
-    // all args
+    // args
     if (lua_isinteger(l, 1)) { arg1 = lua_tointeger(l, 1); }
-    else { ok = ErrorHandler(l, LUA_ERRSYNTAX, "Bad arg type for $arg1$"); }
-    if (!ok) return 0;
+    else { ErrorHandler(l, LUA_ERRSYNTAX, "Bad arg type for $arg1$"); }
     if (lua_isstring(l, 2)) { arg2 = lua_tostring(l, 2); }
-    else { ok = ErrorHandler(l, LUA_ERRSYNTAX, "Bad arg type for $arg2$"); }
-    if (!ok) return 0;
-    // work and return
+    else { ErrorHandler(l, LUA_ERRSYNTAX, "Bad arg type for $arg2$"); }
+    // do work and return
     double ret = interop_LuaCallHost_DoWork(arg1, arg2);
     lua_pushnumber(l, ret);
     return $1;
 }
 
-
 //------------------ Infrastructure ----------------------//
-
 static const luaL_Reg function_map[] =
 {
     { my_lua_func_name_2, interop_LuaCallHost },
