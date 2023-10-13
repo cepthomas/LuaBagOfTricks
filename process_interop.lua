@@ -1,10 +1,10 @@
 --[[
-TODO1 Generate lua interop for C, C++, C#. Also html doc. From spec file ()lua, json, ???)
+Generate lua interop for C, C++, C#, md, html?.
 
-Looks like:
-VALUE_TYPE = { STRING=1, INT=2, NUMBER=2, BOOLEAN=3, TABLE=4, FUNCTION=5 }
+VALUE_TYPE = { STRING=1, INT=2, NUMBER=3, BOOLEAN=4, TABLE=5, FUNCTION=6 }
 
-TODOGEN md instead of html
+TODOGEN enums?
+
 
 ]]
 
@@ -59,7 +59,83 @@ code{background:#eee}
 .footer p{margin-top:1em}
 ]]
 
--- TODO2 enums?
+
+
+
+
+
+
+--[[
+
+
+Get C#:
+------------------
+ARGTYPE string integer boolean number tableex
+
+
+
+defs:
+    _l.PushString(arg1);
+    _l.PushInteger(arg2);
+    _l.PushTableEx(arg3);
+    _l.ToTableEx(-1);
+    l!.IsInteger(1)
+    l.ToInteger(1);
+
+G: NAMESPACE
+   CLASS_NAME
+
+func(N):
+    .HOST_FUNC_NAME
+    .LUA_FUNC_NAME
+    .WORK_FUNC*
+    .DESCRIPTION
+    .RET_TYPE
+    .RET_DESCRIPTION
+    calc: NUM_ARGS, NUM_RET
+    arg(N):
+        ARGN_TYPE
+        ARGN_NAME
+        REQUIRED
+
+
+Get C:
+------------------
+ARGTYPE string integer boolean number tableex
+
+
+defs:
+    lua_pushstring(l, arg1);
+    lua_pushinteger(l, arg2);
+    lua_pushtableex(l, arg3);
+    lua_totableex(l, -1);
+    lua_isinteger(l, 1)
+    lua_tointeger(l, 1)
+
+G: NAMESPACE
+   CLASS_NAME
+
+func(N):
+    .HOST_FUNC_NAME
+    .LUA_FUNC_NAME
+    .WORK_FUNC*
+    .DESCRIPTION
+    .RET_TYPE
+    .RET_DESCRIPTION
+    calc: NUM_ARGS, NUM_RET
+    arg(N):
+        ARGN_TYPE
+        ARGN_NAME
+        REQUIRED
+
+]]
+
+
+
+
+
+
+----------------------------------------------------------------------------------
 
 
 -- Convert generic data type into language specific string.

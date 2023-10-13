@@ -1,25 +1,28 @@
 #ifndef INTEROP_H
 #define INTEROP_H
 
-WARNING // Warning about generated file - do not edit.
+// Warning - this is a generated file, do not edit.
 
 
 // --------------------------------------------------------------------------
-// FUNC.DESCRIPTION
-// @param name ARG_TYPE ARG_DESCRIPTION
+// func.DESCRIPTION
+// @param ARG1_NAME ARG1_DESCRIPTION
+// @param ...
 // @return RET_TYPE RET_DESCRIPTION
 void interop_Load(lua_State* l);
 
 // --------------------------------------------------------------------------
-// FUNC.DESCRIPTION
-// @param name ARG_TYPE ARG_DESCRIPTION
+// func.DESCRIPTION
+// @param ARG1_NAME ARG1_DESCRIPTION
+// @param ...
 // @return RET_TYPE RET_DESCRIPTION
-RET_TYPE HOST_FUNC_NAME(ARG_TYPE_1 ARG_NAME_1, ARG_TYPE_2 ARG_NAME_2, ARG_TYPE_3 ARG_NAME_3, ...)
+RET_TYPE HOST_FUNC_NAME(ARG1_TYPE ARG1_NAME, ARG2_TYPE ARG2_NAME, ARG3_TYPE ARG3_NAME, ...)
 
 // --------------------------------------------------------------------------
-// FUNC.DESCRIPTION
-// @param name ARG_TYPE ARG_DESCRIPTION
+// func.DESCRIPTION
+// @param ARG1_NAME ARG1_DESCRIPTION
+// @param ...
 // @return RET_TYPE RET_DESCRIPTION
-RET_TYPE WORK_FUNC(ARG_NAME_1, ARG_NAME_2, ...);
+RET_TYPE WORK_FUNC(ARG1_TYPE ARG1_NAME, ARG2_TYPE ARG2_NAME, ...);
 
 #endif // INTEROP_H

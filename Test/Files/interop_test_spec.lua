@@ -1,10 +1,13 @@
 
 -- TODOGEN extra include/using.
--- TODOGEN required?
+-- TODOGEN required flag?
 
--- TODOGEN ARGS: boolean int number string intlist numberlist stringlist   RETURN: boolean int number string table
 
-export_lua_funcs = --host_calls_lua =
+-- host_calls_lua 
+-- ARGS: boolean-! integer-X number-! string-X tableex-X integerlist-! numberlist-! stringlist-!
+-- RETURN: boolean-! integer-! number-! string-! tableex-X
+
+export_lua_funcs =
 {
     {
         lua_func_name = "my_lua_func",
@@ -26,14 +29,14 @@ export_lua_funcs = --host_calls_lua =
             },
             {
                 name = "arg_three",
-                type = "dictionary",
+                type = "tableex",
                 required = true,
                 description = "3 ddddddddd"
             },
         },
         ret =
         {
-            type = "table",
+            type = "tableex",
             description = "a returned thing"
         }
     },
@@ -42,10 +45,10 @@ export_lua_funcs = --host_calls_lua =
     }
 }
 
-
--- TODOGEN ARGS: boolean int number string table   RETURN: boolean int number string table
-
-export_host_funcs = --lua_calls_host =
+-- lua_calls_host
+-- ARGS: boolean-? integer-X number-! string-X tableex-? integerlist-? numberlist-? stringlist-?
+-- RETURN: boolean-! integer-! number-X string-! tableex-?
+export_host_funcs =
 {
     {
         lua_func_name = "my_lua_func",

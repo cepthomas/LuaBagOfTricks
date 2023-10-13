@@ -1,8 +1,8 @@
 #ifndef INTEROP_H
 #define INTEROP_H
-// TODOGEN extra includes
+// extra includes
 
-//-------- TODOGEN generator creates from spec --------------------//
+//-------- generator creates from spec --------------------//
 
 // --------------------------------------------------------------------------
 // Description

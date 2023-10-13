@@ -9,7 +9,7 @@ namespace Ephemera.Nebulua
 {
     public partial class Script
     {
-        // // TODOGEN generator fills these in:
+        // generator fills these in:
         // static string my_lua_func_name_1 = "call_my_lua_func";
         // static string my_lua_func_name_2 = "call_my_host_func";
         // static string lib_name = "neb_api";
@@ -18,14 +18,14 @@ namespace Ephemera.Nebulua
         ////////////////////////////
 
         //---------------- Call lua functions from host -------------//
-        public TableEx? interop_HostCallLua(string arg1, int arg2, Dictionary<string, object> arg3)
+        public TableEx? interop_HostCallLua(string arg1, int arg2, TableEx arg3)
         {
             LuaType ltype = _l.GetGlobal(my_lua_func_name_1);
             if (ltype != LuaType.Function) { ErrorHandler(new SyntaxException($"Bad lua function: {my_lua_func_name_1}")); return null; }
             // Push arguments.
             _l.PushString(arg1);
             _l.PushInteger(arg2);
-            _l.PushDictionary(arg3);
+            _l.PushTableEx(arg3);
             // Do the actual call.
             LuaStatus lstat = _l.DoCall(num_args, num_ret);
             if (lstat >= LuaStatus.ErrRun) { ErrorHandler(new SyntaxException("DoCall() failed")); return null; }

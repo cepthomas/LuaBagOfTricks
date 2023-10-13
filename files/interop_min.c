@@ -14,7 +14,7 @@
 #include "interop.h"
 
 //------------------ generator creates these from spec --------------------//
-// TODOGEN generator fills these in place:
+// generator fills these in place:
 // #define my_lua_func_name_2 "call_my_host_func"
 // #define my_lua_func_name_1 "call_my_lua_func"
 // #define lib_name "neb_api"
