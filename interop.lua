@@ -7,177 +7,121 @@ Supported arg and return value types: boolean integer number string tableex
 TODOGEN extra include/using.
 TODOGEN enums?
 TODO2 clean up C:\Dev\repos\Lua\stuff\notes.txt and lua cheatsheet.
-
-
 ]]
 
 local ut = require('utils')
+local dbg = require("debugger")
+-- or
+-- local available, dbg = pcall(require, "debugger")
+-- if not available then
+--     print("You are not using debugger module!")
+-- end
 
 
+local syntaxes =
+{
+    ch = "interop_c.lua",
+    cs = "interop_cs.lua",
+    md = "interop_md.lua"
+}
 
-
-
---[[
-
-C# flavor:
-------------------
-G: NAMESPACE
-   CLASS_NAME
-
-func(N):
-    .HOST_FUNC_NAME
-    .LUA_FUNC_NAME
-    .WORK_FUNC*
-    .DESCRIPTION
-    .RET_TYPE
-    .RET_DESCRIPTION
-    calc: NUM_ARGS, NUM_RET
-    arg(N):
-        ARGN_TYPE
-        ARGN_NAME
-        REQUIRED
-
-
-C flavor:
-------------------
-
-G: NAMESPACE
-   CLASS_NAME
-
-func(N):
-    .HOST_FUNC_NAME
-    .LUA_FUNC_NAME
-    .WORK_FUNC*
-    .DESCRIPTION
-    .RET_TYPE
-    .RET_DESCRIPTION
-    calc: NUM_ARGS, NUM_RET
-    arg(N):
-        ARGN_TYPE
-        ARGN_NAME
-        REQUIRED
-
-]]
-
-
-local function gen_cs()
-    print "Doing CS"
-
-
+local function _error(msg, usage)
+    if usage ~= nil then msg = msg.."\n" .. "Usage: interop.lua -ch|md|cs your_spec.lua your_outfile" end
+    dbg.error(msg)
 end
 
-
------------------- helpers -----------------------
--- You can solve this by adding the function to the table
--- t.insert = table.insert
--- Or using a metatable
--- setmetatable(t, {__index = {insert = table.insert}})
-local op = {}
-local function add_output(s) table.insert(op, s) end
-
-
-
------------------- Start here -------------------
-
--- print("")
 -- print("cd:", ut.execute_capture("echo %cd%"))
 
 
--- Try this. In file `a.lua':
--- assert(loadfile("b.lua"))(10,20,30)
--- In file b.lua:
--- local a,b,c=...
--- or
--- local arg={...}
--- The arguments to b.lua are received as varargs, hence the ....
+if #arg ~= 3 then _error("Bad command line") end
 
+local syntax_chunk = loadfile(syntaxes[arg[1]:sub(2)])
+if syntax_chunk == nil then _error("Bad syntax "..arg[1]) end
 
+local spec_chunk = loadfile(arg[2])
+if spec_chunk == nil then _error("Bad spec file "..arg[2]) end
+local res, content = pcall(spec_chunk)
+if res == false then _error(content, false) end
 
+-- execute the file
+local res, spec = pcall(spec_chunk)
+if res == false then _error(spec, false) end
 
+local res, content = pcall(syntax_chunk, spec)
+if res == false then _error(content, false) end
 
--- Get flavor.
-iop = require("interop_cs")
--- C:/Dev/repos/Lua/LuaBagOfTricks/files/interop_cs.lua
--- C:/Dev/repos/Lua/LuaBagOfTricks/process_interop.lua
-
-
-
-
-
-
-
-argsok = false
-
--- print("0:" .. arg[0])
--- print("1:" .. arg[1])
--- print("2:" .. arg[2])
--- print("3:" .. arg[3])
-
---  -ch|md|cs spec.lua outpath
-if #arg == 3 then
-    otype = arg[1]
-    infile = arg[2]
-    outpath = arg[3]
-
-    -- Read the spec
-    spec = loadfile(infile)
-    if spec ~= nil then
-        if otype == "-ch" then
-            loadfile("b.lua"))(spec)
-            gen_c()
-            argsok = true
-        elseif otype == "-md" then
-            gen_md()
-            argsok = true
-        elseif otype == "-cs" then
-            gen_cs()
-            argsok = true
-        end
-    end
-
-    if argsok == false then
-        print("Bad command line - should be process_interop.lua -ch|md|cs spec.lua outpath")
-    end
+-- output
+cf = io.open(out_file, "w")
+if cf == nil then
+    _error("Invalid filename: "..out_file)
+else
+    cf:write(content)
+    cf:close()
 end
 
 
+    -- -- Get flavor.
 
--- dofile ([filename])
--- Opens the named file and executes its content as a Lua chunk. When called without arguments, dofile executes the contens
--- of the standard input (stdin). Returns all values returned by the chunk. In case of errors, dofile propagates the error to
--- its caller. (That is, dofile does not run in protected mode.)
+    -- if spec ~= nil then
+    --     if otype == "-ch" then
+    --         interop_file = "interop_c.lua"
+    --         local iof = loadfile("interop_c.lua")
+    --         iof(spec)
+    --         argsok = true
+    --     elseif otype == "-cs" then
+    --         local iof = loadfile("interop_csx.lua")
+    --         -- print(">>> iof: ", iof)
 
--- assert (v [, message])
--- Raises an error if the value of its argument v is false (i.e., nil or false); otherwise, returns all its arguments. 
--- In case of error, message is the error object; when absent, it defaults to "assertion failed!"
+    --         if iof == nil then
+    --             error("invalid file")
+    --         end
 
--- local f=loadfile"xxx"
--- f(a1,a2,a3,a4)
+    --         local res, content = pcall(iof, spec)
+    --         -- print(">>> res: ", res)
+    --         -- print(">>> content: ", content)
 
--- Chunks are (and have always been) vararg functions. In 5.1 you can get their
--- args as ... . If you want to create a table, add this to the chunk:
--- local arg={...}
+    --         if res == true then
+    --             write_output(content, err, out_file)
 
-
-
-
-
--- add_output("Here we go")
-
-add_output(iop.preamble)
-
-
-local s = ut.strjoin('\n', op)
-
--- print(">>>>" .. s)
-
-return 0
+    --         else
 
 
+    --         end
 
-----------------------------------------------------------------------------------
-----------------------------------------------------------------------------------
 
---[[ ------------------------------- old ----------------------------------------------
+    --         argsok = true
+    --     elseif otype == "-md" then
+    --         gen_md()
+    --         argsok = true
+    --     end
+    -- end
 
-]]
+
+    -- local iof = loadfile("interop_csx.lua")
+    -- -- print(">>> iof: ", iof)
+
+    -- if iof == nil then
+    --     error("invalid file")
+    -- end
+
+    -- local res, content = pcall(iof, spec)
+    -- -- print(">>> res: ", res)
+    -- -- print(">>> content: ", content)
+
+    -- if res == true then
+    --     write_output(content, err, out_file)
+
+    -- else
+
+
+    -- end
+
+
+
+
+
+    -- if argsok == false then
+    --     print("Bad command line - should be process_interop.lua -ch|md|cs spec.lua outfile")
+    --     return 1
+    -- end
+
