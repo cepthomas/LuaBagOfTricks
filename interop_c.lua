@@ -1,4 +1,39 @@
-// Warning - this is a generated file, do not edit.
+
+
+-- C flavor.
+push_c = 
+{
+    boolean = "lua_pushboolean",
+    integer = "lua_pushinteger",
+    number = "lua_pushnumber",
+    string ="lua_pushstring",
+    tableex = "lua_pushtableex"
+}
+is_c = 
+{
+    boolean = "lua_isboolean",
+    integer = "lua_isinteger",
+    number = "lua_isnumber",
+    string ="lua_isstring",
+    tableex = "lua_istableex"
+}
+to_c = 
+{
+    boolean = "lua_toboolean",
+    integer = "lua_tointeger",
+    number = "lua_tonumber",
+    string ="lua_tostring",
+    tableex = "lua_totableex"
+}
+
+
+
+
+----------------------------- C file -----------------------------
+
+preamble = [[
+
+///// Warning - this is a generated file, do not edit. /////
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -14,10 +49,11 @@
 #include "lauxlib.h"
 #include "luaex.h"
 #include "interop.h"
-ADD_INCLUDE
+{ADD_INCLUDE}
 
+]]
 
-
+export_lua_funcs = [[        
 
 //---------------- Call lua functions from host - export_lua_funcs -------------//
 // ALL functions - LOOP
@@ -46,6 +82,9 @@ RET_TYPE HOST_FUNC_NAME(ARG1_TYPE ARG1_NAME, ARG2_TYPE ARG2_NAME, ARG3_TYPE ARG3
 
     return ret;
 }
+]]
+
+export_host_funcs = [[
 
 //---------------- Call host functions from Lua - export_host_funcs -------------//
 // ALL functions - LOOP
@@ -67,13 +106,16 @@ static int HOST_FUNC_NAME(lua_State* l)
     lua_push_RET_TYPE(l, ret);
     return 1;
 }
+]]
+
+infrastructure = [[
 
 //------------------ Infrastructure ----------------------//
 
 static const luaL_Reg function_map[] =
 {
     // ALL collected
-    { export_host_funcs.LUA_FUNC_NAME, export_host_funcs.HOST_FUNC_NAME },
+    { export_host_funcs.LUA_FUNC_NAME, export_host_funcs.HOST_FUNC_NAME }, -- LOOP
     //...
     { NULL, NULL }
 };
@@ -88,3 +130,56 @@ void interop_Load(lua_State* l)
 {
     luaL_requiref(l, LIB_NAME, interop_Open, true);
 }
+]]
+
+
+postamble ={{
+
+    
+}}
+
+
+---------------------------------- h file -----------------------------------
+
+
+
+preamble = [[
+#ifndef INTEROP_H
+#define INTEROP_H
+
+///// Warning - this is a generated file, do not edit. /////
+
+
+// --------------------------------------------------------------------------
+// Infrastructure function.
+void interop_Load(lua_State* l);
+]]
+
+export_lua_funcs = [[        
+//---------------- Call lua functions from host - export_lua_funcs -------------//
+// ALL functions - LOOP
+
+// --------------------------------------------------------------------------
+// func.DESCRIPTION
+// @param ARG1_NAME ARG1_DESCRIPTION
+// @param ...
+// @return RET_TYPE RET_DESCRIPTION
+RET_TYPE HOST_FUNC_NAME(ARG1_TYPE ARG1_NAME, ARG2_TYPE ARG2_NAME, ARG3_TYPE ARG3_NAME, ...)
+
+]]
+
+export_host_funcs = [[
+//---------------- Call host functions from Lua - export_host_funcs -------------//
+// ALL functions - LOOP
+
+// --------------------------------------------------------------------------
+// func.DESCRIPTION
+// @param ARG1_NAME ARG1_DESCRIPTION
+// @param ...
+// @return RET_TYPE RET_DESCRIPTION
+RET_TYPE WORK_FUNC(ARG1_TYPE ARG1_NAME, ARG2_TYPE ARG2_NAME, ...);
+]]
+
+postamble = [[
+#endif // INTEROP_H
+]]

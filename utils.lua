@@ -7,7 +7,33 @@ GP utilities: strings, tables, math, ...
 local M = {}
 
 
+function M.execute_capture(cmd)
+  local f = io.popen(cmd, 'r')
+  local s = f:read('*a')
+  f:close()
+  -- if raw then return s end
+  -- s = string.gsub(s, '^%s+', '')
+  -- s = string.gsub(s, '%s+$', '')
+  -- s = string.gsub(s, '[\n\r]+', ' ')
+  return s
+end
+
+---------------------------------------------------------------
+-- Simple interpolated string function. Stolen/modified from http://lua-users.org/wiki/StringInterpolation.
+-- ex: interp{ [[Hello {name}, welcome to {company}.]], { name = name, company = get_company_name()}}
+-- @param str Source string.
+-- @param vars Replacement values dict.
+-- @return Formatted string.
+function M.interp(str, vars)
+    if not vars then
+        vars = str
+        str = vars[1]
+    end
+    return (string.gsub(str, "({([^}]+)})", function(whole, i) return vars[i] or whole end))
+end
+
 -----------------------------------------------------------------------------
+-- Diagnostic.
 -- @param tbl What to dump.
 -- @param indent Nesting.
 -- @return string array dump.
