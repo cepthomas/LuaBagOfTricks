@@ -2,12 +2,15 @@
 local output = {}
 local function add_output(s) table.insert(output, s) end
 
--- arg 1
-local spec = ...
+local arg = {...}
+local spec = arg[1]
 
+-- print(arg[0])
+-- print(arg[1])
+-- print(arg[2])
 
 -- C# flavor.
-push_cs = 
+local push_cs = 
 {
     boolean = "PushBoolean",
     integer = "PushInteger",
@@ -15,7 +18,7 @@ push_cs =
     string ="PushString",
     tableex = "PushTableEx"
 }
-is_cs = 
+local is_cs = 
 {
     boolean = "IsBoolean",
     integer = "IsInteger",
@@ -23,7 +26,7 @@ is_cs =
     string ="IsString",
     tableex = "IsTableEx"
 }
-to_cs = 
+local to_cs = 
 {
     boolean = "ToBoolean",
     integer = "ToInteger",
@@ -55,16 +58,11 @@ for _, func in ipairs{spec.lua_export_funcs} do
 end
 
 
-function do_func(func)
-
-end
-
-
 ------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------
 
-preamble = 
+local preamble = 
 [[
 ///// Warning - this is a generated file, do not edit. /////
 
@@ -82,7 +80,7 @@ namespace {NAMESPACE}
     {
 ]]
 
-lua_export_funcs = 
+local lua_export_funcs = 
 [[  LOOPfuncs
         /// <summary>Lua export function: {func.DESCRIPTION}</summary>
         /// <param name="{ARG1_NAME}">{ARG1_DESCRIPTION}</param> LOOPargs
@@ -116,7 +114,7 @@ lua_export_funcs =
         }
 ]]
 
-host_export_funcs = 
+local host_export_funcs = 
 [[  LOOPfuncs
         /// <summary>Host exprt function: func.DESCRIPTION</summary>
         /// <param name="ARG1_NAME">ARG1_DESCRIPTION</param> LOOPargs.
@@ -145,7 +143,7 @@ host_export_funcs =
         }
 ]]
 
-postamble = 
+local postamble = 
 [[
         //------------------ Infrastructure ----------------------//
         readonly LuaRegister[] _libFuncs = new LuaRegister[]
