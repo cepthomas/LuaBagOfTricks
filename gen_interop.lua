@@ -27,7 +27,7 @@ local syntaxes =
 }
 
 local function _error(msg, usage)
-    if usage ~= nil then msg = msg.."\n" .. "Usage: interop.lua -ch|md|cs your_spec.lua your_outfile" end
+    if usage ~= nil then msg = msg .. "\n" .. "Usage: interop.lua -ch|md|cs your_spec.lua your_outfile" end
     if have_dbg then dbg.error(msg) else error(msg) end
 end
 
@@ -37,10 +37,10 @@ end
 if #arg ~= 3 then _error("Bad command line") end
 
 local syntax_chunk = loadfile(syntaxes[arg[1]:sub(2)])
-if syntax_chunk == nil then _error("Bad syntax "..arg[1]) end
+if syntax_chunk == nil then _error("Bad syntax " .. arg[1]) end
 
 local spec_chunk = loadfile(arg[2])
-if spec_chunk == nil then _error("Bad spec file "..arg[2]) end
+if spec_chunk == nil then _error("Bad spec file " .. arg[2]) end
 local res, content = pcall(spec_chunk)
 if res == false then _error(content, false) end
 
@@ -54,7 +54,7 @@ if res == false then _error(content, false) end
 -- output
 cf = io.open(arg[3], "w")
 if cf == nil then
-    _error("Invalid filename: "..arg[3])
+    _error("Invalid filename: " .. arg[3])
 else
     cf:write(content)
     cf:close()

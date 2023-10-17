@@ -59,13 +59,13 @@ namespace $(config.namespace)
         |for _, func in ipairs(lua_funcs) do
         /// <summary>Lua export function: $(func.description)</summary>
         |for _, arg in ipairs(func.args) do
-        /// <param name="$(arg.name)">$(arg.description)</param>
+        /// <param name=$(arg.name)>$(arg.description)</param>
         |end
         /// <returns>$(func.ret.type) $(func.ret.description)></returns>
 
         public $(func.ret.type)? $(func.host_func_name)(
         |for _, arg in ipairs(func.args) do 
-         $(arg.type) $(arg.name),
+        $(arg.type) $(arg.name),
         |end
         )
         {
@@ -96,7 +96,7 @@ namespace $(config.namespace)
         |for _, func in ipairs(host_funcs) do
         /// <summary>Host export function: $(func.description)</summary>
         |for _, arg in ipairs(func.args) do
-        /// <param name="$(arg.name)">$(arg.description)</param>
+        /// <param name=$(arg.name)>$(arg.description)</param>
         |end
         /// <returns>$(func.ret.type) {func.ret.description)></returns>
         static int $(func.host_func_name)(IntPtr p)
@@ -157,16 +157,17 @@ namespace $(config.namespace)
 
 local tmpl_env = { _escape='|', _parent=_G, _debug=true, config=spec.config, lua_funcs=spec.lua_export_funcs, host_funcs=spec.host_export_funcs }
 
-dbg()
+-- dbg()
 
 rendered, err, source = tmpl.substitute(ttt, tmpl_env)
 
-print(source)
 
 if err == nil then
     return rendered
 else
-    error(err)
+    -- print(source)
+    dbg.error(err)
+    -- error(err)
 end
 
 
