@@ -11,9 +11,10 @@ TODO2 clean up C:\Dev\repos\Lua\stuff\notes.txt and lua cheatsheet.
 
 local ut = require('utils')
 local dbg = require("debugger")
+local have_dbg = true
 -- or
--- local available, dbg = pcall(require, "debugger")
--- if not available then
+-- local have_dbg, dbg = pcall(require, "debugger") -- TODO2 cleaner way
+-- if not have_dbg then
 --     print("You are not using debugger module!")
 -- end
 
@@ -27,7 +28,7 @@ local syntaxes =
 
 local function _error(msg, usage)
     if usage ~= nil then msg = msg.."\n" .. "Usage: interop.lua -ch|md|cs your_spec.lua your_outfile" end
-    dbg.error(msg)
+    if have_dbg then dbg.error(msg) else error(msg) end
 end
 
 -- print("cd:", ut.execute_capture("echo %cd%"))
@@ -51,9 +52,9 @@ local res, content = pcall(syntax_chunk, spec)
 if res == false then _error(content, false) end
 
 -- output
-cf = io.open(out_file, "w")
+cf = io.open(arg[3], "w")
 if cf == nil then
-    _error("Invalid filename: "..out_file)
+    _error("Invalid filename: "..arg[3])
 else
     cf:write(content)
     cf:close()

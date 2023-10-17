@@ -10,3 +10,13 @@ See the Test directory as example of how to use it.
 
 ## utils.lua
 Handy collected odds and ends.
+
+
+
+https://github.com/slembcke/debugger.lua
+
+https://github.com/lunarmodules/Penlight
+
+
+TODOGEN fix all these:  ~= nil
+

@@ -1,5 +1,19 @@
 local M = {}
 
+-- Options depending on syntax.
+M.config =
+{
+    -- General
+    lib_name = "my_lib",
+    -- CS
+    namespace = "HeraAndNow",
+    class = "SunAndMoon",
+    add_using = { "System.Diagnostics", "System.Drawing" },
+    -- C
+    add_include = { "<errno.h>" },
+}
+
+
 -- host calls lua 
 -- ARGS: boolean-! integer-X number-! string-X tableex-X
 -- RETURN: boolean-! integer-! number-! string-! tableex-X
@@ -22,7 +36,7 @@ M.lua_export_funcs =
     }
 }
 
--- lua calls host - same as above + work_func
+-- lua calls host - same as above + work_func TODO2 combine?
 -- ARGS: boolean-? integer-X number-! string-X tableex-!
 -- RETURN: boolean-! integer-! number-X string-! tableex-?
 M.host_export_funcs = 
