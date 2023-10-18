@@ -13,10 +13,23 @@ Handy collected odds and ends.
 
 
 
+## interop
+
+See `interop_spec.lua` for example.
+
+Supported arg and return value types: B=boolean I=integer N=number S=string T=tableex
+
+
 https://github.com/slembcke/debugger.lua
 
-https://github.com/lunarmodules/Penlight
+Uses a slightly hacked version of template.lua from https://github.com/lunarmodules/Penlight.
+- Doesn't support nested expansions like:
+`l.$(to_funcs[$(func.ret.type)])`
 
 
-TODOGEN fix all these:  ~= nil
+
+TODO2 enums?
+
+TODO2 clean up C:\Dev\repos\Lua\stuff\notes.txt and lua cheatsheet --> lua-notes.ntr
+
 

@@ -36,8 +36,9 @@ end
 -- Diagnostic.
 -- @param tbl What to dump.
 -- @param indent Nesting.
--- @return string array dump.
-function M.dump_table(tbl, indent)
+-- @param short Return simple string.
+-- @return string or array dump.
+function M.dump_table(tbl, indent, short)
     local res = {}
 
     if type(tbl) == "table" then
@@ -56,6 +57,10 @@ function M.dump_table(tbl, indent)
         end
     else
         table.insert(res, "Not a table")
+    end
+
+    if short ~= nil then
+        res = M.strjoin('\n', res)
     end
 
     return res

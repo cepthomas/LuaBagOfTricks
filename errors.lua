@@ -1,5 +1,5 @@
 --[[
-GP error utilities.
+GP error utilities. TODO1 prune, consolidate, incorporate debugger.lua, ...
 --]]
 
 

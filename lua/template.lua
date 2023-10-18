@@ -31,7 +31,7 @@
 -- local utils = require 'pl.utils'
 
 
---- escape any Lua 'magic' characters in a string
+--- escape any Lua 'magic' characters in a string - from pl.utils
 -- @param s The input string
 function escape(s)
     -- utils.assert_string(1,s)
@@ -68,8 +68,6 @@ end
 
 local function parseHashLines(chunk,inline_escape,brackets,esc,newline)
     -- Escape special characters to avoid invalid expressions
---    inline_escape = utils.escape(inline_escape)
---    esc = utils.escape(esc)
     inline_escape = escape(inline_escape)
     esc = escape(esc)
 
@@ -124,9 +122,8 @@ local template = {}
 -- @return `rendered template + nil + source_code`, or `nil + error + source_code`. The last
 -- return value (`source_code`) is only returned if the debug option is used.
 function template.substitute(str,env)
-    print("AA")
     env = env or {}
-    local t, err = template.compile(str, {
+    local t, err, code = template.compile(str, {
         chunk_name = rawget(env,"_chunk_name"),
         escape = rawget(env,"_escape"),
         inline_escape = rawget(env,"_inline_escape"),
@@ -134,9 +131,8 @@ function template.substitute(str,env)
         newline = nil,
         debug = rawget(env,"_debug")
     })
-    print("BB")
-    if not t then return t, err end
-    print("CC")
+
+    if not t then return t, err, code end
 
     return t:render(env, rawget(env,"_parent"), rawget(env,"_debug"))
 end
@@ -161,7 +157,6 @@ local render = function(self, env, parent, db)
 
     local res, out = xpcall(self.fn, debug.traceback)
     if not res then
-        if self.code and db then print(self.code) end
         return nil, out, self.code
     end
     return table.concat(out), nil, self.code
@@ -187,18 +182,15 @@ end
 -- local ct, err = template.compile(my_template)
 -- local rendered , err = ct:render(my_env, parent)
 function template.compile(str, opts)
-    print("1111")
     opts = opts or {}
     local chunk_name = opts.chunk_name or 'TMP'
     local escape = opts.escape or '#'
     local inline_escape = opts.inline_escape or '$'
     local inline_brackets = opts.inline_brackets or '()'
-    print("2222")
 
     local code, short = parseHashLines(str,inline_escape,inline_brackets,escape,opts.newline)
-    print("code: "..code)
     local env = { __tostring = tostring }
---    local fn, err = utils.load(code, chunk_name,'t',env)
+    -- was local fn, err = utils.load(code, chunk_name,'t',env)
     local fn, err = load(code, chunk_name,'t',env)
     if not fn then return nil, err, code end
 
