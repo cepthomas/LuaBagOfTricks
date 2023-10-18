@@ -42,7 +42,12 @@ M.host_export_funcs =
         host_func_name = "interop_LuaCallHost",
         work_func = "interop_LuaCallHost_work", -- host_export only: gets passed the args and ret below
         description = "fooga",
-    }
+        args =
+        {
+
+        },
+        ret = { type = "B", description = "a returned thing" }
+    },
 }
 
 return M

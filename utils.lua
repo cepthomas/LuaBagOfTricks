@@ -20,7 +20,7 @@ end
 
 ---------------------------------------------------------------
 -- Simple interpolated string function. Stolen/modified from http://lua-users.org/wiki/StringInterpolation.
--- ex: interp{ [[Hello {name}, welcome to {company}.]], { name = name, company = get_company_name()}}
+-- ex: interp( [[Hello {name}, welcome to {company}.]], { name = name, company = get_company_name() } )
 -- @param str Source string.
 -- @param vars Replacement values dict.
 -- @return Formatted string.

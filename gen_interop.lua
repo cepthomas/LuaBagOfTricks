@@ -59,7 +59,7 @@ if not status then _error("Error in spec file: " .. spec, false) end
 
 -- execute the syntax using the spec
 local status, content, code_err = pcall(syntax_chunk, spec) -- protected
-if not status then _error("Error processing generator: " .. content, false) end
+if not status then _error("Error generating: " .. content, false) end
 
 -- Always save the generated code OR the intermediate mangled code for user to review.
 _write_output(outfn, content)

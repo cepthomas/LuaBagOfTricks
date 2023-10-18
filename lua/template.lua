@@ -40,9 +40,6 @@ end
 
 
 
-
-
-
 local append,format,strsub,strfind,strgsub = table.insert,string.format,string.sub,string.find,string.gsub
 
 local APPENDER = "\n__R_size = __R_size + 1; __R_table[__R_size] = "
@@ -134,7 +131,7 @@ function template.substitute(str,env)
 
     if not t then return t, err, code end
 
-    return t:render(env, rawget(env,"_parent"), rawget(env,"_debug"))
+    return t:render(env, rawget(env, "_parent"), rawget(env, "_debug"))
 end
 
 --- executes the previously compiled template and renders it.
@@ -180,7 +177,7 @@ end
 -- @return template object, or `nil + error + source_code`
 -- @usage
 -- local ct, err = template.compile(my_template)
--- local rendered , err = ct:render(my_env, parent)
+-- local rendered, err = ct:render(my_env, parent)
 function template.compile(str, opts)
     opts = opts or {}
     local chunk_name = opts.chunk_name or 'TMP'
@@ -190,8 +187,8 @@ function template.compile(str, opts)
 
     local code, short = parseHashLines(str,inline_escape,inline_brackets,escape,opts.newline)
     local env = { __tostring = tostring }
-    -- was local fn, err = utils.load(code, chunk_name,'t',env)
-    local fn, err = load(code, chunk_name,'t',env)
+    -- was local fn, err = utils.load(code, chunk_name, 't', env)
+    local fn, err = load(code, chunk_name,'t', env)
     if not fn then return nil, err, code end
 
     if short then
