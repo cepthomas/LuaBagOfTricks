@@ -1,6 +1,6 @@
 
 local ut = require('utils')
-local tmpl = require('pl.template')
+local tmpl = require('template')
 local dbg = require("debugger")
 
 local arg = {...}
@@ -157,7 +157,8 @@ namespace $(config.namespace)
 
 local tmpl_env = { _escape='|', _parent=_G, _debug=true, config=spec.config, lua_funcs=spec.lua_export_funcs, host_funcs=spec.host_export_funcs }
 
--- dbg()
+dbg()
+print("aaaa")
 
 rendered, err, source = tmpl.substitute(ttt, tmpl_env)
 
@@ -166,8 +167,8 @@ if err == nil then
     return rendered
 else
     -- print(source)
-    dbg.error(err)
-    -- error(err)
+    -- dbg.error(err)
+    error(err)
 end
 
 

@@ -11,7 +11,7 @@ TODO2 clean up C:\Dev\repos\Lua\stuff\notes.txt and lua cheatsheet.
 
 local ut = require('utils')
 local dbg = require("debugger")
-local have_dbg = true
+local have_dbg = false
 -- or
 -- local have_dbg, dbg = pcall(require, "debugger") -- TODO2 cleaner way
 -- if not have_dbg then
