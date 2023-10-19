@@ -8,11 +8,12 @@ local dbg = require("debugger")
 local args = {...}
 local spec = args[1]
 
+
 -- Convert type names.
 local klex_types = { B = "Boolean", I = "Integer", N = "Number", S ="String", T = "TableEx"}
 local cs_types = { B = "bool", I = "int", N = "double", S ="string", T = "TableEx"}
 
--- TODOGEN handle missing fields - like args {}
+-- TODO1 handle missing fields? - like args {}
 
 local ttt = 
 [[
@@ -23,102 +24,102 @@ using System.IO;
 using System.Text;
 using System.Collections.Generic;
 using KeraLuaEx;
-|for _, us in ipairs(config.add_using) do
+>for _, us in ipairs(config.add_using) do
 using $(us);
-|end
+>end
 
 namespace $(config.namespace)
 {
     public partial class $(config.class)
     {
-|for _, func in ipairs(lua_funcs) do
-|local klex_rt = klex_types[func.type]
-|local cs_rt = cs_types[func.type]
+>for _, func in ipairs(lua_funcs) do
+>local klex_ret_type = klex_types[func.type]
+>local cs_ret_type = cs_types[func.type]
         /// <summary>Lua export function: $(func.description)</summary>
-|for _, arg in ipairs(func.args) do
-        /// <param name=$(arg.name)>$(arg.description)</param>
-|end
-        /// <returns>$(cs_rt) $(func.ret.description)></returns>
+>for _, arg in ipairs(func.args) do
+        /// <param name="$(arg.name)"">$(arg.description)</param>
+>end
+        /// <returns>$(cs_ret_type) $(func.ret.description)></returns>
 
-        public $(cs_rt)? $(func.host_func_name)(
-|for _, arg in ipairs(func.args) do
-|local klex_at = klex_types[arg.type]
-|local cs_at = cs_types[arg.type]
+        public $(cs_ret_type)? $(func.host_func_name)(
+>for _, arg in ipairs(func.args) do
+>local klex_arg_type = klex_types[arg.type]
+>local cs_arg_type = cs_types[arg.type]
 
-        $(cs_at) $(arg.name),
-|end
+        $(cs_arg_type) $(arg.name),
+>end
         )
         {
-            $(cs_rt)? ret = null;
+            $(cs_ret_type)? ret = null;
             // Get function.
             LuaType ltype = _l.GetGlobal($(func.lua_func_name));
             if (ltype != LuaType.Function) { ErrorHandler(new SyntaxException($"Bad lua function: $(func.lua_func_name)")); return null; )
 
             // Push arguments
-|for _, arg in ipairs(func.args) do
-            _l.Push$(klex_at)($(arg.name));
-|end
+>for _, arg in ipairs(func.args) do
+            _l.Push$(klex_arg_type)($(arg.name));
+>end
 
             // Do the actual call.
             LuaStatus lstat = _l.DoCall($(#func.args), 1);
             if (lstat >= LuaStatus.ErrRun) { ErrorHandler(new SyntaxException("DoCall() failed")); return null; )
 
             // Get the results from the stack.
-            ret = _l.To$(klex_rt)(-1);
-            if (ret is null) { ErrorHandler(new SyntaxException("Return value is not a $(cs_rt)")); return null; )
+            ret = _l.To$(klex_ret_type)(-1);
+            if (ret is null) { ErrorHandler(new SyntaxException("Return value is not a $(cs_ret_type)")); return null; )
             _l.Pop(1);
 
             return ret;
         )
-|end -- funcs
+>end -- funcs
 
-|for _, func in ipairs(host_funcs) do
-|local klex_rt = klex_types[func.type]
-|local cs_rt = cs_types[func.type]
+>for _, func in ipairs(host_funcs) do
+>local klex_ret_type = klex_types[func.type]
+>local cs_ret_type = cs_types[func.type]
 
         /// <summary>Host export function: $(func.description)</summary>
-|for _, arg in ipairs(func.args) do
-        /// <param name=$(arg.name)>$(arg.description)</param>
-|end
-        /// <returns>$(cs_rt) {func.ret.description)></returns>
+>for _, arg in ipairs(func.args) do
+        /// <param name="$(arg.name)"">$(arg.description)</param>
+>end
+        /// <returns>$(cs_ret_type) {func.ret.description)></returns>
         static int $(func.host_func_name)(IntPtr p)
         {
             Lua? l = Lua.FromIntPtr(p);
 
             // Get arguments
-|for _, arg in ipairs(func.args) do
-|local klex_at = klex_types[arg.type]
-|local cs_at = cs_types[arg.type]
+>for _, arg in ipairs(func.args) do
+>local klex_arg_type = klex_types[arg.type]
+>local cs_arg_type = cs_types[arg.type]
 
 
 
-            $(cs_at)? $(arg.name) = null;
-            if (l!.Is$(klex_at)(1)) { $(arg.name) = l.To$(klex_at)(1); }
+            $(cs_arg_type)? $(arg.name) = null;
+            if (l!.Is$(klex_arg_type)(1)) { $(arg.name) = l.To$(klex_arg_type)(1); }
             else { ErrorHandler(new SyntaxException($"Bad arg type for {$(arg.name))")); return 0; )
-|end
+>end
 
             // Do the work.
-            $(klex_rt) ret = $(func.work_func)(
-|for _, arg in ipairs(func.args) do 
+            $(klex_ret_type) ret = $(func.work_func)(
+>for _, arg in ipairs(func.args) do 
             $(arg.name),
-|end
+>end
             );
 
             // Return result (one).
-            l.Push$(klex_rt)(1);
+            l.Push$(klex_ret_type)(1);
 
             return 1;
         )
-|end -- funcs
+>end -- funcs
 
         //------------------ Infrastructure ----------------------//
         readonly LuaRegister[] _libFuncs = new LuaRegister[]
         {
             // ALL collected.
 
-|for _, func in ipairs(host_funcs) do
+>for _, func in ipairs(host_funcs) do
             new LuaRegister($(func.lua_func_name), $(func.host_func_name)),
-|end
+>end
 
             new LuaRegister(null, null)
         };
@@ -140,9 +141,14 @@ namespace $(config.namespace)
 
 
 -- Make the output content.
+
+
+print(ut.dump_table(spec.lua_export_funcs, 0, true))
+
+
 local tmpl_env =
 {
-    _escape='|',
+--    _escape='|',
     _parent=_G,
     _debug=true,
     config=spec.config,

@@ -34,7 +34,7 @@ M.lua_export_funcs =
     -- }
 }
 
--- lua calls host - same as above + work_func TODO2 combine?
+-- lua calls host - same as above + work_func TODO1 combine?
 M.host_export_funcs = 
 {
     {
@@ -48,6 +48,9 @@ M.host_export_funcs =
         },
         ret = { type = "B", description = "a returned thing" }
     },
+    -- {
+    --     -- next function
+    -- }
 }
 
 return M

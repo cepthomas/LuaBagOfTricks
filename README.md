@@ -28,7 +28,7 @@ Uses a slightly hacked version of template.lua from https://github.com/lunarmodu
 
 
 
-TODO2 enums?
+TODO2 support enums?
 
 TODO2 clean up C:\Dev\repos\Lua\stuff\notes.txt and lua cheatsheet --> lua-notes.ntr
 
