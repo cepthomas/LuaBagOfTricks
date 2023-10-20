@@ -26,7 +26,7 @@
 
 local dbg
 
--- Use ANSI color codes in the prompt by default.
+-- Use ANSI color codes in the prompt by default. TODO1 get from config?
 local COLOR_GRAY = ""
 local COLOR_RED = ""
 local COLOR_BLUE = ""

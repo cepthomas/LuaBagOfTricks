@@ -13,7 +13,7 @@ local spec = args[1]
 local klex_types = { B = "Boolean", I = "Integer", N = "Number", S ="String", T = "TableEx"}
 local cs_types = { B = "bool", I = "int", N = "double", S ="string", T = "TableEx"}
 
--- TODO1 handle missing fields? - like args {} -> use args or {}.
+-- TODO0 handle missing fields? Use better error msgs.
 
 local ttt =
 [[
@@ -32,7 +32,7 @@ namespace $(config.namespace)
 {
     public partial class $(config.class)
     {
-        #region TODO1 Temp - remove/relocate these
+        #region TODO1 Temp - remove/relocate these - unit test.
         Lua _l;
         static void ErrorHandler(Exception e) {}
         static bool Interop_MyLuaFunc_work(double? arg_one) { return true; }

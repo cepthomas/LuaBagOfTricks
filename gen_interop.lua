@@ -4,7 +4,7 @@ local ut = require('utils')
 local dbg = require("debugger")
 local have_dbg = true
 -- or
--- local have_dbg, dbg = pcall(require, "debugger") -- TODO1 cleaner way
+-- local have_dbg, dbg = pcall(require, "debugger") -- TODO0 cleaner way
 -- if not have_dbg then
 --     print("You are not using debugger module!")
 -- end
@@ -65,15 +65,8 @@ else
     -- Save the intermediate mangled code for user to review/debug.
     err_fn = outfn .. "_err.lua"
     _write_output(err_fn, content)
-    _error("Error - see output file " .. err_fn .. ": " .. code_err) -- TODO1 do something cleaner with this output - point to original source?
+    _error("Error - see output file " .. err_fn .. ": " .. code_err) -- TODO0 do something cleaner with this output - point to original source?
 end
-
--- this dif works:
--- >for i,p in ipairs(d:get_elements_with_name("property", true)) do
--- >datatype, basetype, isobject = gen_type(p.attr.type, p.attr.qualifier or "")
---     PROPERTY_RW($(datatype), $(p.attr.name))
--- >end -- properties
-
 
 -- ERROR: "Error - see output file C:\\Dev\\repos\\Lua\\LuaBagOfTricks\\out\\interop_out.cs_err.lua: [string \"TMP\"]:28: attempt to index a nil value (global 'func')\
 -- stack traceback:\

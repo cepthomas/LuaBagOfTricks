@@ -34,6 +34,38 @@ end
 
 -----------------------------------------------------------------------------
 
+-- Diagnostic.
+-- @param tbl What to dump.
+-- @param indent Nesting.
+-- @param short Return simple string.
+-- @return string or array dump.
+function M.dump_table(tbl, indent, short)
+    local res = {}
+
+    if type(tbl) == "table" then
+        local sindent = string.rep("    ", indent)
+
+        for k, v in pairs(tbl) do
+            if type(v) == "table" then
+                table.insert(res, sindent .. k .. "(table):")
+                t2 = M.dump_table(v, indent + 1) -- recursion!
+                for _,v in ipairs(t2) do
+                    table.insert(res, v)
+                end
+            else
+                table.insert(res, sindent .. k .. ":" .. tostring(v) .. "(" .. type(v) .. ")")
+            end
+        end
+    else
+        table.insert(res, "Not a table")
+    end
+
+    if short ~= nil then
+        res = M.strjoin('\n', res)
+    end
+
+    return res
+end
 -- TODO1 Make prettier, identify array/list/map/dict
 -- 1(table):
 --     description:booga(string)
@@ -67,40 +99,6 @@ end
 --             type:B(string)
 --             description:bbbbbbb(string)
 --             name:arg_one(string)
-
-            
--- Diagnostic.
--- @param tbl What to dump.
--- @param indent Nesting.
--- @param short Return simple string.
--- @return string or array dump.
-function M.dump_table(tbl, indent, short)
-    local res = {}
-
-    if type(tbl) == "table" then
-        local sindent = string.rep("    ", indent)
-
-        for k, v in pairs(tbl) do
-            if type(v) == "table" then
-                table.insert(res, sindent .. k .. "(table):")
-                t2 = M.dump_table(v, indent + 1) -- recursion!
-                for _,v in ipairs(t2) do 
-                    table.insert(res, v)
-                end
-            else
-                table.insert(res, sindent .. k .. ":" .. tostring(v) .. "(" .. type(v) .. ")")
-            end
-        end
-    else
-        table.insert(res, "Not a table")
-    end
-
-    if short ~= nil then
-        res = M.strjoin('\n', res)
-    end
-
-    return res
-end                
 
 -----------------------------------------------------------------------------
 -- Gets the file and line of the caller.
@@ -217,7 +215,7 @@ end
 -- @return
 function M.clamp(val, granularity, round)
     res = (val / granularity) * granularity
-    if round and (val % granularity > granularity / 2) then res = res + granularity end        
+    if round and (val % granularity > granularity / 2) then res = res + granularity end
     return res
 end
 

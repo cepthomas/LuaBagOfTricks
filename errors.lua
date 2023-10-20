@@ -1,6 +1,5 @@
 --[[
-GP error utilities. TODO1 prune, consolidate, incorporate debugger.lua, ...
-debugger get colors from a config?
+GP error utilities. TODO0 prune, consolidate, incorporate debugger.lua, ...
 --]]
 
 
@@ -18,7 +17,7 @@ function M.is_table(v) return type(v) == 'table' end
 -----------------------------------------------------------------------------
 function M.do_error(s, level)
 
-    error(s, level) -- TODO1 Add some options or config?
+    error(s, level) -- TODO0 Add some options or config?
 
     -- error (message [, level])
     -- Raises an error (see §2.3) with message as the error object. This function never returns.
