@@ -1,5 +1,6 @@
 --[[
 GP error utilities. TODO1 prune, consolidate, incorporate debugger.lua, ...
+debugger get colors from a config?
 --]]
 
 

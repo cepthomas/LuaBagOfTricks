@@ -3,7 +3,7 @@ Unit tests for interop processor.
 ]]
 
 
-pi = require("utils")
+ut = require("utils")
 
 -- Create the namespace/module.
 local M = {}

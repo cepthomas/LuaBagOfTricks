@@ -33,6 +33,42 @@ function M.interp(str, vars)
 end
 
 -----------------------------------------------------------------------------
+
+-- TODO1 Make prettier, identify array/list/map/dict
+-- 1(table):
+--     description:booga(string)
+--     host_func_name:interop_HostCallLua(string)
+--     lua_func_name:my_lua_func(string)
+--     ret(table):
+--         description:a returned thing(string)
+--         type:T(string)
+--     args(table):
+--         1(table):
+--             type:S(string)
+--             description:some strings(string)
+--             name:arg_one(string)
+--         2(table):
+--             type:I(string)
+--             description:a nice integer(string)
+--             name:arg_two(string)
+--         3(table):
+--             type:T(string)
+--             description:3 ddddddddd(string)
+--             name:arg_three(string)
+-- 2(table):
+--     description:booga2(string)
+--     host_func_name:interop_HostCallLua2(string)
+--     lua_func_name:my_lua_func2(string)
+--     ret(table):
+--         description:a returned number(string)
+--         type:N(string)
+--     args(table):
+--         1(table):
+--             type:B(string)
+--             description:bbbbbbb(string)
+--             name:arg_one(string)
+
+            
 -- Diagnostic.
 -- @param tbl What to dump.
 -- @param indent Nesting.
