@@ -6,6 +6,27 @@ GP error utilities. TODO0 prune, consolidate, incorporate debugger.lua, ...
 -- Create the namespace/module.
 local M = {}
 
+
+-- local dbg = require("debugger")
+-- local have_dbg = true
+-- -- or
+-- -- local have_dbg, dbg = pcall(require, "debugger") -- TODO0 cleaner way
+-- -- if not have_dbg then
+-- --     print("You are not using debugger module!")
+-- -- end
+-- local function _error(msg, usage)
+--     if usage ~= nil then msg = msg .. "\n" .. "Usage: interop.lua -ch|md|cs your_spec.lua your_outfile" end
+--     -- if have_dbg then dbg.error(msg) else error(msg) end
+--     -- dbg()
+--     print(">>>>>>>> error(msg)")--..msg)
+--     error(msg)
+-- end
+
+
+
+
+
+
 -----------------------------------------------------------------------------
 function M.is_integer(v) return math.ceil(v) == v end
 function M.is_number(v) return type(v) == 'number' end

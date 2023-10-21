@@ -1,19 +1,11 @@
 -- Generate lua interop for C, C#, md.
 
 local ut = require('utils')
-local dbg = require("debugger")
-local have_dbg = true
--- or
--- local have_dbg, dbg = pcall(require, "debugger") -- TODO0 cleaner way
--- if not have_dbg then
---     print("You are not using debugger module!")
--- end
+local have_dbg, dbg = pcall(require, "debugger") -- TODO0 add global enable/disable for dbg()
+
 local function _error(msg, usage)
     if usage ~= nil then msg = msg .. "\n" .. "Usage: interop.lua -ch|md|cs your_spec.lua your_outfile" end
-    -- if have_dbg then dbg.error(msg) else error(msg) end
-    -- dbg()
-    print(">>>>>>>> error(msg)")--..msg)
-    error(msg)
+    if have_dbg then dbg.error(msg) else error(msg) end
 end
 
 -- Supported flavors. TODO1 these need paths.
@@ -23,8 +15,6 @@ local syntaxes =
     cs = "interop_cs.lua",
     md = "interop_md.lua"
 }
-
--- print(ut.dump_table(ut.get_caller_info(2), 0))
 
 -- Helper.
 local function _write_output(fn, content)
@@ -69,8 +59,8 @@ else
     -- Failed, save the intermediate mangled code for user to review/debug.
     err_fn = outfn .. "_err.lua"
     _write_output(err_fn, content)
-    print(">>>>>>>>code_err")
-    print(code_err)
+
+-- TODO0 split code_err into strings and get up to including one with "TMP". Remove leading tabs.
 -- >>>>>>>>code_err
 -- attempt to index a nil value
 -- stack traceback:
@@ -84,7 +74,6 @@ else
 --         gen_interop.lua:60: in main chunk
 --         [C]: in ?
 
--- split into strings and get up to including one with "TMP"
-
-    _error("Error - see output file " .. err_fn .. ": " .. code_err) -- TODO0 do something cleaner with this output - point to original source?
+    dbg()
+    _error("Error - see output file " .. err_fn .. ": " .. code_err)
 end
