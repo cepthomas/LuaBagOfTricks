@@ -26,13 +26,29 @@
 
 local dbg
 
--- Use ANSI color codes in the prompt by default. TODO1 get from config?
+-- Use ANSI color codes in the prompt by default. TODO0 get TERM from config?
 local COLOR_GRAY = ""
 local COLOR_RED = ""
 local COLOR_BLUE = ""
 local COLOR_YELLOW = ""
 local COLOR_RESET = ""
 local GREEN_CARET = " => "
+
+-- rem https://gist.githubusercontent.com/mlocati/fdabcaeb8071d5c75a2d51712db24011/raw/b710612d6320df7e146508094e84b92b34c77d48/win10colors.cmd
+-- echo [101;93m STYLES [0m
+-- echo [0m [0mReset[0m
+-- echo [1m [1mBold[0m
+-- echo [4m [4mUnderline[0m
+-- echo [7m [7mInverse[0m
+-- echo [101;93m NORMAL FOREGROUND COLORS [0m
+-- echo [31m [31mRed[0m
+-- echo [32m [32mGreen[0m
+-- echo [34m [34mBlue[0m
+-- echo [101;93m NORMAL BACKGROUND COLORS [0m
+-- echo [43m [43mYellow[0m
+-- echo [45m [45mMagenta[0m
+-- echo [46m [46mCyan[0m
+
 
 local function pretty(obj, max_depth)
 	if max_depth == nil then max_depth = dbg.pretty_depth end

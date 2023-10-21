@@ -12,6 +12,8 @@ See the Test directory as example of how to use it.
 Handy collected odds and ends.
 
 
+## errors ???
+
 
 ## interop
 
@@ -19,12 +21,7 @@ See `interop_spec.lua` for example.
 
 Supported arg and return value types: B=boolean I=integer N=number S=string T=TableEx
 
+## FOSS components
 
-https://github.com/slembcke/debugger.lua
-
-Uses a slightly hacked version of template.lua from https://github.com/lunarmodules/Penlight.
-- Doesn't support nested expansions like:
-`l.$(to_funcs[$(func.ret.type)])`
-
-
-TODO2 support enums?
+- Uses a slightly hacked version of template.lua from https://github.com/lunarmodules/Penlight. Removed dependencies on other penlight components including LuaFileSystem. It's standalone now.
+- https://github.com/slembcke/debugger.lua

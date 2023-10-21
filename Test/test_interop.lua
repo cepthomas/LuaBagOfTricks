@@ -8,6 +8,7 @@ ut = require("utils")
 -- Create the namespace/module.
 local M = {}
 
+
 -----------------------------------------------------------------------------
 function M.setup(pn)
     -- pn.UT_INFO("setup()!!!")
@@ -21,6 +22,11 @@ end
 -----------------------------------------------------------------------------
 function M.suite_interop(pn)
     pn.UT_INFO("Test all functions in process_interop.lua")
+
+
+-- rem Run it.
+-- lua ..\gen_interop.lua -cs %cd%\interop_spec.lua %cd%\out\GeneratedInterop.cs
+
 
     a = 1
     b = 2

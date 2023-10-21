@@ -1,6 +1,10 @@
+-- Example spec for generating interop test.
+
+-- TODO1 Combine the two exports?
+
 local M = {}
 
--- Options depending on syntax.
+-- Syntax-specific options.
 M.config =
 {
     -- General
@@ -14,13 +18,13 @@ M.config =
 }
 
 
--- host calls lua 
+-- Host calls lua.
 M.lua_export_funcs =
 {
     {
+        description = "booga",
         lua_func_name = "my_lua_func",
         host_func_name = "Interop_HostCallLua",
-        description = "booga",
         args =
         {
             { name = "arg_one", type = "S", description = "some strings" },
@@ -30,9 +34,9 @@ M.lua_export_funcs =
         ret = { type = "T", description = "a returned thing" }
     },
     {
+        description = "booga2",
         lua_func_name = "my_lua_func2",
         host_func_name = "Interop_HostCallLua2",
-        description = "booga2",
         args =
         {
             { name = "arg_one", type = "B", description = "bbbbbbb" },
@@ -40,22 +44,25 @@ M.lua_export_funcs =
         ret = { type = "N", description = "a returned number" }
     },
     {
+        description = "bad_spec",
         lua_func_name = "bad_spec",
         host_func_name = "Interop_bad_spec",
-        description = "bad_spec",
         ret = { type = "N", description = "a returned number" }
+        -- args =
+        -- {
+        -- },
     },
     -- etc
 }
 
--- lua calls host - same as above + work_func TODO1 combine?
+-- Lua calls host.
 M.host_export_funcs = 
 {
     {
+        description = "fooga",
         lua_func_name = "my_lua_func",
         host_func_name = "Interop_MyLuaFunc",
-        work_func = "Interop_MyLuaFunc_work", -- host_export only: gets passed the args and ret below
-        description = "fooga",
+        work_func = "Interop_MyLuaFunc_work", -- Signature is args and ret below.
         args =
         {
             { name = "arg_one", type = "N", description = "kakakakaka" },
@@ -63,10 +70,10 @@ M.host_export_funcs =
         ret = { type = "B", description = "a returned thing" }
     },
     {
+        description = "fooga2",
         lua_func_name = "another_lua_func",
         host_func_name = "Interop_AnotherLuaFunc",
-        work_func = "Interop_AnotherLuaFunc_work", -- host_export only: gets passed the args and ret below
-        description = "fooga",
+        work_func = "Interop_AnotherLuaFunc_work",
         args =
         {
             { name = "arg_one", type = "T", description = "rere reree" },

@@ -30,8 +30,12 @@
 
 -- local utils = require 'pl.utils'
 
+-- CT Notes:
+-- Doesn't support nested expansions like: l.$(to_funcs[$(func.ret.type)])
 
---- escape any Lua 'magic' characters in a string - from pl.utils
+
+
+--- escape any Lua 'magic' characters in a string - CT snipped from pl.utils.
 -- @param s The input string
 function escape(s)
     -- utils.assert_string(1,s)
