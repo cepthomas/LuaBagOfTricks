@@ -11,16 +11,20 @@ local have_dbg = true
 local function _error(msg, usage)
     if usage ~= nil then msg = msg .. "\n" .. "Usage: interop.lua -ch|md|cs your_spec.lua your_outfile" end
     -- if have_dbg then dbg.error(msg) else error(msg) end
+    -- dbg()
+    print(">>>>>>>> error(msg)")--..msg)
     error(msg)
 end
 
--- Supported flavors.
+-- Supported flavors. TODO1 these need paths.
 local syntaxes =
 {
     ch = "interop_c.lua",
     cs = "interop_cs.lua",
     md = "interop_md.lua"
 }
+
+-- print(ut.dump_table(ut.get_caller_info(2), 0))
 
 -- Helper.
 local function _write_output(fn, content)
@@ -43,7 +47,7 @@ local outfn = arg[3]
 
 -- Get the specific flavor.
 local syntax_chunk, msg = loadfile(syntaxes[syn])
-if not syntax_chunk then _error("Bad syntax: " .. msg) end
+if not syntax_chunk then _error("Bad syntax file: " .. msg) end
 
 -- Get the spec.
 local spec_chunk, msg = loadfile(specfn)
@@ -58,24 +62,29 @@ if not ok then _error("Error generating: " .. content) end
 
 -- What happened?
 if code_err == nil then
-    -- Save the generated code.
+    -- OK, save the generated code.
     _write_output(outfn, content)
-    print("Gen complete - see output file " .. outfn)
+    print("Generated code in " .. outfn)
 else    
-    -- Save the intermediate mangled code for user to review/debug.
+    -- Failed, save the intermediate mangled code for user to review/debug.
     err_fn = outfn .. "_err.lua"
     _write_output(err_fn, content)
+    print(">>>>>>>>code_err")
+    print(code_err)
+-- >>>>>>>>code_err
+-- attempt to index a nil value
+-- stack traceback:
+--         [C]: in for iterator 'for iterator'
+--         [string "TMP"]:60: in function <[string "TMP"]:1>
+--         [C]: in function 'xpcall'
+--         .\template.lua:159: in function <.\template.lua:152>
+--         (...tail calls...)
+--         interop_cs.lua:176: in main chunk
+--         [C]: in function 'pcall'
+--         gen_interop.lua:60: in main chunk
+--         [C]: in ?
+
+-- split into strings and get up to including one with "TMP"
+
     _error("Error - see output file " .. err_fn .. ": " .. code_err) -- TODO0 do something cleaner with this output - point to original source?
 end
-
--- ERROR: "Error - see output file C:\\Dev\\repos\\Lua\\LuaBagOfTricks\\out\\interop_out.cs_err.lua: [string \"TMP\"]:28: attempt to index a nil value (global 'func')\
--- stack traceback:\
--- \9[string \"TMP\"]:28: in function <[string \"TMP\"]:1>\
--- \9[C]: in function 'xpcall'\
--- \9C:\\Dev\\repos\\Lua\\LuaBagOfTricks\\lua\\template.lua:155: in function <C:\\Dev\\repos\\Lua\\LuaBagOfTricks\\lua\\template.lua:148>\
--- \9(...tail calls...)\
--- \9interop_cs.lua:161: in main chunk\
--- \9[C]: in function 'pcall'\
--- \9gen_interop.lua:55: in main chunk\
--- \9[C]: in ?\
--- Usage: interop.lua -ch|md|cs your_spec.lua your_outfile"

@@ -7,14 +7,14 @@ GP utilities: strings, tables, math, ...
 local M = {}
 
 
+---------------------------------------------------------------
+-- Execute a file and return the output.
+-- @param cmd Command to run.
+-- @return Output text.
 function M.execute_capture(cmd)
   local f = io.popen(cmd, 'r')
   local s = f:read('*a')
   f:close()
-  -- if raw then return s end
-  -- s = string.gsub(s, '^%s+', '')
-  -- s = string.gsub(s, '%s+$', '')
-  -- s = string.gsub(s, '[\n\r]+', ' ')
   return s
 end
 
@@ -33,13 +33,12 @@ function M.interp(str, vars)
 end
 
 -----------------------------------------------------------------------------
-
 -- Diagnostic.
 -- @param tbl What to dump.
 -- @param indent Nesting.
--- @param short Return simple string.
+-- @param parts Return as array of strings.
 -- @return string or array dump.
-function M.dump_table(tbl, indent, short)
+function M.dump_table(tbl, indent, parts)
     local res = {}
 
     if type(tbl) == "table" then
@@ -48,7 +47,7 @@ function M.dump_table(tbl, indent, short)
         for k, v in pairs(tbl) do
             if type(v) == "table" then
                 table.insert(res, sindent .. k .. "(table):")
-                t2 = M.dump_table(v, indent + 1) -- recursion!
+                t2 = M.dump_table(v, indent + 1, true) -- recursion!
                 for _,v in ipairs(t2) do
                     table.insert(res, v)
                 end
@@ -60,7 +59,7 @@ function M.dump_table(tbl, indent, short)
         table.insert(res, "Not a table")
     end
 
-    if short ~= nil then
+    if not parts then
         res = M.strjoin('\n', res)
     end
 
@@ -102,17 +101,43 @@ end
 
 -----------------------------------------------------------------------------
 -- Gets the file and line of the caller.
--- @param level Where to look.
--- @return array of info or nil if invalid
+-- @param level How deep to look:
+--    0 is the getinfo() itself
+--    1 is the function that called getinfo() - get_caller_info()
+--    2 is the function that called get_caller_info() - usually the one of interest
+-- @return { filename, linenumber } or nil if invalid
 function M.get_caller_info(level)
     local ret = nil
     local s = debug.getinfo(level, 'S')
     local l = debug.getinfo(level, 'l')
-    if s ~= nil or l ~= nil then
-        ret = { s.source:gsub("@", ""), l.currentline }
+    if s ~= nil and l ~= nil then
+        ret = { s.short_src, l.currentline }
     end
     return ret
 end
+
+-- short_src:..\gen_interop.lua(string)
+-- what:main(string)
+-- linedefined:0(number)
+-- lastlinedefined:0(number)
+-- source:@..\gen_interop.lua(string)
+
+-- TODO1 get real path:
+-- > local fullpath = debug.getinfo(1,"S").source:sub(2)
+-- > fullpath = io.popen("realpath '"..fullpath.."'", 'r'):read('a')
+-- > fullpath = fullpath:gsub('[\n\r]*$','')
+-- >
+-- > local dirname, filename = fullpath:match('^(.*/)([^/]-)$')
+-- > dirname = dirname or ''
+-- > filename = filename or fullpath
+
+-- or?
+-- If you have a file somewhere in package.path that require is able to find, then you can also easily get the path by using package.searchpath.
+-- If "foo.bar.baz" is the name under which require will load the file, then
+-- package.searchpath( "foo.bar.baz", package.path )
+-- --> (e.g.) "/usr/share/lua/5.3/foo/bar/baz.lua"
+-- gets you the path.
+
 
 -----------------------------------------------------------------------------
 -- Concat the contents of the parameter list, separated by the string delimiter.

@@ -122,15 +122,15 @@ local template = {}
 -- @tab[opt] env the environment
 -- @return `rendered template + nil + source_code`, or `nil + error + source_code`. The last
 -- return value (`source_code`) is only returned if the debug option is used.
-function template.substitute(str,env)
+function template.substitute(str, env)
     env = env or {}
     local t, err, code = template.compile(str, {
-        chunk_name = rawget(env,"_chunk_name"),
-        escape = rawget(env,"_escape"),
-        inline_escape = rawget(env,"_inline_escape"),
-        inline_brackets = rawget(env,"_brackets"),
+        chunk_name = rawget(env, "_chunk_name"),
+        escape = rawget(env, "_escape"),
+        inline_escape = rawget(env, "_inline_escape"),
+        inline_brackets = rawget(env, "_brackets"),
         newline = nil,
-        debug = rawget(env,"_debug")
+        debug = rawget(env, "_debug")
     })
 
     if not t then return t, err, code end

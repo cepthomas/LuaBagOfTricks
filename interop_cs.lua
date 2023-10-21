@@ -151,16 +151,9 @@ namespace $(config.namespace)
 }
 ]]
 
-
 -- Make the output content.
-
-
--- print(ut.dump_table(spec, 0, true))
-
-
 local tmpl_env =
 {
---    _escape='|',
     _parent=_G,
     _escape = '>',
     _debug=true,
@@ -170,8 +163,6 @@ local tmpl_env =
     klex_types=klex_types,
     cs_types=cs_types
 }
-
--- print(ut.dump_table(tmpl_env.lua_funcs, 0, true))
 
 rendered, err, code = tmpl.substitute(ttt, tmpl_env)
 

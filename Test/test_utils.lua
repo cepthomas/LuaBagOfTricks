@@ -43,7 +43,7 @@ function M.suite_utils(pn)
 
     -- Test dump_table().
     tt = { aa="pt1", bb=90901, arr={"qwerty", 777, temb1={ jj="pt8", b=true, temb2={ num=1.517, dd="strdd" } }, intx=5432}}
-    local sts = ut.dump_table(tt, 0)
+    local sts = ut.dump_table(tt, 0, true)
     s = ut.strjoin('\n', sts)
     pn.UT_EQUAL(#s, 250)
 
