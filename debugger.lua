@@ -19,7 +19,7 @@
 	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 	SOFTWARE.
 	
-	TODO:
+	TODOs from original:
 	* Print short function arguments as part of stack location.
 	* Properly handle being reentrant due to coroutines.
 ]]
@@ -34,7 +34,6 @@ local COLOR_YELLOW = ""
 local COLOR_RESET = ""
 local GREEN_CARET = " => "
 
--- TODO1 global enable/disable for dbg()
 
 local function pretty(obj, max_depth)
 	if max_depth == nil then max_depth = dbg.pretty_depth end

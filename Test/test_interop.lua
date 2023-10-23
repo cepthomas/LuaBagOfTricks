@@ -1,11 +1,7 @@
---[[
-Unit tests for interop processor. TODO1
-]]
-
+-- Unit tests for interop processor. TODO0
 
 ut = require("utils")
 
--- Create the namespace/module.
 local M = {}
 
 

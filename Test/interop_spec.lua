@@ -1,6 +1,6 @@
 -- Example spec for generating interop test.
 
--- TODO1 Combine the two exports?
+-- TODO Combine the two exports?
 
 local M = {}
 
@@ -48,9 +48,9 @@ M.lua_export_funcs =
         lua_func_name = "bad_spec",
         host_func_name = "Interop_bad_spec",
         ret = { type = "N", description = "a returned number" },
-        -- args = -- TODO0 missing field
-        -- {
-        -- },
+        args =
+        {
+        },
     },
     -- etc
 }

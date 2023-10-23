@@ -1,11 +1,8 @@
---[[
+-- 
 Unit tests for the utils.
-]]
-
 
 ut = require("utils")
 
--- Create the namespace/module.
 local M = {}
 
 -----------------------------------------------------------------------------

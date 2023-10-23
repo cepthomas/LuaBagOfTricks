@@ -1,10 +1,7 @@
---[[
-Core module for executing the test suites themselves. Has all the assert functions.
---]]
+-- Core module for executing the test suites themselves. Has all the assert functions.
 
 local ut = require("utils")
 
--- Create the namespace/module.
 local M = {}
 
 -- Create an execution context.

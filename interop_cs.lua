@@ -13,7 +13,7 @@ local spec = args[1]
 local klex_types = { B = "Boolean", I = "Integer", N = "Number", S ="String", T = "TableEx"}
 local cs_types = { B = "bool", I = "int", N = "double", S ="string", T = "TableEx"}
 
-local ttt =
+local t =
 [[
 ///// Warning - this file is created by gen_interop.lua, do not edit. /////
 >local ut = require('utils')
@@ -30,15 +30,6 @@ namespace $(config.namespace)
 {
     public partial class $(config.class)
     {
-        #region TODO1 Temp - remove/relocate these - unit test.
-        Lua _l;
-        static void ErrorHandler(Exception e) {}
-        static bool Interop_MyLuaFunc_work(double? arg_one) { return true; }
-        static double Interop_AnotherLuaFunc_work(TableEx? arg_one, string? arg_two) { return 101.5; }
-        #endregion
-
-
-
         #region Functions exported from lua for execution by host
 >for _, func in ipairs(lua_funcs) do
 >local klex_ret_type = klex_types[func.ret.type]
@@ -161,7 +152,7 @@ local tmpl_env =
     cs_types=cs_types
 }
 
-rendered, err, dcode = tmpl.substitute(ttt, tmpl_env)
+rendered, err, dcode = tmpl.substitute(t, tmpl_env)
 
 if err == nil then -- ok
     return rendered

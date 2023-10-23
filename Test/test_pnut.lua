@@ -1,9 +1,5 @@
---[[
-Unit tests for the tester itself.
-]]
+-- Unit tests for the tester itself.
 
-
--- Create the namespace/module.
 local M = {}
 
 -----------------------------------------------------------------------------
