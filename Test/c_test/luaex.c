@@ -4,7 +4,6 @@
 #include "lauxlib.h"
 #include "luaex.h"
 
-// TODO2 Create C version of the C# functionality.
 
 lua_tableex _t;
 

@@ -47,8 +47,8 @@ M.lua_export_funcs =
         description = "bad_spec",
         lua_func_name = "bad_spec",
         host_func_name = "Interop_bad_spec",
-        ret = { type = "N", description = "a returned number" }
-        -- args =
+        ret = { type = "N", description = "a returned number" },
+        -- args = -- TODO0 missing field
         -- {
         -- },
     },

@@ -9,13 +9,7 @@ C:\Dev\repos\Lua\LuaBagOfTricks\?.lua;^
 C:\Dev\repos\Lua\LuaBagOfTricks\Test\?.lua;
 
 :: Enable debugger terminal color support.
-set TERM=ansi
-:: https://gist.githubusercontent.com/mlocati/fdabcaeb8071d5c75a2d51712db24011/raw/b710612d6320df7e146508094e84b92b34c77d48/win10colors.cmd
-:: echo [101;93m STYLES [0m
-:: echo ^<ESC^>[0m [0mReset[0m
-:: echo ^<ESC^>[1m [1mBold[0m
-:: echo ^<ESC^>[4m [4mUnderline[0m
-:: echo ^<ESC^>[7m [7mInverse[0m
+rem set TERM=ansi
 
 goto interop
 
@@ -27,13 +21,15 @@ goto end
 
 :interop
 rem lua ..\gen_interop.lua -cs C:\Dev\repos\Lua\LuaBagOfTricks\Test\interop_spec.lua C:\Dev\repos\Lua\LuaBagOfTricks\out\GeneratedInterop.cs
-rem TODO1 need absolute path above.
+rem TODO0 need absolute path above.
+:: -- print("cd:", ut.execute_capture("echo %cd%"))
+:: or?
 :: short_src:..\gen_interop.lua(string)
 :: what:main(string)
 :: linedefined:0(number)
 :: lastlinedefined:0(number)
 :: source:@..\gen_interop.lua(string)
-:: TODO1 get real path:
+::   get real path:
 :: > local fullpath = debug.getinfo(1,"S").source:sub(2)
 :: > fullpath = io.popen("realpath '"..fullpath.."'", 'r'):read('a')
 :: > fullpath = fullpath:gsub('[\n\r]*$','')
@@ -51,9 +47,9 @@ rem TODO1 need absolute path above.
 :: lua ..\gen_interop.lua -cs %cd%\interop_spec.lua %cd%\out\GeneratedInterop.cs
 
 
-rem This does work.
 pushd ".."
-lua gen_interop.lua -cs Test\interop_spec.lua Test\out\GeneratedInterop.cs
+lua gen_interop.lua -cs -d -t Test\interop_spec.lua Test\out\GeneratedInterop.cs
 popd
+rem lua ..\gen_interop.lua -cs interop_spec.lua out\GeneratedInterop.cs
 
 :end

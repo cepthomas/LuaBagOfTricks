@@ -1,5 +1,5 @@
 --[[
-GP utilities: strings, tables, math, validatione, errors, ...
+GP utilities: strings, tables, math, validation, errors, ...
 --]]
 
 
@@ -40,6 +40,7 @@ end
 -- @return string or array dump.
 function M.dump_table(tbl, indent, parts)
     local res = {}
+    indent = indent or 0
 
     if type(tbl) == "table" then
         local sindent = string.rep("    ", indent)
@@ -47,10 +48,14 @@ function M.dump_table(tbl, indent, parts)
         for k, v in pairs(tbl) do
             if type(v) == "table" then
                 table.insert(res, sindent .. k .. "(table):")
-                t2 = M.dump_table(v, indent + 1, true) -- recursion!
+                t2 = M.dump_table(v, indent + 1, parts) -- recursion!
                 for _,v in ipairs(t2) do
                     table.insert(res, v)
                 end
+                -- t2 = M.dump_table(v, indent + 1, true) -- recursion!
+                -- for _,v in ipairs(t2) do
+                --     table.insert(res, v)
+                -- end
             else
                 table.insert(res, sindent .. k .. ":" .. tostring(v) .. "(" .. type(v) .. ")")
             end
@@ -65,39 +70,6 @@ function M.dump_table(tbl, indent, parts)
 
     return res
 end
--- TODO1 Make prettier, identify array/list/map/dict
--- 1(table):
---     description:booga(string)
---     host_func_name:interop_HostCallLua(string)
---     lua_func_name:my_lua_func(string)
---     ret(table):
---         description:a returned thing(string)
---         type:T(string)
---     args(table):
---         1(table):
---             type:S(string)
---             description:some strings(string)
---             name:arg_one(string)
---         2(table):
---             type:I(string)
---             description:a nice integer(string)
---             name:arg_two(string)
---         3(table):
---             type:T(string)
---             description:3 ddddddddd(string)
---             name:arg_three(string)
--- 2(table):
---     description:booga2(string)
---     host_func_name:interop_HostCallLua2(string)
---     lua_func_name:my_lua_func2(string)
---     ret(table):
---         description:a returned number(string)
---         type:N(string)
---     args(table):
---         1(table):
---             type:B(string)
---             description:bbbbbbb(string)
---             name:arg_one(string)
 
 -----------------------------------------------------------------------------
 -- Gets the file and line of the caller.
@@ -219,6 +191,77 @@ function M.clamp(val, granularity, round)
     res = (val / granularity) * granularity
     if round and (val % granularity > granularity / 2) then res = res + granularity end
     return res
+end
+
+-----------------------------------------------------------------------------
+function M.is_integer(v) return math.ceil(v) == v end
+function M.is_number(v) return type(v) == 'number' end
+function M.is_string(v) return type(v) == 'string' end
+function M.is_boolean(v) return type(v) == 'boolean' end
+function M.is_function(v) return type(v) == 'function' end
+function M.is_table(v) return type(v) == 'table' end
+
+-----------------------------------------------------------------------------
+local function _do_error(s, level)
+    error(s, level) -- TODO0 Add some options or config or handler for client to set?
+end
+
+-----------------------------------------------------------------------------
+function M.val_number(v, max, min)
+    local ok = M.is_number(v)
+    ok = ok and (max ~= nil and v <= max)
+    ok = ok and (min ~= nil and v >= min)
+    if not ok then
+        local s = string.format("Invalid number:%s", tostring(v))
+        _do_error(s, 3) -- who called me
+    end
+end
+
+-----------------------------------------------------------------------------
+function M.val_integer(v, max, min)
+    local ok = M.is_integer(v)
+    ok = ok and (max ~= nil and v <= max)
+    ok = ok and (min ~= nil and v >= min)
+    if not ok then
+        local s = string.format("Invalid integer:%s", tostring(v))
+        _do_error(s, 3) -- who called me
+    end
+end
+
+-----------------------------------------------------------------------------
+function M.val_string(v)
+    local ok = M.is_string(v)
+    if not ok then
+        local s = string.format("Invalid string:%s", tostring(v))
+        _do_error(s, 3) -- who called me
+    end
+end
+
+-----------------------------------------------------------------------------
+function M.val_boolean(v)
+    local ok = M.is_boolean(v)
+    if not ok then
+        local s = string.format("Invalid boolean:%s", tostring(v))
+        _do_error(s, 3) -- who called me
+    end
+end
+
+-----------------------------------------------------------------------------
+function M.val_table(v)
+    local ok = M.is_table(v)
+    if not ok then
+        local s = string.format("Invalid table:%s", tostring(v))
+        _do_error(s, 3) -- who called me
+    end
+end
+
+-----------------------------------------------------------------------------
+function M.val_function(v)
+    local ok = M.is_function(v)
+    if not ok then
+        local s = string.format("Invalid function:%s", tostring(v))
+        _do_error(s, 3) -- who called me
+    end
 end
 
 -----------------------------------------------------------------------------

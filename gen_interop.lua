@@ -1,17 +1,57 @@
 -- Generate lua interop for C, C#, md.
 
-local ut = require('utils')
-local have_dbg, dbg = pcall(require, "debugger") -- TODO0 add global enable/disable for dbg()
+-- TODO0 run with environment/cli inside ST. Don't set TERM. TERM env from config?
+-- TODO2 support enums?
 
-local function _error(msg, usage)
-    if usage ~= nil then msg = msg .. "\n" .. "Usage: interop.lua -ch|md|cs your_spec.lua your_outfile" end
-    if have_dbg then dbg.error(msg) else error(msg) end
+local ut = require('utils')
+
+
+--------------- TODO1 debugger and error stuff relocate for gp use.
+local enb_debugger = false
+local have_debugger = false
+local enb_term = false
+
+local function _configErrorHandling()
+    if enb_debugger then
+        have_debugger, dbg = pcall(require, "debugger")
+        if not have_debugger then print(dbg) end
+    end
+
+    print(enb_debugger, have_debugger, enb_term)
+
+    if have_debugger and enb_term then
+        dbg.enable_color()
+    end
+
+    -- Global stub just in case.
+    if not have_debugger then
+        function dbg() end
+    end
 end
 
--- Supported flavors. TODO1 these need paths.
+local function _error(msg)
+    if have_debugger and enb_debugger then
+        dbg.error(msg)
+    else
+        error(msg)
+    end
+end
+
+local function _usage()
+    print("Usage: gen_interop.lua (-d) (-t) [-ch|-md|-cs] [your_spec.lua] [your_outfile.xyz]")
+    print("  -ch generate d and h files")
+    print("  -cs generate c# file")
+    print("  -md generate markdown file")
+    print("  -d enable debugger if available")
+    print("  -t use debugger terminal color")
+end
+
+------------------------------------------------
+
+-- Supported flavors. TODO0 these need explicit paths.
 local syntaxes =
 {
-    ch = "interop_c.lua",
+    ch = "interop_ch.lua",
     cs = "interop_cs.lua",
     md = "interop_md.lua"
 }
@@ -21,30 +61,55 @@ local function _write_output(fn, content)
     -- output
     cf = io.open(fn, "w")
     if cf == nil then
-        _error("Invalid filename: " .. fn, true)
+        _error("Invalid filename: " .. fn)
     else
         cf:write(content)
         cf:close()
     end
 end
 
--- Starts here.
-if #arg ~= 3 then _error("Bad command line", true) end
+---------------------- Real app work starts here -----------------------------------
 
-local syn = arg[1]:sub(2)
-local specfn = arg[2]
-local outfn = arg[3]
+-- Gather args.
+local syntaxfn = nil
+local specfn = nil
+local outfn = nil
+
+for _, a in ipairs(arg) do
+    local valid_arg = true
+    if a:sub(1, 1) == '-' then
+        opt = a:sub(2)
+        if opt == "d" then enb_debugger = true
+        elseif opt == "t" then enb_term = true
+        else
+            syntaxfn = syntaxes[opt]
+            if syntaxfn then valid_arg = true end
+        end
+    elseif not specfn then
+        specfn = a
+    elseif not outfn then
+        outfn = a
+    else
+        valid_arg = false
+    end
+
+    if not valid_arg then _error("Invalid command line arg: "..a) end
+end
+if not specfn or not outfn then _error("Missing file name") end
+
+-- OK so far.
+_configErrorHandling()
 
 -- Get the specific flavor.
-local syntax_chunk, msg = loadfile(syntaxes[syn])
-if not syntax_chunk then _error("Bad syntax file: " .. msg) end
+local syntax_chunk, msg = loadfile(syntaxfn)
+if not syntax_chunk then _error("Invalid syntax file: " .. msg) end
 
 -- Get the spec.
 local spec_chunk, msg = loadfile(specfn)
-if not spec_chunk then _error("Bad spec file: " .. msg) end
+if not spec_chunk then _error("Invalid spec file: " .. msg) end
 
 local ok, spec = pcall(spec_chunk)
-if not ok then _error("Error in spec file: " .. spec) end
+if not ok then _error("Syntax in spec file: " .. spec) end
 
 -- Generate using syntax and the spec.
 local ok, content, code_err = pcall(syntax_chunk, spec)
@@ -55,25 +120,9 @@ if code_err == nil then
     -- OK, save the generated code.
     _write_output(outfn, content)
     print("Generated code in " .. outfn)
-else    
+else
     -- Failed, save the intermediate mangled code for user to review/debug.
     err_fn = outfn .. "_err.lua"
     _write_output(err_fn, content)
-
--- TODO0 split code_err into strings and get up to including one with "TMP". Remove leading tabs.
--- >>>>>>>>code_err
--- attempt to index a nil value
--- stack traceback:
---         [C]: in for iterator 'for iterator'
---         [string "TMP"]:60: in function <[string "TMP"]:1>
---         [C]: in function 'xpcall'
---         .\template.lua:159: in function <.\template.lua:152>
---         (...tail calls...)
---         interop_cs.lua:176: in main chunk
---         [C]: in function 'pcall'
---         gen_interop.lua:60: in main chunk
---         [C]: in ?
-
-    dbg()
-    _error("Error - see output file " .. err_fn .. ": " .. code_err)
+    _error("Error in TMP file " .. err_fn .. ": " .. code_err)
 end
