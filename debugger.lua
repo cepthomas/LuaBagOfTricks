@@ -34,8 +34,7 @@ local COLOR_YELLOW = ""
 local COLOR_RESET = ""
 local GREEN_CARET = " => "
 
--- TODO0 get colors or TERM from config?
--- https://gist.githubusercontent.com/mlocati/fdabcaeb8071d5c75a2d51712db24011/raw/b710612d6320df7e146508094e84b92b34c77d48/win10colors.cmd
+-- TODO1 global enable/disable for dbg()
 
 local function pretty(obj, max_depth)
 	if max_depth == nil then max_depth = dbg.pretty_depth end
@@ -498,9 +497,8 @@ end
 
 -- Make the debugger object callable like a function.
 dbg = setmetatable({}, {
-	__call = function(_, condition, top_offset, source)
-		if condition then return end
-		
+	__call = function(x, condition, top_offset, source) -- x is self
+		if not dbg.enable or condition then return end
 		top_offset = (top_offset or 0)
 		stack_inspect_offset = top_offset
 		stack_top = top_offset
@@ -524,6 +522,9 @@ dbg.pp = function(value, depth) dbg_writeln(dbg.pretty(value, depth)) end
 
 dbg.auto_where = false
 dbg.auto_eval = false
+
+dbg.enable = true
+
 
 local lua_error, lua_assert = error, assert
 
@@ -594,15 +595,21 @@ if ffi then
 	stdout_isatty = isatty(1)
 end
 
+
 -- Conditionally enable color support.
-local color_maybe_supported = (stdout_isatty and os.getenv("TERM") and os.getenv("TERM") ~= "dumb")
-if color_maybe_supported and not os.getenv("DBG_NOCOLOR") then
+function dbg.enable_color()
 	COLOR_GRAY = string.char(27) .. "[90m"
 	COLOR_RED = string.char(27) .. "[91m"
 	COLOR_BLUE = string.char(27) .. "[94m"
 	COLOR_YELLOW = string.char(27) .. "[33m"
 	COLOR_RESET = string.char(27) .. "[0m"
 	GREEN_CARET = string.char(27) .. "[92m => "..COLOR_RESET
+end
+
+
+local color_maybe_supported = (stdout_isatty and os.getenv("TERM") and os.getenv("TERM") ~= "dumb")
+if color_maybe_supported and not os.getenv("DBG_NOCOLOR") then
+	dbg.enable_color()
 end
 
 if stdin_isatty and not os.getenv("DBG_NOREADLINE") then
