@@ -17,16 +17,18 @@ local function _configErrorHandling()
         if not have_debugger then print(dbg) end
     end
 
-    print(enb_debugger, have_debugger, enb_term)
+    -- print(enb_debugger, have_debugger, enb_term)
 
     if have_debugger and enb_term then
         dbg.enable_color()
     end
 
-    -- Global stub just in case.
+    -- Make a global stub just in case.
     if not have_debugger then
         function dbg() end
     end
+
+    dbg()
 end
 
 local function _error(msg)
