@@ -32,9 +32,8 @@ end
 -- Diagnostic.
 -- @param tbl What to dump.
 -- @param indent Nesting.
--- @param parts Return as array of strings.
--- @return string or array dump.
-function M.dump_table(tbl, indent, parts)
+-- @return string list
+function M.dump_table(tbl, indent)
     local res = {}
     indent = indent or 0
 
@@ -44,14 +43,10 @@ function M.dump_table(tbl, indent, parts)
         for k, v in pairs(tbl) do
             if type(v) == "table" then
                 table.insert(res, sindent .. k .. "(table):")
-                t2 = M.dump_table(v, indent + 1, parts) -- recursion!
+                t2 = M.dump_table(v, indent + 1) -- recursion!
                 for _,v in ipairs(t2) do
                     table.insert(res, v)
                 end
-                -- t2 = M.dump_table(v, indent + 1, true) -- recursion!
-                -- for _,v in ipairs(t2) do
-                --     table.insert(res, v)
-                -- end
             else
                 table.insert(res, sindent .. k .. ":" .. tostring(v) .. "(" .. type(v) .. ")")
             end
@@ -60,12 +55,56 @@ function M.dump_table(tbl, indent, parts)
         table.insert(res, "Not a table")
     end
 
-    if not parts then
-        res = M.strjoin('\n', res)
-    end
-
     return res
 end
+
+-----------------------------------------------------------------------------
+-- Diagnostic.
+-- @param tbl What to dump.
+-- @return string list
+function M.dump_table_string(tbl)
+    local res = M.dump_table(tbl, 0)
+    return M.strjoin('\n', res)
+end
+
+
+-- -- Diagnostic.
+-- -- @param tbl What to dump.
+-- -- @param indent Nesting.
+-- -- @param parts Return as array of strings.
+-- -- @return string or array dump.
+-- function M.dump_table(tbl, indent, parts)
+--     local res = {}
+--     indent = indent or 0
+
+--     if type(tbl) == "table" then
+--         local sindent = string.rep("    ", indent)
+
+--         for k, v in pairs(tbl) do
+--             if type(v) == "table" then
+--                 table.insert(res, sindent .. k .. "(table):")
+--                 t2 = M.dump_table(v, indent + 1, parts) -- recursion!
+--                 for _,v in ipairs(t2) do
+--                     table.insert(res, v)
+--                 end
+--                 -- t2 = M.dump_table(v, indent + 1, true) -- recursion!
+--                 -- for _,v in ipairs(t2) do
+--                 --     table.insert(res, v)
+--                 -- end
+--             else
+--                 table.insert(res, sindent .. k .. ":" .. tostring(v) .. "(" .. type(v) .. ")")
+--             end
+--         end
+--     else
+--         table.insert(res, "Not a table")
+--     end
+
+--     if not parts then
+--         res = M.strjoin('\n', res)
+--     end
+
+--     return res
+-- end
 
 -----------------------------------------------------------------------------
 -- Gets the file and line of the caller.

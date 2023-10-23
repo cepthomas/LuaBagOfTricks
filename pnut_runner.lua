@@ -23,13 +23,16 @@ end
 
 -----------------------------------------------------------------------------
 -- Report writer.
-local rf = nil
-local report_fn = nil -- or from user
 local function report_line(line)
-    if rf ~= nil then
-        rf:write(line, "\n")
-    end
+    print(line)
 end
+-- local rf = nil
+-- local report_fn = nil -- or from user
+-- local function report_line(line)
+--     if rf ~= nil then
+--         rf:write(line, "\n")
+--     end
+-- end
 
 -----------------------------------------------------------------------------
 -- Get the cmd line args.
@@ -46,7 +49,7 @@ for i = 1, #arg do
     local mfn = arg[i]
 
     local mut = require(mfn) -- loads into global
-    -- or:::
+    -- or
     -- vv = loadfile(mfn) -- loads file
     -- mut = vv() -- executes it returning the module
 

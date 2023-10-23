@@ -15,8 +15,9 @@ goto interop
 
 :: Run the tests. test_pnut test_utils test_interop
 pushd ".."
-lua pnut_runner.lua Test\test_pnut
+lua pnut_runner.lua Test\test_interop
 popd
+
 goto end
 
 :interop

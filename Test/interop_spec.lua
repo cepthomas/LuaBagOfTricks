@@ -1,6 +1,6 @@
 -- Example spec for generating interop test.
 
--- TODO Combine the two exports?
+-- TODO Combine the two exports? They're similar.
 
 local M = {}
 

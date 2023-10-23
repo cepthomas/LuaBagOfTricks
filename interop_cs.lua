@@ -10,8 +10,8 @@ local spec = args[1]
 
 
 -- Type name conversions.
-local klex_types = { B = "Boolean", I = "Integer", N = "Number", S ="String", T = "TableEx"}
-local cs_types = { B = "bool", I = "int", N = "double", S ="string", T = "TableEx"}
+local klex_types = { B = "Boolean", I = "Integer", N = "Number", S =" String", T = "TableEx"}
+local cs_types = { B = "bool", I = "int", N = "double", S = "string", T = "TableEx"}
 
 local t =
 [[
@@ -139,11 +139,12 @@ namespace $(config.namespace)
 }
 ]]
 
+
 -- Make the output content.
 local tmpl_env =
 {
     _parent=_G,
-    _escape = '>',
+    _escape='>',
     _debug=true,
     config=spec.config,
     lua_funcs=spec.lua_export_funcs,

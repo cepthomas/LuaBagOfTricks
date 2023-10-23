@@ -1,5 +1,5 @@
 
--- TODO2 Create C version of the C# functionality.
+-- TODO0 Create C version of the C# functionality. Also md version.
 
 
 -- C flavor.

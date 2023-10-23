@@ -1,9 +1,11 @@
 -- Generate lua interop for C, C#, md.
 
--- TODO0 run with environment/cli inside ST.
 -- TODO support enums?
 
 local ut = require('utils')
+
+local arg={...}
+-- print(ut.dump_table_string(arg))
 
 ------------------------------------------------
 local function usage()
@@ -26,7 +28,7 @@ local syntaxes =
 -- Helper.
 local function write_output(fn, content)
     -- output
-    cf = io.open(fn, "w")
+    local cf = io.open(fn, "w")
     if cf == nil then
         error("Invalid filename: " .. fn)
     else
@@ -42,12 +44,8 @@ local outfn = nil
 local dbgr = false
 local term = false
 
-if #arg == 0 then
-    usage()
-    return
-end
-
-for _, a in ipairs(arg) do
+for i = 1, #arg do
+    local a = arg[i]
     local valid_arg = true
     if a:sub(1, 1) == '-' then
         opt = a:sub(2)
@@ -70,11 +68,10 @@ end
 if not specfn or not outfn then error("Missing file name") end
 
 -- OK so far. Use lbot extras?
-have_lbot, lbot = pcall(require, "lbot")
+local have_lbot, lbot = pcall(require, "lbot")
 if have_lbot then
     lbot.config_error_handling(dbgr, term)
 end
-
 
 -- Get the specific flavor.
 local syntax_chunk, msg = loadfile(syntaxfn)
@@ -85,6 +82,7 @@ local spec_chunk, msg = loadfile(specfn)
 if not spec_chunk then error("Invalid spec file: " .. msg) end
 
 local ok, spec = pcall(spec_chunk)
+-- print(ut.dump_table_string(spec))
 if not ok then error("Syntax in spec file: " .. spec) end
 
 -- Generate using syntax and the spec.
@@ -98,7 +96,7 @@ if code_err == nil then
     print("Generated code in " .. outfn)
 else
     -- Failed, save the intermediate mangled code for user to review/debug.
-    err_fn = outfn .. "_err.lua"
+    local err_fn = outfn .. "_err.lua"
     write_output(err_fn, content)
     error("Error in TMP file " .. err_fn .. ": " .. code_err)
 end
