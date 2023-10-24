@@ -23,9 +23,8 @@ goto end
 :interop
 
 pushd ".."
-lua gen_interop.lua -cs -d -t Test\interop_spec.lua Test\out\GeneratedInterop.cs
+lua gen_interop.lua -cs -d -t Test\interop_spec.lua C:\Dev\repos\Lua\LuaBagOfTricks\Test\cs_test
 popd
 rem TODO paths are messed up - lua doesn't know file system.
-rem lua ..\gen_interop.lua -cs interop_spec.lua out\GeneratedInterop.cs
 
 :end

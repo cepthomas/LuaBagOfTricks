@@ -1,87 +1,117 @@
 -- Example spec for generating interop test.
 
--- TODO Combine the two exports? They're similar.
-
 local M = {}
 
 -- Syntax-specific options.
 M.config =
 {
     -- General
-    lib_name = "my_lib",
-    -- CS
-    namespace = "HeraAndNow",
-    class = "SunAndMoon",
-    add_using = { "System.Diagnostics", "System.Drawing" },
-    -- C
-    add_include = { "<errno.h>" },
+    lua_lib_name = "gen_lib", -- as used by RequireF()
+    host_lib_name = "GenLib", -- as used for class / file names - file name => GenLibInterop
+    namespace = "MyLib", -- C doesn't really need this
+    add_refs =  --OPT cs=using c=include
+    {
+        "System.Diagnostics",
+        -- "System.Drawing",
+        -- "<errno.h>",
+        -- "something_else.h"
+    },
 }
-
-
+ 
+ 
 -- Host calls lua.
 M.lua_export_funcs =
 {
     {
-        description = "booga",
-        lua_func_name = "my_lua_func",
-        host_func_name = "Interop_HostCallLua",
-        args =
+        lua_func_name = "my_lua_func", 
+        host_func_name = "MyLuaFunc", 
+        description = "booga", --OPT
+        args =--OPT
         {
-            { name = "arg_one", type = "S", description = "some strings" },
-            { name = "arg_two", type = "I", description = "a nice integer" },
-            { name = "arg_three", type = "T", description = "3 ddddddddd" },
+            {
+                name = "arg_one", 
+                type = "S", 
+                description = "some strings" --OPT
+            },
+            {
+                name = "arg_two", 
+                type = "I", 
+                description = "a nice integer" --OPT
+            },
+            {
+                name = "arg_three",  
+                type = "T", 
+                description = "3 ddddddddd" --OPT
+            },
         },
-        ret = { type = "T", description = "a returned thing" }
+        ret =
+        {
+            type = "T", 
+            description = "a returned thing" --OPT
+        }
     },
     {
-        description = "booga2",
-        lua_func_name = "my_lua_func2",
-        host_func_name = "Interop_HostCallLua2",
-        args =
+        lua_func_name = "my_lua_func2", 
+        host_func_name = "MyLuaFunc2", 
+        description = "booga2", 
+        args = 
         {
-            { name = "arg_one", type = "B", description = "bbbbbbb" },
+            {
+                name = "arg_one", 
+                type = "B", 
+                description = "bbbbbbb" 
+            },
         },
-        ret = { type = "N", description = "a returned number" }
+         ret = 
+        {
+            type = "N", 
+            description = "a returned number" 
+        }
     },
     {
-        description = "bad_spec",
-        lua_func_name = "bad_spec",
-        host_func_name = "Interop_bad_spec",
-        ret = { type = "N", description = "a returned number" },
-        args =
+        lua_func_name = "no_args_func", 
+        host_func_name = "NoArgsFunc", 
+        description = "no_args", 
+        ret =
         {
+            type = "N", 
+            description = "a returned number" 
         },
     },
-    -- etc
 }
-
+ 
 -- Lua calls host.
 M.host_export_funcs = 
 {
     {
-        description = "fooga",
         lua_func_name = "my_lua_func",
-        host_func_name = "Interop_MyLuaFunc",
-        work_func = "Interop_MyLuaFunc_work", -- Signature is args and ret below.
-        args =
+        host_func_name = "MyLuaFunc",
+        description = "fooga", --OPT
+--!!auto assign        work_func = "MyLuaFuncWork", -- Signature is args and ret below.
+        args = --OPT
         {
-            { name = "arg_one", type = "N", description = "kakakakaka" },
+            {
+                name = "arg_one",
+                type = "N",
+                description = "kakakakaka" --OPT
+            },
         },
-        ret = { type = "B", description = "a returned thing" }
+        ret =
+        {
+            type = "B",
+            description = "a returned thing" --OPT
+        }
     },
     {
-        description = "fooga2",
-        lua_func_name = "another_lua_func",
-        host_func_name = "Interop_AnotherLuaFunc",
-        work_func = "Interop_AnotherLuaFunc_work",
-        args =
+        lua_func_name = "func_with_no_args",
+        host_func_name = "FuncWithNoArgs",
+        description = "Func with no args",
+        ret =
         {
-            { name = "arg_one", type = "T", description = "rere reree" },
-            { name = "arg_two", type = "S", description = "ssss reree" },
-        },
-        ret = { type = "N", description = "a returned thing" }
+            type = "N",
+            description = "a returned thing"
+        }
     },
-    -- etc
 }
-
+ 
 return M

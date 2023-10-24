@@ -9,10 +9,6 @@ local args = {...}
 local spec = args[1]
 
 
--- Type name conversions.
-local klex_types = { B = "Boolean", I = "Integer", N = "Number", S =" String", T = "TableEx"}
-local cs_types = { B = "bool", I = "int", N = "double", S = "string", T = "TableEx"}
-
 local t =
 [[
 ///// Warning - this file is created by gen_interop.lua, do not edit. /////
@@ -22,94 +18,92 @@ using System.IO;
 using System.Text;
 using System.Collections.Generic;
 using KeraLuaEx;
->for _, us in ipairs(config.add_using) do
+>for _, us in ipairs(config.add_refs) do
 using $(us);
 >end
 
 namespace $(config.namespace)
 {
-    public partial class $(config.class)
+    public partial class $(config.host_lib_name)
     {
         #region Functions exported from lua for execution by host
 >for _, func in ipairs(lua_funcs) do
->local klex_ret_type = klex_types[func.ret.type]
->local cs_ret_type = cs_types[func.ret.type]
-        /// <summary>Lua export function: $(func.description)</summary>
+>local klex_ret_type = klex_types[func.ret.type] or "???"
+>local cs_ret_type = cs_types[func.ret.type] or "???"
+        /// <summary>Lua export function: $(func.description or "")</summary>
 >for _, arg in ipairs(func.args or {}) do
-        /// <param name="$(arg.name)">$(arg.description)</param>
+        /// <param name="$(arg.name)">$(arg.description or "")</param>
 >end -- func.args
-        /// <returns>$(cs_ret_type) $(func.ret.description)></returns>
+        /// <returns>$(cs_ret_type) $(func.ret.description or "")></returns>
 >local arg_specs = {}
->for _, arg in ipairs(func.args) do
+>for _, arg in ipairs(func.args or {}) do
 >table.insert(arg_specs, cs_types[arg.type] .. " " .. arg.name)
 >end -- func.args
 >sargs = ut.strjoin(", ", arg_specs)
         public $(cs_ret_type)? $(func.host_func_name)($(sargs))
         {
+            int numArgs = 0;
+            int numRet = 1;
+
             // Get function.
             LuaType ltype = _l.GetGlobal("$(func.lua_func_name)");
             if (ltype != LuaType.Function) { ErrorHandler(new SyntaxException($"Bad lua function: $(func.lua_func_name)")); return null; }
 
             // Push arguments
->for _, arg in ipairs(func.args) do
+>for _, arg in ipairs(func.args or {}) do
 >local klex_arg_type = klex_types[arg.type]
             _l.Push$(klex_arg_type)($(arg.name));
+            numArgs++;
 >end -- func.args
 
             // Do the actual call.
-            LuaStatus lstat = _l.DoCall($(#func.args), 1);
+            LuaStatus lstat = _l.DoCall(numArgs, numRet);
             if (lstat >= LuaStatus.ErrRun) { ErrorHandler(new SyntaxException("DoCall() failed")); return null; }
 
             // Get the results from the stack.
             $(cs_ret_type)? ret = _l.To$(klex_ret_type)(-1);
             if (ret is null) { ErrorHandler(new SyntaxException("Return value is not a $(cs_ret_type)")); return null; }
             _l.Pop(1);
-
             return ret;
         }
-
 >end -- lua_funcs
         #endregion
 
         #region Functions exported from host for execution by lua
 >for _, func in ipairs(host_funcs) do
->local klex_ret_type = klex_types[func.ret.type]
->local cs_ret_type = cs_types[func.ret.type]
-        /// <summary>Host export function: $(func.description)
->for _, arg in ipairs(func.args) do
-        /// Lua arg: "$(arg.name)">$(arg.description)
+>local klex_ret_type = klex_types[func.ret.type] or "???"
+>local cs_ret_type = cs_types[func.ret.type] or "???"
+        /// <summary>Host export function: $(func.description or "")
+>for _, arg in ipairs(func.args or {}) do
+        /// Lua arg: "$(arg.name)">$(arg.description or "")
 >end -- func.args
-        /// Lua return: $(cs_ret_type) $(func.ret.description)>
+        /// Lua return: $(cs_ret_type) $(func.ret.description or "")>
         /// </summary>
         /// <param name="p">Internal lua state</param>
         /// <returns>Number of lua return values></returns>
         static int $(func.host_func_name)(IntPtr p)
         {
-            Lua? l = Lua.FromIntPtr(p);
+            Lua l = Lua.FromIntPtr(p)!;
 
             // Get arguments
->for i, arg in ipairs(func.args) do
+>for i, arg in ipairs(func.args or {}) do
 >local klex_arg_type = klex_types[arg.type]
 >local cs_arg_type = cs_types[arg.type]
             $(cs_arg_type)? $(arg.name) = null;
-            if (l!.Is$(klex_arg_type)($(i))) { $(arg.name) = l.To$(klex_arg_type)($(i)); }
+            if (l.Is$(klex_arg_type)($(i))) { $(arg.name) = l.To$(klex_arg_type)($(i)); }
             else { ErrorHandler(new SyntaxException($"Bad arg type for {$(arg.name)}")); return 0; }
 >end -- func.args
 
-            // Do the work.
+            // Do the work. One result.
 >local arg_specs = {}
->for _, arg in ipairs(func.args) do
+>for _, arg in ipairs(func.args or {}) do
 >table.insert(arg_specs, arg.name)
 >end -- func.args
 >sargs = ut.strjoin(", ", arg_specs)
-            $(cs_ret_type) ret = $(func.work_func)($(sargs));
-
-            // Return result (one).
+            $(cs_ret_type) ret = $(func.host_func_name)Work($(sargs));
             l.Push$(klex_ret_type)(ret);
-
             return 1;
         }
-
 >end -- host_funcs
         #endregion
 
@@ -139,6 +133,9 @@ namespace $(config.namespace)
 }
 ]]
 
+-- Type name conversions.
+local klex_types = { B = "Boolean", I = "Integer", N = "Number", S ="String", T = "TableEx"}
+local cs_types = { B = "bool", I = "int", N = "double", S = "string", T = "TableEx"}
 
 -- Make the output content.
 local tmpl_env =

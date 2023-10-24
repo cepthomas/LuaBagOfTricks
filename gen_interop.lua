@@ -4,12 +4,13 @@
 
 local ut = require('utils')
 
-local arg={...}
+-- Capture args.
+local arg = {...}
 -- print(ut.dump_table_string(arg))
 
 ------------------------------------------------
 local function usage()
-    print("Usage: gen_interop.lua (-d) (-t) [-ch|-md|-cs] [your_spec.lua] [your_outfile.xyz]")
+    print("Usage: gen_interop.lua (-d) (-t) [-ch|-md|-cs] [your_spec.lua] [your_outpath]")
     print("  -ch generate d and h files")
     print("  -cs generate c# file")
     print("  -md generate markdown file")
@@ -38,9 +39,10 @@ local function write_output(fn, content)
 end
 
 -- Gather args.
-local syntaxfn = nil
-local specfn = nil
-local outfn = nil
+local syntax_fn = nil
+local syntax = nil
+local spec_fn = nil
+local out_path = nil
 local dbgr = false
 local term = false
 
@@ -52,20 +54,21 @@ for i = 1, #arg do
         if opt == "d" then dbgr = true
         elseif opt == "t" then term = true
         else
-            syntaxfn = syntaxes[opt]
-            if not syntaxfn then valid_arg = false end
+            syntax = opt
+            syntax_fn = syntaxes[syntax]
+            if not syntax_fn then valid_arg = false end
         end
-    elseif not specfn then
-        specfn = a
-    elseif not outfn then
-        outfn = a
+    elseif not spec_fn then
+        spec_fn = a
+    elseif not out_path then
+        out_path = a
     else
         valid_arg = false
     end
 
     if not valid_arg then error("Invalid command line arg: "..a) end
 end
-if not specfn or not outfn then error("Missing file name") end
+if not spec_fn or not out_path then error("Missing output path") end
 
 -- OK so far. Use lbot extras?
 local have_lbot, lbot = pcall(require, "lbot")
@@ -74,11 +77,11 @@ if have_lbot then
 end
 
 -- Get the specific flavor.
-local syntax_chunk, msg = loadfile(syntaxfn)
+local syntax_chunk, msg = loadfile(syntax_fn)
 if not syntax_chunk then error("Invalid syntax file: " .. msg) end
 
 -- Get the spec.
-local spec_chunk, msg = loadfile(specfn)
+local spec_chunk, msg = loadfile(spec_fn)
 if not spec_chunk then error("Invalid spec file: " .. msg) end
 
 local ok, spec = pcall(spec_chunk)
@@ -91,12 +94,13 @@ if not ok then error("Error generating: " .. content) end
 
 -- What happened?
 if code_err == nil then
-    -- OK, save the generated code.
+    -- OK, save the generated code. ?? 2 files ??
+    outfn = ut.strjoin('/', { out_path, spec.config.host_lib_name .. "Interop." .. syntax } )
     write_output(outfn, content)
     print("Generated code in " .. outfn)
 else
     -- Failed, save the intermediate mangled code for user to review/debug.
-    local err_fn = outfn .. "_err.lua"
+    err_fn = ut.strjoin('/', { out_path, spec.config.host_lib_name .. "_err.lua" } )
     write_output(err_fn, content)
     error("Error in TMP file " .. err_fn .. ": " .. code_err)
 end
