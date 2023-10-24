@@ -2,7 +2,6 @@
 
 local ut = require('utils')
 local tmpl = require('template')
--- local dbg = require("debugger")
 
 -- Get specification.
 local args = {...}
@@ -82,7 +81,7 @@ namespace $(config.namespace)
         /// </summary>
         /// <param name="p">Internal lua state</param>
         /// <returns>Number of lua return values></returns>
-        static int $(func.host_func_name)(IntPtr p)
+        int $(func.host_func_name)(IntPtr p)
         {
             Lua l = Lua.FromIntPtr(p)!;
 
@@ -110,11 +109,18 @@ namespace $(config.namespace)
         #endregion
 
         #region Infrastructure
+        // Bind functions to static instance.
+        static $(config.host_lib_name) _instance;
+        // Bound functions.
+>for _, func in ipairs(host_funcs) do
+        readonly static LuaFunction _$(func.host_func_name) = _instance.$(func.host_func_name);
+>end -- host_funcs
+
         readonly LuaRegister[] _libFuncs = new LuaRegister[]
         {
             // ALL collected.
 >for _, func in ipairs(host_funcs) do
-            new LuaRegister("$(func.lua_func_name)", $(func.host_func_name)),
+            new LuaRegister("$(func.lua_func_name)", _$(func.host_func_name)),
 >end -- host_funcs
             new LuaRegister(null, null)
         };
@@ -128,6 +134,7 @@ namespace $(config.namespace)
 
         public void LoadInterop()
         {
+            _instance = this;
             _l.RequireF("$(config.lib_name)", OpenInterop, true);
         }
         #endregion

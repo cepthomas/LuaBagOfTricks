@@ -12,9 +12,7 @@ M.config =
     add_refs =  --OPT cs=using c=include
     {
         "System.Diagnostics",
-        -- "System.Drawing",
         -- "<errno.h>",
-        -- "something_else.h"
     },
 }
  
@@ -87,7 +85,6 @@ M.host_export_funcs =
         lua_func_name = "my_lua_func",
         host_func_name = "MyLuaFunc",
         description = "fooga", --OPT
---!!auto assign        work_func = "MyLuaFuncWork", -- Signature is args and ret below.
         args = --OPT
         {
             {

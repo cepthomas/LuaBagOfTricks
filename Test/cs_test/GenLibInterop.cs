@@ -92,6 +92,7 @@ namespace MyLib
             _l.Pop(1);
             return ret;
         }
+
         #endregion
 
         #region Functions exported from host for execution by lua
@@ -101,7 +102,7 @@ namespace MyLib
         /// </summary>
         /// <param name="p">Internal lua state</param>
         /// <returns>Number of lua return values></returns>
-        static int MyLuaFunc(IntPtr p)
+        int MyLuaFunc(IntPtr p)
         {
             Lua l = Lua.FromIntPtr(p)!;
 
@@ -120,7 +121,7 @@ namespace MyLib
         /// </summary>
         /// <param name="p">Internal lua state</param>
         /// <returns>Number of lua return values></returns>
-        static int FuncWithNoArgs(IntPtr p)
+        int FuncWithNoArgs(IntPtr p)
         {
             Lua l = Lua.FromIntPtr(p)!;
 
@@ -131,14 +132,21 @@ namespace MyLib
             l.PushNumber(ret);
             return 1;
         }
+
         #endregion
 
         #region Infrastructure
+        // Bind functions to static instance.
+        static GenLib _instance;
+        // Bound functions.
+        readonly static LuaFunction _MyLuaFunc = _instance.MyLuaFunc;
+        readonly static LuaFunction _FuncWithNoArgs = _instance.FuncWithNoArgs;
+
         readonly LuaRegister[] _libFuncs = new LuaRegister[]
         {
             // ALL collected.
-            new LuaRegister("my_lua_func", MyLuaFunc),
-            new LuaRegister("func_with_no_args", FuncWithNoArgs),
+            new LuaRegister("my_lua_func", _MyLuaFunc),
+            new LuaRegister("func_with_no_args", _FuncWithNoArgs),
             new LuaRegister(null, null)
         };
 
@@ -151,6 +159,7 @@ namespace MyLib
 
         public void LoadInterop()
         {
+            _instance = this;
             _l.RequireF("", OpenInterop, true);
         }
         #endregion
