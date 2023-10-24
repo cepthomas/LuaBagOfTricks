@@ -11,45 +11,65 @@ namespace MyLib
     /// <summary>An example of how to create a C# library that can be loaded by Lua.</summary>
     public partial class GenLib
     {
-
         /// <summary>Main execution lua state.</summary>
         readonly Lua _l = new();
 
-        /// <summary>Need static instance for binding functions.</summary>
-        static GenLib _instance;
-
-
-
+        ///// <summary>Need static instance for binding functions.</summary>
+        //static GenLib _instance;
 
         ///// <summary>Bound lua function.</summary>
         //readonly static LuaFunction _fPrint = PrintEx;
-
-        ///// <summary>Bound lua function.</summary>
-        //readonly static LuaFunction _fTimer = Timer;
 
         /// <summary>Metrics.</summary>
         static readonly Stopwatch _sw = new();
         static long _startTicks = 0;
 
+        #region Lifecycle
+        /// <summary>
+        /// Load the lua libs implemented in C#.
+        /// </summary>
+        /// <param name="l">Lua context</param>
+        public static void Init(Lua l)
+        {
+            // Load lib stuff.
+            LoadInterop();
 
+            // Other inits.
+            _startTicks = 0;
+            _sw.Start();
+        }
+        #endregion
 
+        #region Bound lua functions
+        /// <summary>
+        /// Interop error handler. Do something with this - log it or other.
+        /// </summary>
+        /// <param name="e"></param>
+        /// <returns></returns>
         static bool ErrorHandler(Exception e)
         {
-            //// Do something with this.
-            //if (_instance._l.ThrowOnError)
-            //{
-            //    throw e;
-            //}
-            //else
-            //{
-            //    _logger.Error(e.Message);
-            //    _logger.Error(e.StackTrace ?? "No stack");
-            //}
             return false;
         }
 
+        /// <summary>
+        /// Do something with this.
+        /// </summary>
+        /// <param name="arg_one"></param>
+        /// <returns></returns>
+        static bool MyLuaFuncWork(double? arg_one)
+        {
+            return arg_one < 100.0;
+        }
 
-
+        /// <summary>
+        /// Do something with this.
+        /// </summary>
+        /// <returns></returns>
+        static double FuncWithNoArgsWork()
+        {
+            return 1234.5;
+        }
+        #endregion
 
 
         // #region Lifecycle

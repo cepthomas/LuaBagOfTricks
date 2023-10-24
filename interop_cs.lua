@@ -67,6 +67,7 @@ namespace $(config.namespace)
             return ret;
         }
 >end -- lua_funcs
+
         #endregion
 
         #region Functions exported from host for execution by lua
@@ -105,6 +106,7 @@ namespace $(config.namespace)
             return 1;
         }
 >end -- host_funcs
+
         #endregion
 
         #region Infrastructure
