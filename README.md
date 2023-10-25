@@ -23,5 +23,6 @@ Supported arg and return value types: B=boolean I=integer N=number S=string T=Ta
 
 ## FOSS components
 
-- Uses a slightly hacked version of template.lua from https://github.com/lunarmodules/Penlight. Removed dependencies on other penlight components including LuaFileSystem. It's standalone now.
-- https://github.com/slembcke/debugger.lua
+- Uses a slightly hacked version of [template.lua](https://github.com/lunarmodules/Penlight). Removed dependencies on other penlight components including LuaFileSystem. It's standalone now.
+- Modified version of the nifty [debugger.lua](https://github.com/slembcke/debugger.lua).
+

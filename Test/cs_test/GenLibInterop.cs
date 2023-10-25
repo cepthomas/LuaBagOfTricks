@@ -43,6 +43,7 @@ namespace MyLib
             _l.Pop(1);
             return ret;
         }
+
         /// <summary>Lua export function: booga2</summary>
         /// <param name="arg_one">bbbbbbb</param>
         /// <returns>double a returned number></returns>
@@ -69,6 +70,7 @@ namespace MyLib
             _l.Pop(1);
             return ret;
         }
+
         /// <summary>Lua export function: no_args</summary>
         /// <returns>double a returned number></returns>
         public double? NoArgsFunc()
@@ -98,7 +100,7 @@ namespace MyLib
         #region Functions exported from host for execution by lua
         /// <summary>Host export function: fooga
         /// Lua arg: "arg_one">kakakakaka
-        /// Lua return: bool a returned thing>
+        /// Lua return: bool required return value>
         /// </summary>
         /// <param name="p">Internal lua state</param>
         /// <returns>Number of lua return values></returns>
@@ -116,6 +118,7 @@ namespace MyLib
             l.PushBoolean(ret);
             return 1;
         }
+
         /// <summary>Host export function: Func with no args
         /// Lua return: double a returned thing>
         /// </summary>
@@ -137,10 +140,10 @@ namespace MyLib
 
         #region Infrastructure
         // Bind functions to static instance.
-        static GenLib _instance;
+        static GenLib? _instance;
         // Bound functions.
-        readonly static LuaFunction _MyLuaFunc = _instance.MyLuaFunc;
-        readonly static LuaFunction _FuncWithNoArgs = _instance.FuncWithNoArgs;
+        static LuaFunction? _MyLuaFunc;
+        static LuaFunction? _FuncWithNoArgs;
 
         readonly LuaRegister[] _libFuncs = new LuaRegister[]
         {
@@ -157,10 +160,12 @@ namespace MyLib
             return 1;
         }
 
-        public void LoadInterop()
+        void LoadInterop()
         {
             _instance = this;
-            _l.RequireF("", OpenInterop, true);
+            _MyLuaFunc = _instance!.MyLuaFunc;
+            _FuncWithNoArgs = _instance!.FuncWithNoArgs;
+            _l.RequireF("gen_lib", OpenInterop, true);
         }
         #endregion
     }

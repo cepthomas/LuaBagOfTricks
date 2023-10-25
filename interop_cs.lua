@@ -65,8 +65,8 @@ namespace $(config.namespace)
             _l.Pop(1);
             return ret;
         }
->end -- lua_funcs
 
+>end -- lua_funcs
         #endregion
 
         #region Functions exported from host for execution by lua
@@ -104,16 +104,16 @@ namespace $(config.namespace)
             l.Push$(klex_ret_type)(ret);
             return 1;
         }
->end -- host_funcs
 
+>end -- host_funcs
         #endregion
 
         #region Infrastructure
         // Bind functions to static instance.
-        static $(config.host_lib_name) _instance;
+        static $(config.host_lib_name)? _instance;
         // Bound functions.
 >for _, func in ipairs(host_funcs) do
-        readonly static LuaFunction _$(func.host_func_name) = _instance.$(func.host_func_name);
+        static LuaFunction? _$(func.host_func_name);
 >end -- host_funcs
 
         readonly LuaRegister[] _libFuncs = new LuaRegister[]
@@ -132,15 +132,19 @@ namespace $(config.namespace)
             return 1;
         }
 
-        public void LoadInterop()
+        void LoadInterop()
         {
             _instance = this;
-            _l.RequireF("$(config.lib_name)", OpenInterop, true);
+>for _, func in ipairs(host_funcs) do
+            _$(func.host_func_name) = _instance!.$(func.host_func_name);
+>end -- host_funcs
+            _l.RequireF("$(config.lua_lib_name)", OpenInterop, true);
         }
         #endregion
     }
 }
 ]]
+
 
 -- Type name conversions.
 local klex_types = { B = "Boolean", I = "Integer", N = "Number", S ="String", T = "TableEx"}

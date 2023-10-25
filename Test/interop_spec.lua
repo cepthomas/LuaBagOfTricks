@@ -15,71 +15,71 @@ M.config =
         -- "<errno.h>",
     },
 }
- 
- 
+
+
 -- Host calls lua.
 M.lua_export_funcs =
 {
     {
-        lua_func_name = "my_lua_func", 
-        host_func_name = "MyLuaFunc", 
+        lua_func_name = "my_lua_func",
+        host_func_name = "MyLuaFunc",
         description = "booga", --OPT
         args =--OPT
         {
             {
-                name = "arg_one", 
-                type = "S", 
+                name = "arg_one",
+                type = "S",
                 description = "some strings" --OPT
             },
             {
-                name = "arg_two", 
-                type = "I", 
+                name = "arg_two",
+                type = "I",
                 description = "a nice integer" --OPT
             },
             {
-                name = "arg_three",  
-                type = "T", 
+                name = "arg_three",
+                type = "T",
                 description = "3 ddddddddd" --OPT
             },
         },
         ret =
         {
-            type = "T", 
+            type = "T",
             description = "a returned thing" --OPT
         }
     },
     {
-        lua_func_name = "my_lua_func2", 
-        host_func_name = "MyLuaFunc2", 
-        description = "booga2", 
-        args = 
+        lua_func_name = "my_lua_func2",
+        host_func_name = "MyLuaFunc2",
+        description = "booga2",
+        args =
         {
             {
-                name = "arg_one", 
-                type = "B", 
-                description = "bbbbbbb" 
+                name = "arg_one",
+                type = "B",
+                description = "bbbbbbb"
             },
         },
-         ret = 
+         ret =
         {
-            type = "N", 
-            description = "a returned number" 
+            type = "N",
+            description = "a returned number"
         }
     },
     {
-        lua_func_name = "no_args_func", 
-        host_func_name = "NoArgsFunc", 
-        description = "no_args", 
+        lua_func_name = "no_args_func",
+        host_func_name = "NoArgsFunc",
+        description = "no_args",
         ret =
         {
-            type = "N", 
-            description = "a returned number" 
+            type = "N",
+            description = "a returned number"
         },
     },
 }
- 
+
 -- Lua calls host.
-M.host_export_funcs = 
+M.host_export_funcs =
 {
     {
         lua_func_name = "my_lua_func",
@@ -96,7 +96,7 @@ M.host_export_funcs =
         ret =
         {
             type = "B",
-            description = "a returned thing" --OPT
+            description = "required return value" --OPT
         }
     },
     {
@@ -110,5 +110,5 @@ M.host_export_funcs =
         }
     },
 }
- 
+
 return M

@@ -12,18 +12,21 @@ namespace MyLib
     public partial class GenLib
     {
         /// <summary>Main execution lua state.</summary>
-        readonly Lua _l = new();
+        readonly Lua _l;
 
         /// <summary>Metrics.</summary>
         readonly Stopwatch _sw = new();
-        long _startTicks = 0;
+        readonly long _startTicks = 0;
 
         #region Lifecycle
         /// <summary>
         /// Load the lua libs implemented in C#.
         /// </summary>
-        public GenLib()
+        /// <param name="l">Lua context.</param>
+        public GenLib(Lua l)
         {
+            _l = l;
+
             // Load our lib stuff.
             LoadInterop();
 
@@ -39,8 +42,9 @@ namespace MyLib
         /// </summary>
         /// <param name="e"></param>
         /// <returns></returns>
-        static bool ErrorHandler(Exception e)
+        bool ErrorHandler(Exception e)
         {
+            Debug.WriteLine(e.ToString());
             return false;
         }
 
@@ -49,7 +53,7 @@ namespace MyLib
         /// </summary>
         /// <param name="arg_one"></param>
         /// <returns></returns>
-        static bool MyLuaFuncWork(double? arg_one)
+        bool MyLuaFuncWork(double? arg_one)
         {
             return arg_one < 100.0;
         }
@@ -58,7 +62,7 @@ namespace MyLib
         /// Do something with this.
         /// </summary>
         /// <returns></returns>
-        static double FuncWithNoArgsWork()
+        double FuncWithNoArgsWork()
         {
             return 1234.5;
         }

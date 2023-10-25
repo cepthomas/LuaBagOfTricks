@@ -33,7 +33,7 @@ end
 -- @param tbl What to dump.
 -- @param indent Nesting.
 -- @return string list
-function M.dump_table(tbl, indent)
+function M.dump_table(tbl, indent) --TODO0 add table name
     local res = {}
     indent = indent or 0
 

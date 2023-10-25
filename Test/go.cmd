@@ -18,7 +18,7 @@ popd
 goto end
 
 :interop
-:: Build the interop. TODO0 need explicit paths - lua doesn't know file system.
+:: Build the interop. TODO need explicit paths - lua doesn't know file system.
 pushd ".."
 lua gen_interop.lua -cs -d -t "Test\interop_spec.lua" "C:\Dev\repos\Lua\LuaBagOfTricks\Test\cs_test"
 popd

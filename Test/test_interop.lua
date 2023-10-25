@@ -1,4 +1,4 @@
--- Unit tests for interop processor. TODO0
+-- Unit tests for interop processor. TODO
 
 ut = require("utils")
 
