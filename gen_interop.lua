@@ -1,6 +1,6 @@
 -- Generate lua interop for C, C#, md.
 
--- TODO support enums?
+-- FUTURE support enums?
 
 local ut = require('utils')
 
