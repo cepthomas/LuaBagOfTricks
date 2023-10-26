@@ -115,20 +115,12 @@ namespace $(config.namespace)
 >for _, func in ipairs(host_funcs) do
         static LuaFunction? _$(func.host_func_name);
 >end -- host_funcs
-
-        readonly LuaRegister[] _libFuncs = new LuaRegister[]
-        {
-            // ALL collected.
->for _, func in ipairs(host_funcs) do
-            new LuaRegister("$(func.lua_func_name)", _$(func.host_func_name)),
->end -- host_funcs
-            new LuaRegister(null, null)
-        };
+        readonly List<LuaRegister> _libFuncs = new();
 
         int OpenInterop(IntPtr p)
         {
             var l = Lua.FromIntPtr(p)!;
-            l.NewLib(_libFuncs);
+            l.NewLib(_libFuncs.ToArray());
             return 1;
         }
 
@@ -137,7 +129,10 @@ namespace $(config.namespace)
             _instance = this;
 >for _, func in ipairs(host_funcs) do
             _$(func.host_func_name) = _instance!.$(func.host_func_name);
+            _libFuncs.Add(new LuaRegister("$(func.lua_func_name)", _$(func.host_func_name)));
 >end -- host_funcs
+
+            _libFuncs.Add(new LuaRegister(null, null));
             _l.RequireF("$(config.lua_lib_name)", OpenInterop, true);
         }
         #endregion
