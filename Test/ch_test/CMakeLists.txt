@@ -21,7 +21,6 @@ add_executable(interop_gen_c
     ${LUA_SRC}/src/lapi.c
     ${LUA_SRC}/src/lauxlib.c
     ${LUA_SRC}/src/lbaselib.c
-    # ${LUA_SRC}/src/lbitlib.c
     ${LUA_SRC}/src/lcode.c
     ${LUA_SRC}/src/lcorolib.c
     ${LUA_SRC}/src/lctype.c

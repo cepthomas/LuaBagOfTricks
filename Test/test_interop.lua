@@ -28,8 +28,6 @@ function M.suite_interop(pn)
     else
         pn.UT_ERROR("Error: "..msg)
     end
-
-    -- TODO check the generated file.
 end
 
 -----------------------------------------------------------------------------

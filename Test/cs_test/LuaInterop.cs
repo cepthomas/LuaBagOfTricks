@@ -105,7 +105,7 @@ namespace MyLuaInteropLib
         /// </summary>
         /// <param name="p">Internal lua state</param>
         /// <returns>Number of lua return values></returns>
-        int MyLuaFunc(IntPtr p)
+        int MyLuaFunc3(IntPtr p)
         {
             Lua l = Lua.FromIntPtr(p)!;
 
@@ -115,7 +115,7 @@ namespace MyLuaInteropLib
             else { ErrorHandler(new SyntaxException($"Bad arg type for {arg_one}")); return 0; }
 
             // Do the work. One result.
-            bool ret = MyLuaFuncWork(arg_one);
+            bool ret = MyLuaFunc3Work(arg_one);
             l.PushBoolean(ret);
             return 1;
         }
@@ -143,7 +143,7 @@ namespace MyLuaInteropLib
         // Bind functions to static instance.
         static LuaInterop? _instance;
         // Bound functions.
-        static LuaFunction? _MyLuaFunc;
+        static LuaFunction? _MyLuaFunc3;
         static LuaFunction? _FuncWithNoArgs;
         readonly List<LuaRegister> _libFuncs = new();
 
@@ -157,8 +157,8 @@ namespace MyLuaInteropLib
         void LoadInterop()
         {
             _instance = this;
-            _MyLuaFunc = _instance!.MyLuaFunc;
-            _libFuncs.Add(new LuaRegister("my_lua_func", _MyLuaFunc));
+            _MyLuaFunc3 = _instance!.MyLuaFunc3;
+            _libFuncs.Add(new LuaRegister("my_lua_func3", _MyLuaFunc3));
             _FuncWithNoArgs = _instance!.FuncWithNoArgs;
             _libFuncs.Add(new LuaRegister("func_with_no_args", _FuncWithNoArgs));
 

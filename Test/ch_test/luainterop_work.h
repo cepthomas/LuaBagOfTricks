@@ -16,13 +16,10 @@
 #include "luaex.h"
 #include "luainterop.h"
 
-//------------------ generator creates --------------------//
+// Declaration of work functions.
 
+bool luainterop_MyLuaFunc3Work(double arg_one);
 
-void interop_Load(lua_State* l);
-
-tableex* interop_DoOperation(lua_State* l, char* arg1, int arg2, tableex* arg3);
-
-double interop_LuaCallHost_DoWork(int arg1, const char* arg2);
+double luainterop_FuncWithNoArgsWork();
 
 #endif // LUAINTEROP_WORK_H

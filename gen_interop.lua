@@ -1,6 +1,6 @@
--- Generate lua interop for C, C#, md.
+-- Generate lua interop for C, C#.
 
--- FUTURE support enums?
+-- FUTURE support enums? markdown?
 
 local ut = require('utils')
 
@@ -90,15 +90,10 @@ if not ok then error("Syntax in spec file: " .. spec) end
 -- Generate using syntax and the spec.
 local ok, result = pcall(syntax_chunk, spec)
 
--- print(ok, result)
--- print(ut.dump_table_string(result))
-
-sep = package.config:sub(1,1)
-
-
 -- What happened?
 if ok then
     -- pcall ok, examine the result.
+    sep = package.config:sub(1,1)
     for k, v in pairs(result) do
         if k == "err" then
             -- Compile error, save the intermediate code.
@@ -110,7 +105,6 @@ if ok then
         else
             -- Ok, save the generated code.
             outfn = ut.strjoin(sep, { out_path, k } )
-            -- outfn = ut.strjoin(sep, { out_path, "interop_" .. spec.config.host_lib_name .. "." .. k } )
             write_output(outfn, v)
             print("Generated code in " .. outfn)
         end

@@ -1,19 +1,20 @@
 ///// Warning - this file is created by gen_interop.lua, do not edit. /////
-//#include <stdlib.h>
-//#include <stdio.h>
-//#include <stdarg.h>
-//#include <stdbool.h>
-//#include <stdint.h>
-//#include <string.h>
-//#include <float.h>
-//#include <math.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <stdarg.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <string.h>
+#include <float.h>
+
 #include "lua.h"
 #include "lualib.h"
 #include "lauxlib.h"
 #include "luaex.h"
+
 #include "luainterop.h"
+#include "luainterop_work.h"
 #include <errno.h>
-#include "other.h"
 
 //---------------- Call lua functions from host -------------//
 
@@ -24,23 +25,24 @@ tableex* luainterop_MyLuaFunc(lua_State* l, char* arg_one, int arg_two, tableex*
 
     // Get function.
     int ltype = lua_getglobal(l, "my_lua_func");
-    if (ltype != LUA_TFUNCTION) { ErrorHandler(l, LUA_ERRSYNTAX, "Bad lua function: %s", my_lua_func); return NULL; };
+    if (ltype != LUA_TFUNCTION) { luaL_error(l, "Bad lua function: my_lua_func"); };
 
     // Push arguments.
     lua_pushstring(l, arg_one);
     num_args++;
     lua_pushinteger(l, arg_two);
     num_args++;
-    lua_pushtable(l, arg_three);
+    lua_pushtableex(l, arg_three);
     num_args++;
 
     // Do the actual call.
     int lstat = luaL_docall(l, num_args, num_ret); // optionally throws
-    if (lstat >= LUA_ERRRUN) { ErrorHandler(l, lstat, "luaL_docall() failed"); return NULL; }
+    if (lstat >= LUA_ERRRUN) { luaL_error(l, "luaL_docall() failed: %d", lstat); }
 
     // Get the results from the stack.
-    tableex* ret = lua_totable(l, -1);
-    if (ret is NULL) { ErrorHandler(ErrorHandler(l, LUA_ERRSYNTAX, "Return is not a tableex*"); return NULL; }
+    tableex* ret;
+    if (lua_totableex(l, -1)) { ret = lua_totableex(l, -1); }
+    else { luaL_error(l, "Return is not a tableex*"); }
     lua_pop(l, num_ret); // Clean up results.
     return ret;
 }
@@ -52,7 +54,7 @@ double luainterop_MyLuaFunc2(lua_State* l, bool arg_one)
 
     // Get function.
     int ltype = lua_getglobal(l, "my_lua_func2");
-    if (ltype != LUA_TFUNCTION) { ErrorHandler(l, LUA_ERRSYNTAX, "Bad lua function: %s", my_lua_func2); return NULL; };
+    if (ltype != LUA_TFUNCTION) { luaL_error(l, "Bad lua function: my_lua_func2"); };
 
     // Push arguments.
     lua_pushboolean(l, arg_one);
@@ -60,33 +62,35 @@ double luainterop_MyLuaFunc2(lua_State* l, bool arg_one)
 
     // Do the actual call.
     int lstat = luaL_docall(l, num_args, num_ret); // optionally throws
-    if (lstat >= LUA_ERRRUN) { ErrorHandler(l, lstat, "luaL_docall() failed"); return NULL; }
+    if (lstat >= LUA_ERRRUN) { luaL_error(l, "luaL_docall() failed: %d", lstat); }
 
     // Get the results from the stack.
-    double ret = lua_tonumber(l, -1);
-    if (ret is NULL) { ErrorHandler(ErrorHandler(l, LUA_ERRSYNTAX, "Return is not a double"); return NULL; }
+    double ret;
+    if (lua_tonumber(l, -1)) { ret = lua_tonumber(l, -1); }
+    else { luaL_error(l, "Return is not a double"); }
     lua_pop(l, num_ret); // Clean up results.
     return ret;
 }
 
-double luainterop_NoArgsFunc(lua_State* l, )
+double luainterop_NoArgsFunc(lua_State* l)
 {
     int num_args = 0;
     int num_ret = 1;
 
     // Get function.
     int ltype = lua_getglobal(l, "no_args_func");
-    if (ltype != LUA_TFUNCTION) { ErrorHandler(l, LUA_ERRSYNTAX, "Bad lua function: %s", no_args_func); return NULL; };
+    if (ltype != LUA_TFUNCTION) { luaL_error(l, "Bad lua function: no_args_func"); };
 
     // Push arguments.
 
     // Do the actual call.
     int lstat = luaL_docall(l, num_args, num_ret); // optionally throws
-    if (lstat >= LUA_ERRRUN) { ErrorHandler(l, lstat, "luaL_docall() failed"); return NULL; }
+    if (lstat >= LUA_ERRRUN) { luaL_error(l, "luaL_docall() failed: %d", lstat); }
 
     // Get the results from the stack.
-    double ret = lua_tonumber(l, -1);
-    if (ret is NULL) { ErrorHandler(ErrorHandler(l, LUA_ERRSYNTAX, "Return is not a double"); return NULL; }
+    double ret;
+    if (lua_tonumber(l, -1)) { ret = lua_tonumber(l, -1); }
+    else { luaL_error(l, "Return is not a double"); }
     lua_pop(l, num_ret); // Clean up results.
     return ret;
 }
@@ -99,15 +103,15 @@ double luainterop_NoArgsFunc(lua_State* l, )
 // Lua return: bool required return value
 // @param[in] l Internal lua state.
 // @return Number of lua return values.
-static int luainterop_MyLuaFunc(lua_State* l)
+static int luainterop_MyLuaFunc3(lua_State* l)
 {
     // Get arguments
     double arg_one;
     if (lua_isnumber(l, 1)) { arg_one = lua_tonumber(l, 1); }
-    else { ErrorHandler(l, LUA_ERRSYNTAX, "Bad arg type for arg_one"); return 0; }
+    else { luaL_error(l, "Bad arg type for arg_one"); }
 
     // Do the work. One result.
-    bool ret = luainterop_MyLuaFuncWork(arg_one);
+    bool ret = luainterop_MyLuaFunc3Work(arg_one);
     lua_pushboolean(l, ret);
     return 1;
 }
@@ -131,8 +135,8 @@ static int luainterop_FuncWithNoArgs(lua_State* l)
 
 static const luaL_Reg function_map[] =
 {
-    _MyLuaFunc = luainterop_MyLuaFunc;
-    _FuncWithNoArgs = luainterop_FuncWithNoArgs;
+    { "my_lua_func3", luainterop_MyLuaFunc3 },
+    { "func_with_no_args", luainterop_FuncWithNoArgs },
     { NULL, NULL }
 };
 
@@ -144,5 +148,5 @@ static int luainterop_Open(lua_State* l)
 
 void luainterop_Load(lua_State* l)
 {
-    luaL_requiref(l, , luainterop_Open, true);
+    luaL_requiref(l, "gen_lib", luainterop_Open, true);
 }

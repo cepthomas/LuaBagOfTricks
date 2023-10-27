@@ -2,6 +2,13 @@
 #define LUAINTEROP_H
 
 ///// Warning - this file is created by gen_interop.lua, do not edit. /////
+#include <stdlib.h>
+#include <stdio.h>
+#include <stdarg.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <string.h>
+#include <float.h>
 
 #include "lua.h"
 #include "lualib.h"
@@ -27,7 +34,7 @@ double luainterop_MyLuaFunc2(lua_State* l, bool arg_one);
 // Lua export function: function with no args
 // @param[in] l Internal lua state.
 // @return double a returned number
-double luainterop_NoArgsFunc(lua_State* l, );
+double luainterop_NoArgsFunc(lua_State* l);
 
 
 ///// Infrastructure.

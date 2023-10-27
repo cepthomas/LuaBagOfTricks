@@ -1,3 +1,11 @@
+#include <stdlib.h>
+#include <stdio.h>
+#include <stdarg.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <string.h>
+#include <float.h>
+
 #include "lua.h"
 #include "lualib.h"
 #include "lauxlib.h"
@@ -9,10 +17,5 @@ int main(int argc, char* argv[])
     // Maybe do something?
     
     return 0;
-}
-
-double luainterop_LuaCallHost_DoWork(int arg1, const char* arg2)
-{
-    return arg1 + strlen(arg2);
 }
 

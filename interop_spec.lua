@@ -1,4 +1,4 @@
--- Example spec for generating interop, with doc comments. TODO put somewhere else?
+-- Example spec for generating interop, with doc comments.
 -- OPT are optional fields.
 
 local M = {}
@@ -8,7 +8,6 @@ M.config =
 {
     -- General
     lua_lib_name = "gen_lib", -- as used by luaL_requiref()/RequireF()
-    -- host_lib_name = "GenLib", -- as used for class / file names incl GenLibInterop
     -- Syntax specific
     namespace = "MyLib", -- C# specific
     add_refs =
@@ -84,8 +83,8 @@ M.lua_export_funcs =
 M.host_export_funcs =
 {
     {
-        lua_func_name = "my_lua_func",
-        host_func_name = "MyLuaFunc",
+        lua_func_name = "my_lua_func3",
+        host_func_name = "MyLuaFunc3",
         description = "fooga", --OPT
         args = --OPT
         {

@@ -1,25 +1,11 @@
 -- See interop_spec.lua for legend.
 
-
-
--- interop.h/c
--- //---------------- Call lua functions from host -------------//
--- tableex* interop_do_operation(lua_State* l, char* arg1, int arg2, tableex* arg3)
-
--- //---------------- Call host functions from Lua -------------//
--- static int interop_lua_call_host(lua_State* l)
-
--- interop_work.c
--- double interop_lua_call_host_work(int arg1, const char* arg2);
-
-
 local M = {}
 
 M.config =
 {
-    lua_lib_name = "gen_lib", -- as used by luaL_requiref()/RequireF()
-    --host_lib_name = "gen_lib", -- as used for class / file names => interop_gen_lib.h/c
-    add_refs = { "<errno.h>", "\"other.h\"" },
+    lua_lib_name = "gen_lib",
+    add_refs = { "<errno.h>", },
 }
 
 M.lua_export_funcs =
@@ -85,8 +71,8 @@ M.lua_export_funcs =
 M.host_export_funcs =
 {
     {
-        lua_func_name = "my_lua_func",
-        host_func_name = "MyLuaFunc",
+        lua_func_name = "my_lua_func3",
+        host_func_name = "MyLuaFunc3",
         description = "fooga",
         args =
         {

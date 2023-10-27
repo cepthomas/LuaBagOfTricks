@@ -53,7 +53,7 @@ namespace MyLuaInteropLib
         /// </summary>
         /// <param name="arg_one"></param>
         /// <returns></returns>
-        bool MyLuaFuncWork(double? arg_one)
+        bool MyLuaFunc3Work(double? arg_one)
         {
             return arg_one < 100.0;
         }

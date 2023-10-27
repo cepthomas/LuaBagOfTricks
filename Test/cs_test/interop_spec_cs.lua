@@ -5,11 +5,9 @@ local M = {}
 M.config =
 {
     lua_lib_name = "gen_lib",
-    -- host_lib_name = "GenLib",
     namespace = "MyLuaInteropLib",
     add_refs = { "System.Diagnostics", },
 }
-
 
 -- Host calls lua.
 M.lua_export_funcs =
@@ -33,7 +31,6 @@ M.lua_export_funcs =
             {
                 name = "arg_three",
                 type = "T",
-                --description = "missing desc"
             },
         },
         ret =
@@ -76,8 +73,8 @@ M.lua_export_funcs =
 M.host_export_funcs =
 {
     {
-        lua_func_name = "my_lua_func",
-        host_func_name = "MyLuaFunc",
+        lua_func_name = "my_lua_func3",
+        host_func_name = "MyLuaFunc3",
         description = "fooga",
         args =
         {
