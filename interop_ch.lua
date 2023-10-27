@@ -32,7 +32,7 @@ local tmpl_src_c =
 #include "lauxlib.h"
 #include "luaex.h"
 #include "interop_$(config.host_lib_name).h"
->for _, inc in ipairs(config.add_include) do
+>for _, inc in ipairs(config.add_refs) do
 #include $(inc)
 >end
 

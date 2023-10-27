@@ -18,7 +18,7 @@ using System.IO;
 using System.Text;
 using System.Collections.Generic;
 using KeraLuaEx;
->for _, us in ipairs(config.add_using) do
+>for _, us in ipairs(config.add_refs) do
 using $(us);
 >end
 
