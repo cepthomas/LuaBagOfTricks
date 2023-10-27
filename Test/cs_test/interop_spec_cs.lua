@@ -1,4 +1,4 @@
--- Example spec for generating interop, with doc comments. TODO put somewhere else?
+-- Example spec for generating interop, with doc comments.
 -- OPT are optional fields.
 
 local M = {}
@@ -71,7 +71,7 @@ M.lua_export_funcs =
     {
         lua_func_name = "no_args_func",
         host_func_name = "NoArgsFunc",
-        description = "function with no args",
+        description = "no_args",
         ret =
         {
             type = "N",

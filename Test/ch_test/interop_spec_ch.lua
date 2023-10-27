@@ -1,53 +1,40 @@
--- Example spec for generating interop, with doc comments. TODO put somewhere else?
--- OPT are optional fields.
 
 local M = {}
 
--- Syntax-specific options.
 M.config =
 {
-    -- General
     lua_lib_name = "gen_lib", -- as used by luaL_requiref()/RequireF()
     host_lib_name = "GenLib", -- as used for class / file names incl GenLibInterop
-    -- Syntax specific
-    namespace = "MyLib", -- C# specific
-    add_refs =
-    {
-        "System.Diagnostics",  -- C#: using
-        "<errno.h>",           -- C: include
-    },
+    add_refs = { "<errno.h>", "other.h" },
 }
 
-
--- Host calls lua.
 M.lua_export_funcs =
 {
     {
         lua_func_name = "my_lua_func",
         host_func_name = "MyLuaFunc",
-        description = "Tell me something good.", --OPT
-        args =--OPT
+        description = "Tell me something good.",
+        args =
         {
             {
                 name = "arg_one",
                 type = "S",
-                description = "some strings" --OPT
+                description = "some strings"
             },
             {
                 name = "arg_two",
                 type = "I",
-                description = "a nice integer" --OPT
+                description = "a nice integer"
             },
             {
                 name = "arg_three",
                 type = "T",
-                --description = "missing desc" --OPT
             },
         },
         ret =
         {
             type = "T",
-            description = "a returned thing" --OPT
+            description = "a returned thing"
         }
     },
     {
@@ -86,19 +73,19 @@ M.host_export_funcs =
     {
         lua_func_name = "my_lua_func",
         host_func_name = "MyLuaFunc",
-        description = "fooga", --OPT
-        args = --OPT
+        description = "fooga",
+        args =
         {
             {
                 name = "arg_one",
                 type = "N",
-                description = "kakakakaka" --OPT
+                description = "kakakakaka"
             },
         },
         ret =
         {
             type = "B",
-            description = "required return value" --OPT
+            description = "required return value"
         }
     },
     {

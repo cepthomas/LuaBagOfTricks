@@ -5,13 +5,13 @@
 #include "luaex.h"
 
 
-lua_tableex _t;
+tableex _t;
 
-void lua_pushtableex(lua_State* l, lua_tableex* tbl)
+void lua_pushtableex(lua_State* l, tableex* tbl)
 {
 }
 
-lua_tableex* lua_totableex(lua_State* l, int ind)
+tableex* lua_totableex(lua_State* l, int ind)
 {
     return &_t;
 }

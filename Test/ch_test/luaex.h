@@ -10,13 +10,13 @@
 //------------------ framework provides this -----------------//
 
 // tableex implementation.
-typedef struct lua_tableex {
+typedef struct tableex {
   int something;
-} lua_tableex;
+} tableex;
 
-void lua_pushtableex(lua_State* l, lua_tableex* tbl);
+void lua_pushtableex(lua_State* l, tableex* tbl);
 
-lua_tableex* lua_totableex(lua_State* l, int ind);
+tableex* lua_totableex(lua_State* l, int ind);
 
 int luaL_docall(lua_State* l, int num_args, int num_ret);
 

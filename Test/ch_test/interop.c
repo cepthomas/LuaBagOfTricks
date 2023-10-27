@@ -28,9 +28,9 @@ int num_ret;
 
 //---------------- Call lua functions from host -------------//
 
-lua_tableex* interop_HostCallLua(lua_State* l, char* arg1, int arg2, lua_tableex* arg3)
+tableex* interop_DoOperation(lua_State* l, char* arg1, int arg2, tableex* arg3)
 {
-    lua_tableex* ret = NULL;
+    tableex* ret = NULL;
     bool ok = true;
     // int lstat = LUA_OK;
 
