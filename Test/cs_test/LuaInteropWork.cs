@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -6,10 +6,10 @@ using System.Text;
 using KeraLuaEx;
 
 
-namespace MyLib
+namespace MyLuaInteropLib
 {
     /// <summary>An example of how to create a C# library that can be loaded by Lua.</summary>
-    public partial class GenLib
+    public partial class LuaInterop
     {
         /// <summary>Main execution lua state.</summary>
         readonly Lua _l;
@@ -23,7 +23,7 @@ namespace MyLib
         /// Load the lua libs implemented in C#.
         /// </summary>
         /// <param name="l">Lua context.</param>
-        public GenLib(Lua l)
+        public LuaInterop(Lua l)
         {
             _l = l;
 

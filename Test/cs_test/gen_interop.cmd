@@ -9,8 +9,7 @@ C:\Dev\repos\Lua\LuaBagOfTricks\?.lua;^
 C:\Dev\repos\Lua\LuaBagOfTricks\Test\?.lua;
 
 
-:: Build the interop. TODO need explicit paths - lua doesn't know file system.
-rem pushd ".."
-rem lua gen_interop.lua -cs -d -t "Test\interop_spec.lua" "C:\Dev\repos\Lua\LuaBagOfTricks\Test\cs_test"
-rem popd
-lua gen_interop.lua -cs -d -t interop_spec_cs.lua .
+:: Build the interop.
+pushd "..\.."
+lua gen_interop.lua -cs -d -t Test\cs_test\interop_spec_cs.lua Test\cs_test
+popd

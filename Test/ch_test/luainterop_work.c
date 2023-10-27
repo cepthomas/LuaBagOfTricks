@@ -1,29 +1,31 @@
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <stdarg.h>
-#include <stdbool.h>
-#include <stdint.h>
-#include <string.h>
-#include <float.h>
-#include <errno.h>
-#include <math.h>
+// #include <stdlib.h>
+// #include <stdio.h>
+// #include <stdarg.h>
+// #include <stdbool.h>
+// #include <stdint.h>
+// #include <string.h>
+// #include <float.h>
+// #include <errno.h>
+// #include <math.h>
+
 #include "lua.h"
 #include "lualib.h"
 #include "lauxlib.h"
+
 #include "luaex.h"
-#include "interop.h"
+#include "luainterop.h"
 
 // lua_Integer lua_tointegerx (lua_State *L, int index, int *isnum);
 // lua_Number lua_tonumberx (lua_State *L, int index, int *isnum);
 
 
-// generator fills these in place:
-#define my_lua_func_name_2 "call_my_host_func"
-#define my_lua_func_name_1 "call_my_lua_func"
-#define lib_name "neb_api"
-int num_args;
-int num_ret;
+// // generator fills these in place:
+// #define my_lua_func_name_2 "call_my_host_func"
+// #define my_lua_func_name_1 "call_my_lua_func"
+// #define lib_name "neb_api"
+// int num_args;
+// int num_ret;
 
 
 //---------------- Call lua functions from host -------------//

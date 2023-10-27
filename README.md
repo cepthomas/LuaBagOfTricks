@@ -21,6 +21,8 @@ See `interop_spec.lua` for example.
 
 Supported arg and return value types: B=boolean I=integer N=number S=string T=TableEx
 
+:: Build the interop. TODO need explicit paths - lua doesn't know file system.
+
 ## FOSS components
 
 - Uses a slightly hacked version of [template.lua](https://github.com/lunarmodules/Penlight). Removed dependencies on other penlight components including LuaFileSystem. It's standalone now.

@@ -9,7 +9,7 @@ C:\Dev\repos\Lua\LuaBagOfTricks\?.lua;^
 C:\Dev\repos\Lua\LuaBagOfTricks\Test\?.lua;
 
 
-:: Build the interop. TODO need explicit paths - lua doesn't know file system.
+:: Build the interop.
 pushd "..\.."
 lua gen_interop.lua -ch -d -t Test\ch_test\interop_spec_ch.lua Test\ch_test
 popd

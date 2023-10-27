@@ -1,4 +1,5 @@
 ///// Warning - this file is created by gen_interop.lua, do not edit. /////
+
 using System;
 using System.IO;
 using System.Text;
@@ -6,15 +7,15 @@ using System.Collections.Generic;
 using KeraLuaEx;
 using System.Diagnostics;
 
-namespace MyLib
+namespace MyLuaInteropLib
 {
-    public partial class GenLib
+    public partial class LuaInterop
     {
         #region Functions exported from lua for execution by host
-        /// <summary>Lua export function: booga</summary>
+        /// <summary>Lua export function: Tell me something good.</summary>
         /// <param name="arg_one">some strings</param>
         /// <param name="arg_two">a nice integer</param>
-        /// <param name="arg_three">3 ddddddddd</param>
+        /// <param name="arg_three"></param>
         /// <returns>TableEx a returned thing></returns>
         public TableEx? MyLuaFunc(string arg_one, int arg_two, TableEx arg_three)
         {
@@ -25,7 +26,7 @@ namespace MyLib
             LuaType ltype = _l.GetGlobal("my_lua_func");
             if (ltype != LuaType.Function) { ErrorHandler(new SyntaxException($"Bad lua function: my_lua_func")); return null; }
 
-            // Push arguments
+            // Push arguments.
             _l.PushString(arg_one);
             numArgs++;
             _l.PushInteger(arg_two);
@@ -44,8 +45,8 @@ namespace MyLib
             return ret;
         }
 
-        /// <summary>Lua export function: booga2</summary>
-        /// <param name="arg_one">bbbbbbb</param>
+        /// <summary>Lua export function: wooga wooga</summary>
+        /// <param name="arg_one">aaa bbb ccc</param>
         /// <returns>double a returned number></returns>
         public double? MyLuaFunc2(bool arg_one)
         {
@@ -56,7 +57,7 @@ namespace MyLib
             LuaType ltype = _l.GetGlobal("my_lua_func2");
             if (ltype != LuaType.Function) { ErrorHandler(new SyntaxException($"Bad lua function: my_lua_func2")); return null; }
 
-            // Push arguments
+            // Push arguments.
             _l.PushBoolean(arg_one);
             numArgs++;
 
@@ -82,7 +83,7 @@ namespace MyLib
             LuaType ltype = _l.GetGlobal("no_args_func");
             if (ltype != LuaType.Function) { ErrorHandler(new SyntaxException($"Bad lua function: no_args_func")); return null; }
 
-            // Push arguments
+            // Push arguments.
 
             // Do the actual call.
             LuaStatus lstat = _l.DoCall(numArgs, numRet);
@@ -140,23 +141,16 @@ namespace MyLib
 
         #region Infrastructure
         // Bind functions to static instance.
-        static GenLib? _instance;
+        static LuaInterop? _instance;
         // Bound functions.
         static LuaFunction? _MyLuaFunc;
         static LuaFunction? _FuncWithNoArgs;
-
-        readonly LuaRegister[] _libFuncs = new LuaRegister[]
-        {
-            // ALL collected.
-            new LuaRegister("my_lua_func", _MyLuaFunc),
-            new LuaRegister("func_with_no_args", _FuncWithNoArgs),
-            new LuaRegister(null, null)
-        };
+        readonly List<LuaRegister> _libFuncs = new();
 
         int OpenInterop(IntPtr p)
         {
             var l = Lua.FromIntPtr(p)!;
-            l.NewLib(_libFuncs);
+            l.NewLib(_libFuncs.ToArray());
             return 1;
         }
 
@@ -164,7 +158,11 @@ namespace MyLib
         {
             _instance = this;
             _MyLuaFunc = _instance!.MyLuaFunc;
+            _libFuncs.Add(new LuaRegister("my_lua_func", _MyLuaFunc));
             _FuncWithNoArgs = _instance!.FuncWithNoArgs;
+            _libFuncs.Add(new LuaRegister("func_with_no_args", _FuncWithNoArgs));
+
+            _libFuncs.Add(new LuaRegister(null, null));
             _l.RequireF("gen_lib", OpenInterop, true);
         }
         #endregion

@@ -24,12 +24,12 @@ using $(us);
 
 namespace $(config.namespace)
 {
-    public partial class $(config.host_lib_name)
+    public partial class LuaInterop
     {
         #region Functions exported from lua for execution by host
 >for _, func in ipairs(lua_funcs) do
->local klex_ret_type = klex_types[func.ret.type]"
->local cs_ret_type = cs_types[func.ret.type]"
+>local klex_ret_type = klex_types[func.ret.type]
+>local cs_ret_type = cs_types[func.ret.type]
         /// <summary>Lua export function: $(func.description or "")</summary>
 >for _, arg in ipairs(func.args or {}) do
         /// <param name="$(arg.name)">$(arg.description or "")</param>
@@ -111,7 +111,7 @@ namespace $(config.namespace)
 
         #region Infrastructure
         // Bind functions to static instance.
-        static $(config.host_lib_name)? _instance;
+        static LuaInterop? _instance;
         // Bound functions.
 >for _, func in ipairs(host_funcs) do
         static LuaFunction? _$(func.host_func_name);
@@ -159,19 +159,14 @@ local tmpl_env =
     cs_types=cs_types
 }
 
-local ret = {}
+local ret = {} -- { "gensrc1.cs"=rendered, "gensrc2.cs"=rendered, err, dcode }
 
 local rendered, err, dcode = tmpl.substitute(tmpl_src, tmpl_env)
-
 if not err then -- ok
-    ret.cs = rendered
+    ret["LuaInterop.cs"] = rendered
 else -- failed, look at intermediary code
     ret.err = err
     ret.dcode = dcode
 end
 
--- if err == nil then -- ok
---     return rendered
--- else -- failed, look at intermediary
---     return dcode, err
--- end
+return ret

@@ -8,7 +8,7 @@ M.config =
 {
     -- General
     lua_lib_name = "gen_lib", -- as used by luaL_requiref()/RequireF()
-    host_lib_name = "GenLib", -- as used for class / file names incl GenLibInterop
+    -- host_lib_name = "GenLib", -- as used for class / file names incl GenLibInterop
     -- Syntax specific
     namespace = "MyLib", -- C# specific
     add_refs =

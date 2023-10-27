@@ -1,55 +1,56 @@
 cmake_minimum_required(VERSION 3.5)
-project(cgentest)
+project(interop_gen_c)
 
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_CXX_STANDARD 11)
+set(LUA_SRC "C:/Program Files/Lua")
 
 # needs -g to debug.
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall -Wno-deprecated-declarations -Wno-unused-variable -Wno-unused-but-set-variable")
 
 include_directories(
-    # source/c
-    lua-5.3.5
+    ${LUA_SRC}/include
     )
 
 # Source files.
-add_executable(cgentest
+add_executable(interop_gen_c
     main.c
     luaex.c
-    interop.c
-    lua-5.3.5/lapi.c
-    lua-5.3.5/lauxlib.c
-    lua-5.3.5/lbaselib.c
-    lua-5.3.5/lbitlib.c
-    lua-5.3.5/lcode.c
-    lua-5.3.5/lcorolib.c
-    lua-5.3.5/lctype.c
-    lua-5.3.5/ldblib.c
-    lua-5.3.5/ldebug.c
-    lua-5.3.5/ldo.c
-    lua-5.3.5/ldump.c
-    lua-5.3.5/lfunc.c
-    lua-5.3.5/lgc.c
-    lua-5.3.5/linit.c
-    lua-5.3.5/liolib.c
-    lua-5.3.5/llex.c
-    lua-5.3.5/lmathlib.c
-    lua-5.3.5/lmem.c
-    lua-5.3.5/loadlib.c
-    lua-5.3.5/lobject.c
-    lua-5.3.5/lopcodes.c
-    lua-5.3.5/loslib.c
-    lua-5.3.5/lparser.c
-    lua-5.3.5/lstate.c
-    lua-5.3.5/lstring.c
-    lua-5.3.5/lstrlib.c
-    lua-5.3.5/ltable.c
-    lua-5.3.5/ltablib.c
-    lua-5.3.5/ltm.c
-    # lua-5.3.5/lua.c
-    # lua-5.3.5/luac.c
-    lua-5.3.5/lundump.c
-    lua-5.3.5/lutf8lib.c
-    lua-5.3.5/lvm.c
-    lua-5.3.5/lzio.c
+    luainterop.c
+    luainterop_work.c
+    ${LUA_SRC}/src/lapi.c
+    ${LUA_SRC}/src/lauxlib.c
+    ${LUA_SRC}/src/lbaselib.c
+    # ${LUA_SRC}/src/lbitlib.c
+    ${LUA_SRC}/src/lcode.c
+    ${LUA_SRC}/src/lcorolib.c
+    ${LUA_SRC}/src/lctype.c
+    ${LUA_SRC}/src/ldblib.c
+    ${LUA_SRC}/src/ldebug.c
+    ${LUA_SRC}/src/ldo.c
+    ${LUA_SRC}/src/ldump.c
+    ${LUA_SRC}/src/lfunc.c
+    ${LUA_SRC}/src/lgc.c
+    ${LUA_SRC}/src/linit.c
+    ${LUA_SRC}/src/liolib.c
+    ${LUA_SRC}/src/llex.c
+    ${LUA_SRC}/src/lmathlib.c
+    ${LUA_SRC}/src/lmem.c
+    ${LUA_SRC}/src/loadlib.c
+    ${LUA_SRC}/src/lobject.c
+    ${LUA_SRC}/src/lopcodes.c
+    ${LUA_SRC}/src/loslib.c
+    ${LUA_SRC}/src/lparser.c
+    ${LUA_SRC}/src/lstate.c
+    ${LUA_SRC}/src/lstring.c
+    ${LUA_SRC}/src/lstrlib.c
+    ${LUA_SRC}/src/ltable.c
+    ${LUA_SRC}/src/ltablib.c
+    ${LUA_SRC}/src/ltm.c
+    # ${LUA_SRC}/src/lua.c
+    # ${LUA_SRC}/src/luac.c
+    ${LUA_SRC}/src/lundump.c
+    ${LUA_SRC}/src/lutf8lib.c
+    ${LUA_SRC}/src/lvm.c
+    ${LUA_SRC}/src/lzio.c
     )

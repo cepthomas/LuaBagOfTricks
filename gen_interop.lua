@@ -90,7 +90,11 @@ if not ok then error("Syntax in spec file: " .. spec) end
 -- Generate using syntax and the spec.
 local ok, result = pcall(syntax_chunk, spec)
 
+-- print(ok, result)
 -- print(ut.dump_table_string(result))
+
+sep = package.config:sub(1,1)
+
 
 -- What happened?
 if ok then
@@ -98,14 +102,15 @@ if ok then
     for k, v in pairs(result) do
         if k == "err" then
             -- Compile error, save the intermediate code.
-            err_fn = ut.strjoin('/', { out_path, spec.config.host_lib_name .. "_err.lua" } )
+            err_fn = ut.strjoin(sep, { out_path, "err_dcode.lua" } )
             write_output(err_fn, result.dcode)
             error("Error in TMP file " .. err_fn .. ": " .. v)
         elseif k == "dcode" then
             -- covered above.
         else
             -- Ok, save the generated code.
-            outfn = ut.strjoin('/', { out_path, "interop_" .. spec.config.host_lib_name .. "." .. k } )
+            outfn = ut.strjoin(sep, { out_path, k } )
+            -- outfn = ut.strjoin(sep, { out_path, "interop_" .. spec.config.host_lib_name .. "." .. k } )
             write_output(outfn, v)
             print("Generated code in " .. outfn)
         end
@@ -114,17 +119,3 @@ else
     -- pcall failed.
     error("pcall failed: " .. result)
 end
-
-
--- -- What happened?
--- if code_err == nil then
---     -- OK, save the generated code. ?? TODO0 2+ files i content ??
---     outfn = ut.strjoin('/', { out_path, spec.config.host_lib_name .. "Interop." .. syntax } )
---     write_output(outfn, content)
---     print("Generated code in " .. outfn)
--- else
---     -- Failed, save the intermediate mangled code for user to review/debug.
---     err_fn = ut.strjoin('/', { out_path, spec.config.host_lib_name .. "_err.lua" } )
---     write_output(err_fn, content)
---     error("Error in TMP file " .. err_fn .. ": " .. code_err)
--- end

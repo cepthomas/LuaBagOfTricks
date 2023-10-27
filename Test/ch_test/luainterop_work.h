@@ -1,5 +1,5 @@
-#ifndef INTEROP_H
-#define INTEROP_H
+#ifndef LUAINTEROP_WORK_H
+#define LUAINTEROP_WORK_H
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -13,8 +13,11 @@
 #include "lua.h"
 #include "lualib.h"
 #include "lauxlib.h"
+#include "luaex.h"
+#include "luainterop.h"
 
 //------------------ generator creates --------------------//
+
 
 void interop_Load(lua_State* l);
 
@@ -22,4 +25,4 @@ tableex* interop_DoOperation(lua_State* l, char* arg1, int arg2, tableex* arg3);
 
 double interop_LuaCallHost_DoWork(int arg1, const char* arg2);
 
-#endif // INTEROP_H
+#endif // LUAINTEROP_WORK_H
