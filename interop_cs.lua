@@ -8,16 +8,17 @@ local args = {...}
 local spec = args[1]
 
 
-local t =
+local tmpl_src =
 [[
 ///// Warning - this file is created by gen_interop.lua, do not edit. /////
+
 >local ut = require('utils')
 using System;
 using System.IO;
 using System.Text;
 using System.Collections.Generic;
 using KeraLuaEx;
->for _, us in ipairs(config.add_refs) do
+>for _, us in ipairs(config.add_using) do
 using $(us);
 >end
 
@@ -27,8 +28,8 @@ namespace $(config.namespace)
     {
         #region Functions exported from lua for execution by host
 >for _, func in ipairs(lua_funcs) do
->local klex_ret_type = klex_types[func.ret.type] or "???"
->local cs_ret_type = cs_types[func.ret.type] or "???"
+>local klex_ret_type = klex_types[func.ret.type]"
+>local cs_ret_type = cs_types[func.ret.type]"
         /// <summary>Lua export function: $(func.description or "")</summary>
 >for _, arg in ipairs(func.args or {}) do
         /// <param name="$(arg.name)">$(arg.description or "")</param>
@@ -48,7 +49,7 @@ namespace $(config.namespace)
             LuaType ltype = _l.GetGlobal("$(func.lua_func_name)");
             if (ltype != LuaType.Function) { ErrorHandler(new SyntaxException($"Bad lua function: $(func.lua_func_name)")); return null; }
 
-            // Push arguments
+            // Push arguments.
 >for _, arg in ipairs(func.args or {}) do
 >local klex_arg_type = klex_types[arg.type]
             _l.Push$(klex_arg_type)($(arg.name));
@@ -71,8 +72,8 @@ namespace $(config.namespace)
 
         #region Functions exported from host for execution by lua
 >for _, func in ipairs(host_funcs) do
->local klex_ret_type = klex_types[func.ret.type] or "???"
->local cs_ret_type = cs_types[func.ret.type] or "???"
+>local klex_ret_type = klex_types[func.ret.type]
+>local cs_ret_type = cs_types[func.ret.type]
         /// <summary>Host export function: $(func.description or "")
 >for _, arg in ipairs(func.args or {}) do
         /// Lua arg: "$(arg.name)">$(arg.description or "")
@@ -142,8 +143,8 @@ namespace $(config.namespace)
 
 
 -- Type name conversions.
-local klex_types = { B = "Boolean", I = "Integer", N = "Number", S ="String", T = "TableEx"}
-local cs_types = { B = "bool", I = "int", N = "double", S = "string", T = "TableEx"}
+local klex_types = { B = "Boolean", I = "Integer", N = "Number", S ="String", T = "TableEx" }
+local cs_types = { B = "bool", I = "int", N = "double", S = "string", T = "TableEx" }
 
 -- Make the output content.
 local tmpl_env =
@@ -158,10 +159,19 @@ local tmpl_env =
     cs_types=cs_types
 }
 
-rendered, err, dcode = tmpl.substitute(t, tmpl_env)
+local ret = {}
 
-if err == nil then -- ok
-    return rendered
-else -- failed, look at intermediary
-    return dcode, err
+local rendered, err, dcode = tmpl.substitute(tmpl_src, tmpl_env)
+
+if not err then -- ok
+    ret.cs = rendered
+else -- failed, look at intermediary code
+    ret.err = err
+    ret.dcode = dcode
 end
+
+-- if err == nil then -- ok
+--     return rendered
+-- else -- failed, look at intermediary
+--     return dcode, err
+-- end

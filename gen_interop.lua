@@ -6,12 +6,11 @@ local ut = require('utils')
 
 -- Capture args.
 local arg = {...}
--- print(ut.dump_table_string(arg))
 
 ------------------------------------------------
 local function usage()
     print("Usage: gen_interop.lua (-d) (-t) [-ch|-md|-cs] [your_spec.lua] [your_outpath]")
-    print("  -ch generate d and h files")
+    print("  -ch generate c and h files")
     print("  -cs generate c# file")
     print("  -md generate markdown file")
     print("  -d enable debugger if available")
@@ -89,18 +88,43 @@ local ok, spec = pcall(spec_chunk)
 if not ok then error("Syntax in spec file: " .. spec) end
 
 -- Generate using syntax and the spec.
-local ok, content, code_err = pcall(syntax_chunk, spec)
-if not ok then error("Error generating: " .. content) end
+local ok, result = pcall(syntax_chunk, spec)
+
+-- print(ut.dump_table_string(result))
 
 -- What happened?
-if code_err == nil then
-    -- OK, save the generated code. ?? 2 files ??
-    outfn = ut.strjoin('/', { out_path, spec.config.host_lib_name .. "Interop." .. syntax } )
-    write_output(outfn, content)
-    print("Generated code in " .. outfn)
+if ok then
+    -- pcall ok, examine the result.
+    for k, v in pairs(result) do
+        if k == "err" then
+            -- Compile error, save the intermediate code.
+            err_fn = ut.strjoin('/', { out_path, spec.config.host_lib_name .. "_err.lua" } )
+            write_output(err_fn, result.dcode)
+            error("Error in TMP file " .. err_fn .. ": " .. v)
+        elseif k == "dcode" then
+            -- covered above.
+        else
+            -- Ok, save the generated code.
+            outfn = ut.strjoin('/', { out_path, "interop_" .. spec.config.host_lib_name .. "." .. k } )
+            write_output(outfn, v)
+            print("Generated code in " .. outfn)
+        end
+    end
 else
-    -- Failed, save the intermediate mangled code for user to review/debug.
-    err_fn = ut.strjoin('/', { out_path, spec.config.host_lib_name .. "_err.lua" } )
-    write_output(err_fn, content)
-    error("Error in TMP file " .. err_fn .. ": " .. code_err)
+    -- pcall failed.
+    error("pcall failed: " .. result)
 end
+
+
+-- -- What happened?
+-- if code_err == nil then
+--     -- OK, save the generated code. ?? TODO0 2+ files i content ??
+--     outfn = ut.strjoin('/', { out_path, spec.config.host_lib_name .. "Interop." .. syntax } )
+--     write_output(outfn, content)
+--     print("Generated code in " .. outfn)
+-- else
+--     -- Failed, save the intermediate mangled code for user to review/debug.
+--     err_fn = ut.strjoin('/', { out_path, spec.config.host_lib_name .. "_err.lua" } )
+--     write_output(err_fn, content)
+--     error("Error in TMP file " .. err_fn .. ": " .. code_err)
+-- end

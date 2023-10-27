@@ -1,4 +1,4 @@
--- Example spec for generating interop test.
+-- Example spec for generating interop test. TODO syntax-specific?
 
 local M = {}
 
@@ -7,12 +7,17 @@ M.config =
 {
     -- General
     lua_lib_name = "gen_lib", -- as used by RequireF()
-    host_lib_name = "GenLib", -- as used for class / file names - file name => GenLibInterop
-    namespace = "MyLib", -- C doesn't really need this
-    add_refs =  --OPT cs=using c=include
+    host_lib_name = "GenLib", -- as used for class / file names incl GenLibInterop
+    -- C# specific
+    namespace = "MyLib",
+    add_using = -- generic lines to add TODO0
     {
         "System.Diagnostics",
-        -- "<errno.h>",
+    },
+    -- C specific
+    add_include =
+    {
+        "<errno.h>",
     },
 }
 
