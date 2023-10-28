@@ -31,20 +31,24 @@ end
 -----------------------------------------------------------------------------
 -- Diagnostic.
 -- @param tbl What to dump.
+-- @param name Of the tbl.
 -- @param indent Nesting.
 -- @return string list
-function M.dump_table(tbl, indent) --TODO add table name
+function M.dump_table(tbl, name, indent)
     local res = {}
     indent = indent or 0
 
     if type(tbl) == "table" then
         local sindent = string.rep("    ", indent)
+        table.insert(res, sindent .. name .. "(table):")
 
+        -- Do contents.
+        indent = indent + 1
+        sindent = sindent .. "    "
         for k, v in pairs(tbl) do
             if type(v) == "table" then
-                table.insert(res, sindent .. k .. "(table):")
-                t2 = M.dump_table(v, indent + 1) -- recursion!
-                for _,v in ipairs(t2) do
+                trec = M.dump_table(v, k, indent) -- recursion!
+                for _,v in ipairs(trec) do
                     table.insert(res, v)
                 end
             else
@@ -61,9 +65,10 @@ end
 -----------------------------------------------------------------------------
 -- Diagnostic.
 -- @param tbl What to dump.
+-- @param name Of tbl.
 -- @return string list
-function M.dump_table_string(tbl)
-    local res = M.dump_table(tbl, 0)
+function M.dump_table_string(tbl, name)
+    local res = M.dump_table(tbl, name, 0)
     return M.strjoin('\n', res)
 end
 
