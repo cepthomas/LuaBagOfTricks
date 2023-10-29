@@ -15,10 +15,11 @@ Generates C# and C code for the standard lua interop.
 - Test projects (Windows) demonstrate how to use it.
 - Supported arg and return value types: B=boolean I=integer N=number S=string T=TableEx.
 - See `interop_spec.lua` for definition of input.
+- The C version needs some more infrastructure to support tables.
 
 ## FOSS components
 
 Uses slightly modified versions of:
-- [template.lua](https://github.com/lunarmodules/Penlight). Removed dependencies on other penlight components including LuaFileSystem. It's standalone now.
-- The nifty [debugger.lua](https://github.com/slembcke/debugger.lua).
+- [template.lua](https://github.com/lunarmodules/Penlight). Removed dependencies on other penlight components including `LuaFileSystem`. It's standalone now. Used for interop.
+- The nifty [debugger.lua](https://github.com/slembcke/debugger.lua). It has companion functionality in `lbot.lua`.
 
