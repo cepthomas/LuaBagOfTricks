@@ -26,16 +26,6 @@ tableex* lua_totableex(lua_State* l, int ind);
 // @param[in] num_ret 
 // @return status
 int luaL_docall(lua_State* l, int num_args, int num_ret);
-{
-    // LuaStatus lstat;
-    // int fbase = GetTop() - num_args;  // function index
-    // PushCFunction(_funcMsgHandler);  // push message handler
-    // Insert(fbase);  // put it under function and args
-    // lstat = PCall(num_args, num_ret, fbase);
-    // Remove(fbase);  // remove message handler from the stack
-    // return lstat;
-    return 0;
-}
 
 
 #endif // LUAEX_H
