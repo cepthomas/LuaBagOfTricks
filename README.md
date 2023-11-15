@@ -21,5 +21,5 @@ Generates C# and C code for the standard lua interop.
 
 Uses slightly modified versions of:
 - [template.lua](https://github.com/lunarmodules/Penlight). Removed dependencies on other penlight components including `LuaFileSystem`. It's standalone now. Used for interop.
-- The nifty [debugger.lua](https://github.com/slembcke/debugger.lua). It has companion functionality in `lbot.lua`.
+- The nifty [debugger.lua](https://github.com/slembcke/debugger.lua).
 

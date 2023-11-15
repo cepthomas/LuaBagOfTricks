@@ -1,7 +1,7 @@
 cls
 echo off
 
-:: Script to run lbot unit tests.
+:: Script to run LuaBagOfTricks unit tests.
 
 :: Set the lua path.
 set LUA_PATH=;;^

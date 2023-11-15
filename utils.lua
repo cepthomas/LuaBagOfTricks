@@ -28,6 +28,38 @@ function M.interp(str, vars)
     return (string.gsub(str, "({([^}]+)})", function(whole, i) return vars[i] or whole end))
 end
 
+---------------------------------------------------------------
+-- If using debugger, bind lua error() function to it. Optional terminal.
+-- @param use_dbgr Use debugger.
+-- @param use_term Use terminal for debugger.
+function M.config_error_handling(use_dbgr, use_term)
+    local have_dbgr = false
+    local og_error = error -- save original error function
+
+    if use_dbgr then
+        have_dbgr, dbg = pcall(require, "debugger")
+        if not have_dbgr then
+            print(dbg)
+        end
+    end
+
+    if dbg then 
+        -- sub debug handler
+        error = dbg.error
+    end
+
+    if dbg and use_term then
+        dbg.enable_color()
+    end
+
+    -- Not using debugger so make a global stub to keep breakpoints from yelling.
+    if not dbg then
+        function dbg() end
+    end
+
+    -- dbg()
+end
+
 -----------------------------------------------------------------------------
 -- Diagnostic.
 -- @param tbl What to dump.

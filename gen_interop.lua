@@ -9,10 +9,9 @@ local arg = {...}
 
 ------------------------------------------------
 local function usage()
-    print("Usage: gen_interop.lua (-d) (-t) [-ch|-md|-cs] [your_spec.lua] [your_outpath]")
+    print("Usage: gen_interop.lua (-d) (-t) [-ch|-cs] [your_spec.lua] [your_outpath]")
     print("  -ch generate c and h files")
     print("  -cs generate c# file")
-    print("  -md generate markdown file")
     print("  -d enable debugger if available")
     print("  -t use debugger terminal color")
 end
@@ -21,8 +20,7 @@ end
 local syntaxes =
 {
     ch = "interop_ch.lua",
-    cs = "interop_cs.lua",
-    md = "interop_md.lua"
+    cs = "interop_cs.lua"
 }
 
 -- Helper.
@@ -42,16 +40,16 @@ local syntax_fn = nil
 local syntax = nil
 local spec_fn = nil
 local out_path = nil
-local dbgr = false
-local term = false
+local use_dbgr = false
+local use_term = false
 
 for i = 1, #arg do
     local a = arg[i]
     local valid_arg = true
     if a:sub(1, 1) == '-' then
         opt = a:sub(2)
-        if opt == "d" then dbgr = true
-        elseif opt == "t" then term = true
+        if opt == "d" then use_dbgr = true
+        elseif opt == "t" then use_term = true
         else
             syntax = opt
             syntax_fn = syntaxes[syntax]
@@ -69,11 +67,8 @@ for i = 1, #arg do
 end
 if not spec_fn or not out_path then error("Missing output path") end
 
--- OK so far. Use lbot extras?
-local have_lbot, lbot = pcall(require, "lbot")
-if have_lbot then
-    lbot.config_error_handling(dbgr, term)
-end
+-- OK so far. Configure error function.
+ut.config_error_handling(use_dbgr, use_term)
 
 -- Get the specific flavor.
 local syntax_chunk, msg = loadfile(syntax_fn)
