@@ -1,6 +1,6 @@
 -- Generate lua interop for C, C#.
 
--- FUTURE support enums? markdown?
+-- Support enums? markdown?
 
 local ut = require('utils')
 

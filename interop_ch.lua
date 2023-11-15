@@ -105,9 +105,9 @@ static int luainterop_$(func.host_func_name)(lua_State* l)
 >end -- func.args
 >sargs = ut.strjoin(", ", arg_specs)
 >if #sargs > 0 then
-    $(c_ret_type) ret = luainterop_$(func.host_func_name)Work($(sargs));
+    $(c_ret_type) ret = luainterop_$(func.host_func_name)_Work($(sargs));
 >else
-    $(c_ret_type) ret = luainterop_$(func.host_func_name)Work();
+    $(c_ret_type) ret = luainterop_$(func.host_func_name)_Work();
 >end -- #sargs
     lua_push$(lua_ret_type)(l, ret);
     return 1;

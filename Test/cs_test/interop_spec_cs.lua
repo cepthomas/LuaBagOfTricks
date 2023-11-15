@@ -6,6 +6,7 @@ M.config =
 {
     lua_lib_name = "gen_lib",
     namespace = "MyLuaInteropLib",
+    class = "MyClass",
     add_refs = { "System.Diagnostics", },
 }
 

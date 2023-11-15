@@ -9,7 +9,7 @@ using KeraLuaEx;
 namespace MyLuaInteropLib
 {
     /// <summary>An example of how to create a C# library that can be loaded by Lua.</summary>
-    public partial class LuaInterop
+    public partial class MyClass
     {
         /// <summary>Main execution lua state.</summary>
         readonly Lua _l;
@@ -23,7 +23,7 @@ namespace MyLuaInteropLib
         /// Load the lua libs implemented in C#.
         /// </summary>
         /// <param name="l">Lua context.</param>
-        public LuaInterop(Lua l)
+        public MyClass(Lua l)
         {
             _l = l;
 
@@ -53,7 +53,7 @@ namespace MyLuaInteropLib
         /// </summary>
         /// <param name="arg_one"></param>
         /// <returns></returns>
-        bool MyLuaFunc3Work(double? arg_one)
+        bool MyLuaFunc3_Work(double? arg_one)
         {
             return arg_one < 100.0;
         }
@@ -62,7 +62,7 @@ namespace MyLuaInteropLib
         /// Do something with this.
         /// </summary>
         /// <returns></returns>
-        double FuncWithNoArgsWork()
+        double FuncWithNoArgs_Work()
         {
             return 1234.5;
         }

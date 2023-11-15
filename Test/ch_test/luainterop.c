@@ -111,7 +111,7 @@ static int luainterop_MyLuaFunc3(lua_State* l)
     else { luaL_error(l, "Bad arg type for arg_one"); }
 
     // Do the work. One result.
-    bool ret = luainterop_MyLuaFunc3Work(arg_one);
+    bool ret = luainterop_MyLuaFunc3_Work(arg_one);
     lua_pushboolean(l, ret);
     return 1;
 }
@@ -125,7 +125,7 @@ static int luainterop_FuncWithNoArgs(lua_State* l)
     // Get arguments
 
     // Do the work. One result.
-    double ret = luainterop_FuncWithNoArgsWork();
+    double ret = luainterop_FuncWithNoArgs_Work();
     lua_pushnumber(l, ret);
     return 1;
 }

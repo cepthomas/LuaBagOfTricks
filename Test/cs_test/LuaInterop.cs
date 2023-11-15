@@ -9,7 +9,7 @@ using System.Diagnostics;
 
 namespace MyLuaInteropLib
 {
-    public partial class LuaInterop
+    public partial class MyClass
     {
         #region Functions exported from lua for execution by host
         /// <summary>Lua export function: Tell me something good.</summary>
@@ -115,7 +115,7 @@ namespace MyLuaInteropLib
             else { ErrorHandler(new SyntaxException($"Bad arg type for {arg_one}")); return 0; }
 
             // Do the work. One result.
-            bool ret = MyLuaFunc3Work(arg_one);
+            bool ret = MyLuaFunc3_Work(arg_one);
             l.PushBoolean(ret);
             return 1;
         }
@@ -132,7 +132,7 @@ namespace MyLuaInteropLib
             // Get arguments
 
             // Do the work. One result.
-            double ret = FuncWithNoArgsWork();
+            double ret = FuncWithNoArgs_Work();
             l.PushNumber(ret);
             return 1;
         }
@@ -141,7 +141,7 @@ namespace MyLuaInteropLib
 
         #region Infrastructure
         // Bind functions to static instance.
-        static LuaInterop? _instance;
+        static MyClass? _instance;
         // Bound functions.
         static LuaFunction? _MyLuaFunc3;
         static LuaFunction? _FuncWithNoArgs;

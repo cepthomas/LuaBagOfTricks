@@ -24,7 +24,7 @@ using $(us);
 
 namespace $(config.namespace)
 {
-    public partial class LuaInterop
+    public partial class $(config.class)
     {
         #region Functions exported from lua for execution by host
 >for _, func in ipairs(lua_funcs) do
@@ -101,7 +101,7 @@ namespace $(config.namespace)
 >table.insert(arg_specs, arg.name)
 >end -- func.args
 >sargs = ut.strjoin(", ", arg_specs)
-            $(cs_ret_type) ret = $(func.host_func_name)Work($(sargs));
+            $(cs_ret_type) ret = $(func.host_func_name)_Work($(sargs));
             l.Push$(klex_ret_type)(ret);
             return 1;
         }
@@ -111,7 +111,7 @@ namespace $(config.namespace)
 
         #region Infrastructure
         // Bind functions to static instance.
-        static LuaInterop? _instance;
+        static $(config.class)? _instance;
         // Bound functions.
 >for _, func in ipairs(host_funcs) do
         static LuaFunction? _$(func.host_func_name);
