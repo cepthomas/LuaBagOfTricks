@@ -6,7 +6,7 @@
 #include "lauxlib.h"
 
 
-// TODO Eventually need implementation for these, like LuaEx.cs and TableEx.cs.
+// TODOF Eventually need implementation for these, like LuaEx.cs and TableEx.cs.
 
 typedef struct tableex
 {
