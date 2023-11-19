@@ -1,6 +1,6 @@
 -- Unit tests for the utils.
 
-ut = require("utils")
+local ut = require("utils")
 
 local M = {}
 
