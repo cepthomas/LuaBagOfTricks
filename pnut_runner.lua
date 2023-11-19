@@ -46,16 +46,17 @@ end
 -- Process each script filename.
 for i = 1, #arg do
     -- load script
-    local mfn = arg[i]
+    local scrfn = arg[i]
+    local mod = scrfn:gsub('.lua', '')
 
-    local mut = require(mfn) -- loads into global
+    local mut = require(mod) -- loads into global
     -- or
-    -- vv = loadfile(mfn) -- loads file
+    -- vv = loadfile(scrfn) -- loads file
     -- mut = vv() -- executes it returning the module
 
     if mut == nil then
         -- log a message and exit.
-        internal_error("Invalid file: " .. mfn)
+        internal_error("Invalid file: "..scrfn)
         app_fail = true
         goto done
     end
@@ -64,7 +65,7 @@ for i = 1, #arg do
     for k, v in pairs(mut) do
         if type(v) == "function" and k:match("suite_") then
             -- Found something to do. Run it in between optional test boilerplate.
-            pn.start_suite(k .. " in " .. mfn)
+            pn.start_suite(k.." in "..scrfn)
 
             local ok, result = pcall(mut["setup"], pn) -- optional
             if not ok then
@@ -112,13 +113,13 @@ else pf_run = "Test Fail" end
 -- Report.
 report_line("#------------------------------------------------------------------")
 report_line("# Unit Test Report")
-report_line("# Start Time: " .. start_date)
-report_line("# Duration: " .. dur)
-report_line("# Suites Run: " .. pn.suites_run)
-report_line("# Suites Failed: " .. pn.suites_failed)
-report_line("# Cases Run: " .. pn.cases_run)
-report_line("# Cases Failed: " .. pn.cases_failed)
-report_line("# Run Result: " .. pf_run)
+report_line("# Start Time: "..start_date)
+report_line("# Duration: "..dur)
+report_line("# Suites Run: "..pn.suites_run)
+report_line("# Suites Failed: "..pn.suites_failed)
+report_line("# Cases Run: "..pn.cases_run)
+report_line("# Cases Failed: "..pn.cases_failed)
+report_line("# Run Result: "..pf_run)
 report_line("#------------------------------------------------------------------")
 report_line("")
 
