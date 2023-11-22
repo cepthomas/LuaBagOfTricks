@@ -8,7 +8,7 @@ local M = {}
 
 -- .
 ------------------- Test classes -----------------------------------
-Animal = class(
+local Animal = class(
     function(a, name)
         a.name = name
     end)
