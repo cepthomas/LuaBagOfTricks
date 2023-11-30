@@ -43,3 +43,6 @@ luac.out
 .vs/
 *.obj
 *.bin
+
+# My adds.
+*.sublime-*
