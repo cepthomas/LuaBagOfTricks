@@ -6,7 +6,7 @@ require 'class'
 -- Create the namespace/module.
 local M = {}
 
--- .
+
 ------------------- Test classes -----------------------------------
 local Animal = class(
     function(a, name)
@@ -27,7 +27,7 @@ end
 -- inherit
 Cat = class(Animal,
     function(c, name, breed)
-        Animal.init(c, name) -- must init base!
+        Animal.__init(c, name) -- must init base!
         c.breed = breed
     end)
 
@@ -45,12 +45,12 @@ end
 
 -----------------------------------------------------------------------------
 function M.setup(pn)
-    -- pn.UT_INFO("setup()!!!")
+    pn.UT_INFO("setup()!!!")
 end
 
 -----------------------------------------------------------------------------
 function M.teardown(pn)
-    -- pn.UT_INFO("teardown()!!!")
+    pn.UT_INFO("teardown()!!!")
 end
 
 -----------------------------------------------------------------------------

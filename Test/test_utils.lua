@@ -38,9 +38,9 @@ function M.suite_utils(pn)
     pn.UT_EQUAL(l[7], "condimentum")
 
     -- Test dump_table().
-    tt = { aa="pt1", bb=90901, arr={"qwerty", 777, temb1={ jj="pt8", b=true, temb2={ num=1.517, dd="strdd" } }, intx=5432}}
+    tt = { aa="pt1", bb=90901, alist={"qwerty", 777, temb1={ jj="pt8", b=true, temb2={ num=1.517, dd="strdd" } }, intx=5432}}
     s = ut.dump_table_string(tt, 0, true)
-    pn.UT_EQUAL(#s, 250)
+    pn.UT_EQUAL(#s, 310)
 
 end
 
