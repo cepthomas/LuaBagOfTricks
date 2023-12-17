@@ -13,6 +13,8 @@ local tmpl_src =
 ///// Warning - this file is created by gen_interop.lua, do not edit. /////
 
 >local ut = require('utils')
+>local sx = require("stringex")
+
 using System;
 using System.IO;
 using System.Text;
@@ -39,7 +41,7 @@ namespace $(config.namespace)
 >for _, arg in ipairs(func.args or {}) do
 >table.insert(arg_specs, cs_types[arg.type] .. " " .. arg.name)
 >end -- func.args
->sargs = ut.strjoin(", ", arg_specs)
+>sargs = sx.strjoin(", ", arg_specs)
         public $(cs_ret_type)? $(func.host_func_name)($(sargs))
         {
             int numArgs = 0;
@@ -100,7 +102,7 @@ namespace $(config.namespace)
 >for _, arg in ipairs(func.args or {}) do
 >table.insert(arg_specs, arg.name)
 >end -- func.args
->sargs = ut.strjoin(", ", arg_specs)
+>sargs = sx.strjoin(", ", arg_specs)
             $(cs_ret_type) ret = $(func.host_func_name)_Work($(sargs));
             l.Push$(klex_ret_type)(ret);
             return 1;

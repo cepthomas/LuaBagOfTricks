@@ -12,6 +12,8 @@ local tmpl_src_c =
 [[
 ///// Warning - this file is created by gen_interop.lua, do not edit. /////
 >local ut = require('utils')
+>local sx = require("stringex")
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
@@ -40,7 +42,7 @@ local tmpl_src_c =
 >for _, arg in ipairs(func.args or {}) do
 >table.insert(arg_specs, c_types[arg.type] .. " " .. arg.name)
 >end -- func.args
->sargs = ut.strjoin(", ", arg_specs)
+>sargs = sx.strjoin(", ", arg_specs)
 >if #sargs > 0 then
 $(c_ret_type) luainterop_$(func.host_func_name)(lua_State* l, $(sargs))
 >else
@@ -103,7 +105,7 @@ static int luainterop_$(func.host_func_name)(lua_State* l)
 >for _, arg in ipairs(func.args or {}) do
 >table.insert(arg_specs, arg.name)
 >end -- func.args
->sargs = ut.strjoin(", ", arg_specs)
+>sargs = sx.strjoin(", ", arg_specs)
 >if #sargs > 0 then
     $(c_ret_type) ret = luainterop_$(func.host_func_name)_Work($(sargs));
 >else
@@ -144,6 +146,8 @@ local tmpl_src_h =
 
 ///// Warning - this file is created by gen_interop.lua, do not edit. /////
 >local ut = require('utils')
+>local sx = require("stringex")
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
@@ -172,7 +176,7 @@ local tmpl_src_h =
 >for _, arg in ipairs(func.args or {}) do
 >table.insert(arg_specs, c_types[arg.type] .. " " .. arg.name)
 >end -- func.args
->sargs = ut.strjoin(", ", arg_specs)
+>sargs = sx.strjoin(", ", arg_specs)
 >if #sargs > 0 then
 $(c_ret_type) luainterop_$(func.host_func_name)(lua_State* l, $(sargs));
 >else

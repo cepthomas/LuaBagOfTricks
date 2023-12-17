@@ -3,6 +3,8 @@
 -- Support enums? markdown?
 
 local ut = require('utils')
+local sx = require("stringex")
+
 
 -- Capture args.
 local arg = {...}
@@ -92,14 +94,19 @@ if ok then
     for k, v in pairs(result) do
         if k == "err" then
             -- Compile error, save the intermediate code.
-            err_fn = ut.strjoin(sep, { out_path, "err_dcode.lua" } )
+            err_fn = sx.strjoin(sep, { out_path, "err_dcode.lua" } )
             write_output(err_fn, result.dcode)
             error("Error in TMP file " .. err_fn .. ": " .. v)
         elseif k == "dcode" then
             -- covered above.
         else
             -- Ok, save the generated code.
-            outfn = ut.strjoin(sep, { out_path, k } )
+            if out_path:match"9$" then
+                outfn = out_path..k
+            else
+                outfn = sx.strjoin(sep, { out_path, k } )
+            end
+            print('>>>', sep, out_path, k)
             write_output(outfn, v)
             print("Generated code in " .. outfn)
         end

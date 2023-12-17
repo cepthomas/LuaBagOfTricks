@@ -8,7 +8,10 @@
 See the Test directory for an example of how to use it.
 
 ## utils
-Handy collected odds and ends for strings, tables, math, validation, errors, ...
+Handy collected odds and ends for tables, math, validation, errors, ...
+
+## stringex
+String functions. Some pieces-parts lifted from  [Penlight](https://github.com/lunarmodules/Penlight).
 
 ## template
 Slightly modified version of [template.lua](https://github.com/lunarmodules/Penlight).

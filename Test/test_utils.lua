@@ -1,5 +1,6 @@
 -- Unit tests for the utils.
 
+local sx = require("stringex")
 local ut = require("utils")
 
 local M = {}
@@ -20,14 +21,15 @@ function M.suite_utils(pn)
 
     -- Test strtrim().
     local s = "  I have whitespace    "
-    pn.UT_EQUAL(ut.strtrim(s), "I have whitespace")
+    pn.UT_EQUAL(sx.strtrim(s), "I have whitespace")
 
     -- Test strjoin().
     local l = {123, "orange monkey", 765.12, "BlueBlueBlue", "ano", "ther", 222}
-    pn.UT_EQUAL(ut.strjoin("XXX", l), "123XXXorange monkeyXXX765.12XXXBlueBlueBlueXXXanoXXXtherXXX222")
+    pn.UT_EQUAL(sx.strjoin("XXX", l), "123XXXorange monkeyXXX765.12XXXBlueBlueBlueXXXanoXXXtherXXX222")
 
     -- Test strsplit().
-    l = ut.strsplit(",", "Ut,turpis,adipiscing,luctus,,pharetra,condimentum, ")
+    s = "Ut,turpis,adipiscing,luctus,,pharetra,condimentum, "
+    l = sx.strsplit(s, ",")
     pn.UT_EQUAL(#l, 8, "Number of list entries")
     pn.UT_EQUAL(l[1], "Ut")
     pn.UT_EQUAL(l[2], "turpis")
