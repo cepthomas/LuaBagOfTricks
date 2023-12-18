@@ -13,7 +13,7 @@
 #include "luaex.h"
 
 #include "luainterop.h"
-#include "luainterop_work.h"
+#include "luainteropwork.h"
 #include <errno.h>
 
 //---------------- Call lua functions from host -------------//

@@ -20,8 +20,10 @@ using System.IO;
 using System.Text;
 using System.Collections.Generic;
 using KeraLuaEx;
+>if config.add_refs ~= nil then
 >for _, us in ipairs(config.add_refs) do
 using $(us);
+>end
 >end
 
 namespace $(config.namespace)
@@ -103,7 +105,7 @@ namespace $(config.namespace)
 >table.insert(arg_specs, arg.name)
 >end -- func.args
 >sargs = sx.strjoin(", ", arg_specs)
-            $(cs_ret_type) ret = $(func.host_func_name)_Work($(sargs));
+            $(cs_ret_type) ret = $(func.host_func_name)Work($(sargs));
             l.Push$(klex_ret_type)(ret);
             return 1;
         }

@@ -5,7 +5,7 @@ local M = {}
 M.config =
 {
     lua_lib_name = "gen_lib",
-    add_refs = { "<errno.h>", },
+    add_refs = { "<luaex.h>", },
 }
 
 M.lua_export_funcs =

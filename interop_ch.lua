@@ -25,12 +25,13 @@ local tmpl_src_c =
 #include "lua.h"
 #include "lualib.h"
 #include "lauxlib.h"
-#include "luaex.h"
 
 #include "luainterop.h"
-#include "luainterop_work.h"
+#include "luainteropwork.h"
+>if config.add_refs ~= nil then
 >for _, inc in ipairs(config.add_refs) do
 #include $(inc)
+>end
 >end
 
 //---------------- Call lua functions from host -------------//
@@ -64,8 +65,8 @@ $(c_ret_type) luainterop_$(func.host_func_name)(lua_State* l)
 >end -- func.args
 
     // Do the actual call.
-    int lstat = luaL_docall(l, num_args, num_ret); // optionally throws
-    if (lstat >= LUA_ERRRUN) { luaL_error(l, "luaL_docall() failed: %d", lstat); }
+    int lstat = lua_pcall(l, num_args, num_ret, 0); // optionally throws
+    if (lstat >= LUA_ERRRUN) { luaL_error(l, "lua_pcall() failed: %d", lstat); }
 
     // Get the results from the stack.
     $(c_ret_type) ret;
@@ -107,9 +108,9 @@ static int luainterop_$(func.host_func_name)(lua_State* l)
 >end -- func.args
 >sargs = sx.strjoin(", ", arg_specs)
 >if #sargs > 0 then
-    $(c_ret_type) ret = luainterop_$(func.host_func_name)_Work($(sargs));
+    $(c_ret_type) ret = luainteropwork_$(func.host_func_name)($(sargs));
 >else
-    $(c_ret_type) ret = luainterop_$(func.host_func_name)_Work();
+    $(c_ret_type) ret = luainteropwork_$(func.host_func_name)();
 >end -- #sargs
     lua_push$(lua_ret_type)(l, ret);
     return 1;
@@ -159,7 +160,6 @@ local tmpl_src_h =
 #include "lua.h"
 #include "lualib.h"
 #include "lauxlib.h"
-#include "luaex.h"
 
 //---------------- Call lua functions from host -------------//
 

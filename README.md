@@ -21,7 +21,6 @@ Used for generating language specific interop.
 ## debugger
 Slightly modified version of the nifty [debugger.lua](https://github.com/slembcke/debugger.lua).
 
-
 ## interop
 Generates C# and C code for the standard lua interop. The ``.\Test projects` demonstrate how to use it.
 
@@ -40,16 +39,16 @@ M.config =
 {
     -- General
     lua_lib_name = "gen_lib", -- as used by luaL_requiref() / RequireF()
-    -- C# specific
+    ----- C# specific
     namespace = "MyLib",
     class = "MyClass",
-    add_refs = -- using
+    add_refs = -- OPT -> using
     {
         "System.Diagnostics",
         "OtherAssembly",
     },
-    -- C specific
-    add_refs = -- #include
+    ----- C specific
+    add_refs = -- OPT -> #include
     {
         "<errno.h>",
         "<other_stuff.h>",
