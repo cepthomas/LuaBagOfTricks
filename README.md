@@ -27,10 +27,10 @@ Generates C# and C code for the standard lua interop. The ``.\Test projects` dem
 How to define an API:
 ``` Lua
 -- Example spec for generating interop, with doc comments.
--- Supported arg and return value types: B=boolean I=integer N=number S=string T=TableEx.
+-- Supported arg and return value types: B=boolean I=integer N=number S=string T=tableex.
 -- OPT are optional fields.
 -- Return type is required, void not supported.
--- The C version needs some more infrastructure to support tables.
+-- Note: the C version needs some more infrastructure to support T.
 
 local M = {}
 

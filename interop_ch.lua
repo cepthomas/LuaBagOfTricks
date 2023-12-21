@@ -192,8 +192,8 @@ void luainterop_Load(lua_State* l);
 ]]
 
 -- Type name conversions.
-local lua_types = { B = "boolean", I = "integer", N = "number", S ="string", T = "tableex" }
-local c_types = { B = "bool", I = "int", N = "double", S = "char*", T = "tableex*" }
+local lua_types = { B = "boolean", I = "integer", N = "number", S ="string" }
+local c_types = { B = "bool", I = "int", N = "double", S = "char*" }
 
 -- Make the output content.
 local tmpl_env =
