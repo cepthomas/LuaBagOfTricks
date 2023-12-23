@@ -11,6 +11,7 @@
 #include "lua.h"
 #include "lualib.h"
 #include "lauxlib.h"
+#include "luaex.h"
 
 #include "luainterop.h"
 #include "luainteropwork.h"
@@ -36,8 +37,8 @@ int luainterop_MyLuaFunc(lua_State* l, char* arg_one, int arg_two, int arg_three
     num_args++;
 
     // Do the actual call.
-    int lstat = lua_pcall(l, num_args, num_ret, 0);
-    if (lstat >= LUA_ERRRUN) { luaL_error(l, "lua_pcall() failed: %d", lstat); }
+    int lstat = luaex_docall(l, num_args, num_ret);
+    if (lstat >= LUA_ERRRUN) { luaL_error(l, "luaex_docall() failed: %d", lstat); }
 
     // Get the results from the stack.
     int ret;
@@ -61,8 +62,8 @@ double luainterop_MyLuaFunc2(lua_State* l, bool arg_one)
     num_args++;
 
     // Do the actual call.
-    int lstat = lua_pcall(l, num_args, num_ret, 0);
-    if (lstat >= LUA_ERRRUN) { luaL_error(l, "lua_pcall() failed: %d", lstat); }
+    int lstat = luaex_docall(l, num_args, num_ret);
+    if (lstat >= LUA_ERRRUN) { luaL_error(l, "luaex_docall() failed: %d", lstat); }
 
     // Get the results from the stack.
     double ret;
@@ -84,8 +85,8 @@ double luainterop_NoArgsFunc(lua_State* l)
     // Push arguments.
 
     // Do the actual call.
-    int lstat = lua_pcall(l, num_args, num_ret, 0);
-    if (lstat >= LUA_ERRRUN) { luaL_error(l, "lua_pcall() failed: %d", lstat); }
+    int lstat = luaex_docall(l, num_args, num_ret);
+    if (lstat >= LUA_ERRRUN) { luaL_error(l, "luaex_docall() failed: %d", lstat); }
 
     // Get the results from the stack.
     double ret;

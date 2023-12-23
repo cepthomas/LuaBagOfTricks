@@ -9,7 +9,6 @@
 #include "lua.h"
 #include "lualib.h"
 #include "lauxlib.h"
-#include "luaex.h"
 #include "luainterop.h"
 
 // Definition of work functions.

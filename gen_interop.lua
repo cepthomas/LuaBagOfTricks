@@ -1,6 +1,6 @@
 -- Generate lua interop for C, C#.
 
--- TODO Add table type (tableex) similar to LuaEx.cs/TableEx.cs. See structinator, 
+-- TODO3 Add table type (tableex) similar to LuaEx.cs/TableEx.cs. See structinator, 
 
 -- Later maybe: enums, markdown, ...
 

@@ -9,7 +9,6 @@
 #include "lua.h"
 #include "lualib.h"
 #include "lauxlib.h"
-#include "luaex.h"
 #include "luainterop.h"
 
 int main(int argc, char* argv[])

@@ -112,3 +112,10 @@ M.host_export_funcs =
 
 return M
 ```
+
+## c dir
+
+Several functions to support the C side of lua applications:
+- Rudimentary logger.
+- Return error information from the lua script on call.
+- Some general diagnostics.

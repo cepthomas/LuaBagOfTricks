@@ -25,6 +25,7 @@ local tmpl_src_c =
 #include "lua.h"
 #include "lualib.h"
 #include "lauxlib.h"
+#include "luaex.h"
 
 #include "luainterop.h"
 #include "luainteropwork.h"
@@ -65,8 +66,8 @@ $(c_ret_type) luainterop_$(func.host_func_name)(lua_State* l)
 >end -- func.args
 
     // Do the actual call.
-    int lstat = lua_pcall(l, num_args, num_ret, 0);
-    if (lstat >= LUA_ERRRUN) { luaL_error(l, "lua_pcall() failed: %d", lstat); }
+    int lstat = luaex_docall(l, num_args, num_ret);
+    if (lstat >= LUA_ERRRUN) { luaL_error(l, "luaex_docall() failed: %d", lstat); }
 
     // Get the results from the stack.
     $(c_ret_type) ret;

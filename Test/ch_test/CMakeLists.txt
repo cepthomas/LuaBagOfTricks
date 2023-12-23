@@ -4,20 +4,24 @@ project(interop_gen_c)
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_CXX_STANDARD 11)
 set(LUA_SRC "C:/Program Files/Lua")
+set(C_SRC "../../c")
 
 # needs -g to debug.
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall -Wno-deprecated-declarations -Wno-unused-variable -Wno-unused-but-set-variable")
 
 include_directories(
+    ${C_SRC}
     ${LUA_SRC}/include
     )
 
 # Source files.
 add_executable(interop_gen_c
     main.c
-    luaex.c
     luainterop.c
     luainteropwork.c
+    ${C_SRC}/diag.c
+    ${C_SRC}/logger.c
+    ${C_SRC}/luaex.c
     ${LUA_SRC}/src/lapi.c
     ${LUA_SRC}/src/lauxlib.c
     ${LUA_SRC}/src/lbaselib.c
