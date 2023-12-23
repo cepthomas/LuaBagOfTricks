@@ -1,4 +1,5 @@
 ///// Warning - this file is created by gen_interop.lua, do not edit. /////
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
@@ -10,15 +11,14 @@
 #include "lua.h"
 #include "lualib.h"
 #include "lauxlib.h"
-#include "luaex.h"
 
 #include "luainterop.h"
 #include "luainteropwork.h"
-#include <errno.h>
+#include "another.h"
 
 //---------------- Call lua functions from host -------------//
 
-tableex* luainterop_MyLuaFunc(lua_State* l, char* arg_one, int arg_two, tableex* arg_three)
+int luainterop_MyLuaFunc(lua_State* l, char* arg_one, int arg_two, int arg_three)
 {
     int num_args = 0;
     int num_ret = 1;
@@ -32,17 +32,17 @@ tableex* luainterop_MyLuaFunc(lua_State* l, char* arg_one, int arg_two, tableex*
     num_args++;
     lua_pushinteger(l, arg_two);
     num_args++;
-    lua_pushtableex(l, arg_three);
+    lua_pushinteger(l, arg_three);
     num_args++;
 
     // Do the actual call.
-    int lstat = luaL_docall(l, num_args, num_ret); // optionally throws
-    if (lstat >= LUA_ERRRUN) { luaL_error(l, "luaL_docall() failed: %d", lstat); }
+    int lstat = lua_pcall(l, num_args, num_ret, 0);
+    if (lstat >= LUA_ERRRUN) { luaL_error(l, "lua_pcall() failed: %d", lstat); }
 
     // Get the results from the stack.
-    tableex* ret;
-    if (lua_totableex(l, -1)) { ret = lua_totableex(l, -1); }
-    else { luaL_error(l, "Return is not a tableex*"); }
+    int ret;
+    if (lua_tointeger(l, -1)) { ret = lua_tointeger(l, -1); }
+    else { luaL_error(l, "Return is not a int"); }
     lua_pop(l, num_ret); // Clean up results.
     return ret;
 }
@@ -61,8 +61,8 @@ double luainterop_MyLuaFunc2(lua_State* l, bool arg_one)
     num_args++;
 
     // Do the actual call.
-    int lstat = luaL_docall(l, num_args, num_ret); // optionally throws
-    if (lstat >= LUA_ERRRUN) { luaL_error(l, "luaL_docall() failed: %d", lstat); }
+    int lstat = lua_pcall(l, num_args, num_ret, 0);
+    if (lstat >= LUA_ERRRUN) { luaL_error(l, "lua_pcall() failed: %d", lstat); }
 
     // Get the results from the stack.
     double ret;
@@ -84,8 +84,8 @@ double luainterop_NoArgsFunc(lua_State* l)
     // Push arguments.
 
     // Do the actual call.
-    int lstat = luaL_docall(l, num_args, num_ret); // optionally throws
-    if (lstat >= LUA_ERRRUN) { luaL_error(l, "luaL_docall() failed: %d", lstat); }
+    int lstat = lua_pcall(l, num_args, num_ret, 0);
+    if (lstat >= LUA_ERRRUN) { luaL_error(l, "lua_pcall() failed: %d", lstat); }
 
     // Get the results from the stack.
     double ret;
@@ -99,7 +99,7 @@ double luainterop_NoArgsFunc(lua_State* l)
 //---------------- Call host functions from Lua -------------//
 
 // Host export function: fooga
-// Lua arg: "arg_one">kakakakaka
+// Lua arg: arg_one kakakakaka
 // Lua return: bool required return value
 // @param[in] l Internal lua state.
 // @return Number of lua return values.
@@ -111,7 +111,7 @@ static int luainterop_MyLuaFunc3(lua_State* l)
     else { luaL_error(l, "Bad arg type for arg_one"); }
 
     // Do the work. One result.
-    bool ret = luainterop_MyLuaFunc3_Work(arg_one);
+    bool ret = luainteropwork_MyLuaFunc3(arg_one);
     lua_pushboolean(l, ret);
     return 1;
 }
@@ -125,7 +125,7 @@ static int luainterop_FuncWithNoArgs(lua_State* l)
     // Get arguments
 
     // Do the work. One result.
-    double ret = luainterop_FuncWithNoArgs_Work();
+    double ret = luainteropwork_FuncWithNoArgs();
     lua_pushnumber(l, ret);
     return 1;
 }

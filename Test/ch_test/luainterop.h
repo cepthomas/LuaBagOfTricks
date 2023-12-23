@@ -2,6 +2,7 @@
 #define LUAINTEROP_H
 
 ///// Warning - this file is created by gen_interop.lua, do not edit. /////
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
@@ -13,7 +14,6 @@
 #include "lua.h"
 #include "lualib.h"
 #include "lauxlib.h"
-#include "luaex.h"
 
 //---------------- Call lua functions from host -------------//
 
@@ -22,8 +22,8 @@
 // @param[in] arg_one some strings
 // @param[in] arg_two a nice integer
 // @param[in] arg_three 
-// @return tableex* a returned thing
-tableex* luainterop_MyLuaFunc(lua_State* l, char* arg_one, int arg_two, tableex* arg_three);
+// @return int a returned thing
+int luainterop_MyLuaFunc(lua_State* l, char* arg_one, int arg_two, int arg_three);
 
 // Lua export function: wooga wooga
 // @param[in] l Internal lua state.

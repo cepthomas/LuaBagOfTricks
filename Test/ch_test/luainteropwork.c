@@ -14,12 +14,12 @@
 
 // Definition of work functions.
 
-bool luainterop_MyLuaFunc3_Work(double arg_one)
+bool luainteropwork_MyLuaFunc3(double arg_one)
 {
     return arg_one > 100.0;
 }
 
-double luainterop_FuncWithNoArgs_Work()
+double luainteropwork_FuncWithNoArgs()
 {
     return 123.4;
 }

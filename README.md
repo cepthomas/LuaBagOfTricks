@@ -71,7 +71,7 @@ M.lua_export_funcs =
             },
             {
                 name = "arg_two",
-                type = "T",
+                type = "I",
                 --description = "missing desc" --OPT
             },
             -- etc for other arguments
@@ -103,7 +103,7 @@ M.host_export_funcs =
         },
         ret =
         {
-            type = "T",
+            type = "I",
             description = "a returned thing" --OPT
         }
     },

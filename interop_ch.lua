@@ -65,7 +65,7 @@ $(c_ret_type) luainterop_$(func.host_func_name)(lua_State* l)
 >end -- func.args
 
     // Do the actual call.
-    int lstat = lua_pcall(l, num_args, num_ret, 0); // optionally throws
+    int lstat = lua_pcall(l, num_args, num_ret, 0);
     if (lstat >= LUA_ERRRUN) { luaL_error(l, "lua_pcall() failed: %d", lstat); }
 
     // Get the results from the stack.

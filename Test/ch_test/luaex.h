@@ -6,11 +6,9 @@
 #include "lauxlib.h"
 
 
-// TODO Eventually need implementation for these, similar to LuaEx.cs/TableEx.cs.
-
 typedef struct tableex
 {
-  int something;
+    int something;
 } tableex;
 
 // Push a table onto lua stack.

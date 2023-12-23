@@ -5,7 +5,7 @@ local M = {}
 M.config =
 {
     lua_lib_name = "gen_lib",
-    add_refs = { "<luaex.h>", },
+    add_refs = { "\"another.h\"" },
 }
 
 M.lua_export_funcs =
@@ -28,12 +28,12 @@ M.lua_export_funcs =
             },
             {
                 name = "arg_three",
-                type = "T",
+                type = "I",
             },
         },
         ret =
         {
-            type = "T",
+            type = "I",
             description = "a returned thing"
         }
     },

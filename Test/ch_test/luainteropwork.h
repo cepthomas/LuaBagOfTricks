@@ -18,8 +18,8 @@
 
 // Declaration of work functions.
 
-bool luainterop_MyLuaFunc3_Work(double arg_one);
+bool luainteropwork_MyLuaFunc3(double arg_one);
 
-double luainterop_FuncWithNoArgs_Work();
+double luainteropwork_FuncWithNoArgs();
 
 #endif // LUAINTEROP_WORK_H
