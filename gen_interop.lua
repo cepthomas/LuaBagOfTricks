@@ -1,7 +1,5 @@
 -- Generate lua interop for C, C#.
 
--- TODO3 Add table type (tableex) similar to LuaEx.cs/TableEx.cs. See structinator, 
-
 -- Later maybe: enums, markdown, ...
 
 local ut = require('utils')

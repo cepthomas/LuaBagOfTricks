@@ -5,6 +5,7 @@
 #include "lualib.h"
 #include "lauxlib.h"
 
+// TODO3 Add tableex type support similar to LuaEx.cs/TableEx.cs.
 
 typedef struct tableex
 {

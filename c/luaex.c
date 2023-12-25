@@ -13,22 +13,9 @@
 
 
 //--------------------------------------------------------//
-tableex _t;
 
 // Capture error stack trace Message handler used to run all chunks.
-static int p_handler(lua_State* L);
-
-
-//--------------------------------------------------------//
-void luaex_pushtableex(lua_State* l, tableex* tbl)
-{
-}
-
-//--------------------------------------------------------//
-tableex* luaex_totableex(lua_State* l, int ind)
-{
-    return &_t;
-}
+static int p_handler(lua_State* l);
 
 //--------------------------------------------------------//
 int luaex_docall(lua_State* l, int narg, int nres)
@@ -47,13 +34,13 @@ int luaex_docall(lua_State* l, int narg, int nres)
 
 //--------------------------------------------------------//
 // Capture error stack trace Message handler used to run all chunks.
-static int p_handler(lua_State* L)
+static int p_handler(lua_State* l)
 {
-    char* msg = lua_tostring(L, 1);
+    char* msg = lua_tostring(l, 1);
     if (msg == NULL)  // is error object not a string?
     {
         // Does it have a metamethod that produces a string?
-        if (luaL_callmeta(L, 1, "__tostring") && lua_type(L, -1) == LUA_TSTRING)
+        if (luaL_callmeta(l, 1, "__tostring") && lua_type(l, -1) == LUA_TSTRING)
         {
             // that is the message
             return 1;
@@ -61,43 +48,25 @@ static int p_handler(lua_State* L)
         else
         {
             msg = "Error object is a not a string";
-            lua_pushstring(L, msg);
+            lua_pushstring(l, msg);
         }
     }
 
     // Append and return a standard traceback.
-    luaL_traceback(L, L, msg, 1);  
+    luaL_traceback(l, l, msg, 1);  
     return 1;
 }
 
 
+//--------------------------------------------------------//
+void luaex_pushtableex(lua_State* l, tableex* tbl)
+{
+}
 
-// /// <summary>
-// /// Loads and runs the given file.
-// /// </summary>
-// /// <param name="file"></param>
-// /// <returns>Returns false if there are no errors or true in case of errors.</returns>
-// public bool DoFile(string file) TODO2
-// {
-//     bool err;
-//     LuaStatus lstat = LoadFile(file);
-//     err = EvalLuaStatus(lstat);
-//     lstat = DoCall(0, LUA_MULTRET);
-//     err |= EvalLuaStatus(lstat);
-//     return err;
-// }
-// /// <summary>
-// /// Loads and runs the given string.
-// /// </summary>
-// /// <param name="chunk"></param>
-// /// <returns>Returns false if there are no errors or true in case of errors.</returns>
-// public bool DoString(string chunk) TODO2
-// {
-//     bool err;
-//     LuaStatus lstat = LoadString(chunk);
-//     err = EvalLuaStatus(lstat);
-//     lstat = DoCall(0, LUA_MULTRET);
-//     err |= EvalLuaStatus(lstat);
-//     return err;
-// }
+//--------------------------------------------------------//
+tableex _t;
+tableex* luaex_totableex(lua_State* l, int ind)
+{
+    return &_t;
+}
 

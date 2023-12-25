@@ -29,14 +29,4 @@ int logger_SetFilters(log_level_t level);
 // @return Status.
 int logger_Log(log_level_t level, const char* format, ...);
 
-
-// Helper macro.
-#define LOG_ERROR(fmt, ...) logger_Log(LVL_ERROR, fmt, ##__VA_ARGS__);
-
-// Helper macro.
-#define LOG_INFO(fmt, ...)  logger_Log(LVL_INFO, fmt, ##__VA_ARGS__);
-
-// Helper macro.
-#define LOG_DEBUG(fmt, ...) logger_Log(LVL_DEBUG, fmt, ##__VA_ARGS__);
-
 #endif // LOGGER_H

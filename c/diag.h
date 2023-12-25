@@ -13,34 +13,29 @@
 #include "logger.h"
 
 
-
 //----------------------- Diagnostics -----------------------------//
 
 // Diagnostic utility.
-int diag_DumpStack(lua_State* L, const char* info);
+// @param[in] l Internal lua state.
+// @param[in] info User info.
+// @return int Status.
+int diag_DumpStack(lua_State* l, const char* info);
 
 // Diagnostic utility.
-int diag_DumpTable(lua_State* L, const char* tbl_name);
-
-// // Diagnostic utility.
-// void diag_LuaError(lua_State* L, const char* fn, int line, int err, const char* msg);
+// @param[in] l Internal lua state.
+// @param[in] tbl_name User info.
+// @return int Status.
+int diag_DumpTable(lua_State* l, const char* tbl_name);
 
 // Check/log stack size.
-void diag_EvalStack(lua_State* L, int expected);
+// @param[in] l Internal lua state.
+// @param[in] expected What it should be.
+// @return int Status.
+void diag_EvalStack(lua_State* l, int expected);
 
-// Make it readable.
-const char* diag_LuaErrToString(int err);
-
-// #define EVAL_STACK(L, expected) {     int num = lua_gettop(L);     if (num != expected)     {         LOG_DEBUG("Expected %d stack but is %d", expected, num);     } }
-
-// // Helper macro to check then handle error.
-// #define CHK_LUA_ERROR(L, err, msg)  if(err >= LUA_ERRRUN) { diag_LuaError(L, __FILE__, __LINE__, err, msg); }
-
-//----------------------- Utils -----------------------------//
-
-// // Interface to lua_pcall, but sets appropriate message function and C-signal handler. Used to run all chunks.
-// int diag_DoCall(lua_State* L, int narg, int nres);
-
-
+// Convert a status to string.
+// @param[in] err Status to examine.
+// @return String or NULL if not valid.
+const char* diag_LuaStatusToString(int err);
 
 #endif // C_DIAG_H

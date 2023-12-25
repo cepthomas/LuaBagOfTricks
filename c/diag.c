@@ -12,26 +12,26 @@
 
 
 //--------------------------------------------------------//
-int diag_DumpStack(lua_State* L, const char* info)
+int diag_DumpStack(lua_State* l, const char* info)
 {
     static char buff[BUFF_LEN];
 
-    LOG_DEBUG("Dump stack:%s (L:%p)", info, L);
+    logger_Log(LVL_DEBUG, "Dump stack:%s (l:%p)", info, l);
 
-    for(int i = lua_gettop(L); i >= 1; i--)
+    for(int i = lua_gettop(l); i >= 1; i--)
     {
-        int t = lua_type(L, i);
+        int t = lua_type(l, i);
 
         switch(t)
         {
             case LUA_TSTRING:
-                snprintf(buff, BUFF_LEN-1, "index:%d string:%s ", i, lua_tostring(L, i));
+                snprintf(buff, BUFF_LEN-1, "index:%d string:%s ", i, lua_tostring(l, i));
                 break;
             case LUA_TBOOLEAN:
-                snprintf(buff, BUFF_LEN-1, "index:%d bool:%s ", i, lua_toboolean(L, i) ? "true" : "false");
+                snprintf(buff, BUFF_LEN-1, "index:%d bool:%s ", i, lua_toboolean(l, i) ? "true" : "false");
                 break;
             case LUA_TNUMBER:
-                snprintf(buff, BUFF_LEN-1, "index:%d number:%g ", i, lua_tonumber(L, i));
+                snprintf(buff, BUFF_LEN-1, "index:%d number:%g ", i, lua_tonumber(l, i));
                 break;
             case LUA_TNIL:
                 snprintf(buff, BUFF_LEN-1, "index:%d nil", i);
@@ -44,109 +44,68 @@ int diag_DumpStack(lua_State* L, const char* info)
             case LUA_TTHREAD:
             case LUA_TUSERDATA:
             case LUA_TLIGHTUSERDATA:
-                snprintf(buff, BUFF_LEN-1, "index:%d %s:%p ", i, lua_typename(L, t), lua_topointer(L, i));
+                snprintf(buff, BUFF_LEN-1, "index:%d %s:%p ", i, lua_typename(l, t), lua_topointer(l, i));
                 break;
             default:
                 snprintf(buff, BUFF_LEN-1, "index:%d type:%d", i, t);
                 break;
         }
     
-        LOG_DEBUG("    %s", buff);
+        logger_Log(LVL_DEBUG, "    %s", buff);
     }
 
     return 0;
 }
 
 //--------------------------------------------------------//
-int diag_DumpTable(lua_State* L, const char* tbl_name)
+int diag_DumpTable(lua_State* l, const char* tbl_name)
 {
-    LOG_DEBUG("table:%s", tbl_name);
+    logger_Log(LVL_DEBUG, "table:%s", tbl_name);
 
     // Put a nil key on stack.
-    lua_pushnil(L);
+    lua_pushnil(l);
 
     // key(-1) is replaced by the next key(-1) in table(-2).
-    while (lua_next(L, -2) != 0)
+    while (lua_next(l, -2) != 0)
     {
         // Get key(-2) name.
-        const char* kname = lua_tostring(L, -2);
+        const char* kname = lua_tostring(l, -2);
 
         // Get type of value(-1).
-        const char* type = luaL_typename(L, -1);
-        LOG_DEBUG("    %s=%s", kname, type);
+        const char* type = luaL_typename(l, -1);
+        logger_Log(LVL_DEBUG, "    %s=%s", kname, type);
 
         // Remove value(-1), now key on top at(-1).
-        lua_pop(L, 1);
+        lua_pop(l, 1);
     }
     
     return 0;
 }
 
 //--------------------------------------------------------//
-void diag_EvalStack(lua_State* L, int expected)
+void diag_EvalStack(lua_State* l, int expected)
 {
-    int num = lua_gettop(L);
+    int num = lua_gettop(l);
     if (num != expected)
     {
-        LOG_DEBUG("Expected %d stack but is %d", expected, num);
+        logger_Log(LVL_DEBUG, "Expected %d stack but is %d", expected, num);
     }
 }
 
-
-// //--------------------------------------------------------//
-// void diag_LuaError(lua_State* L, const char* fn, int line, int err, const char* msg) TODO1 consolidate errors
-// {
-//     static char buff[BUFF_LEN];
-
-//     if (err >= LUA_ERRRUN && err <= LUA_ERRFILE)
-//     {
-//         LOG_DEBUG("%s:%s", diag_LuaErrToString(err), msg);
-
-//         // Dump trace.
-//         luaL_traceback(L, L, NULL, 1);
-//         snprintf(buff, BUFF_LEN-1, "%s | %s | %s", lua_tostring(L, -1), lua_tostring(L, -2), lua_tostring(L, -3));
-//         LOG_DEBUG(buff);
-
-//         lua_error(L); // never returns
-//     }
-// }
-
-// public bool EvalLuaStatus(LuaStatus lstat, [CallerFilePath] string file = "", [CallerLineNumber] int line = 0)
-// {
-//     bool hasError = false;
-//     if (lstat >= LuaStatus.ErrRun)
-//     {
-//         hasError = true;
-//         // Get error message on stack.
-//         string s;
-//         if (GetTop() > 0)
-//         {
-//             s = ToString(-1)!.Trim();
-//             Pop(1); // remove
-//         }
-//         else
-//         {
-//             s = "No error message!!!";
-//         }
-//         var serror = $"{file}({line}) [{lstat}]: {s}";
-//     }
-//     return hasError;
-// }
-
-
 //--------------------------------------------------------//
-const char* diag_LuaErrToString(int err)
+const char* diag_LuaStatusToString(int err)
 {
-    const char* serr = "UNKNOWN";
+    const char* serr = NULL;
     switch(err)
     {
-        case LUA_OK: serr = "OK"; break;
-        case LUA_YIELD: serr = "YIELD"; break;
-        case LUA_ERRRUN: serr = "ERRRUN"; break;
-        case LUA_ERRSYNTAX: serr = "ERRSYNTAX"; break; // syntax error during pre-compilation
-        case LUA_ERRMEM: serr = "ERRMEM"; break; // memory allocation error
-        case LUA_ERRERR: serr = "ERRERR"; break; // error while running the error handler function
-        case LUA_ERRFILE: serr = "ERRFILE"; break; // couldn't open the given file
+        case LUA_OK: serr = "LUA_OK"; break;
+        case LUA_YIELD: serr = "LUA_YIELD"; break;
+        case LUA_ERRRUN: serr = "LUA_ERRRUN"; break;
+        case LUA_ERRSYNTAX: serr = "LUA_ERRSYNTAX"; break; // syntax error during pre-compilation
+        case LUA_ERRMEM: serr = "LUA_ERRMEM"; break; // memory allocation error
+        case LUA_ERRERR: serr = "LUA_ERRERR"; break; // error while running the error handler function
+        case LUA_ERRFILE: serr = "LUA_ERRFILE"; break; // couldn't open the given file
+        default: break; // nothing for now.
     }
     return serr;
 }
