@@ -36,7 +36,6 @@ namespace MyLuaInteropLib
         }
         #endregion
 
-        #region Bound lua work functions
         /// <summary>
         /// Interop error handler. Do something with this - log it or other.
         /// </summary>
@@ -49,7 +48,7 @@ namespace MyLuaInteropLib
         }
 
         /// <summary>
-        /// Do something with this.
+        /// Bound lua work function.
         /// </summary>
         /// <param name="arg_one"></param>
         /// <returns></returns>
@@ -59,13 +58,12 @@ namespace MyLuaInteropLib
         }
 
         /// <summary>
-        /// Do something with this.
+        /// Bound lua work function.
         /// </summary>
         /// <returns></returns>
         double FuncWithNoArgs_Work()
         {
             return 1234.5;
         }
-        #endregion
     }
 }

@@ -43,7 +43,6 @@ int logger_SetFilters(log_level_t level)
 }
 
 //--------------------------------------------------------//
-// int logger_Log(log_level_t level, const char* fn, int line, const char* format, ...)
 int logger_Log(log_level_t level, const char* format, ...)
 {
     static char buff[LOG_LINE_LEN];

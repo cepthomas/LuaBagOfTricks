@@ -7,6 +7,7 @@ local tmpl = require('template')
 local args = {...}
 local spec = args[1]
 
+-- TODO1 needs user supplied ErrorHandler() like cs. Replace luaL_error()
 
 local tmpl_src_c =
 [[
