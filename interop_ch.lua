@@ -86,12 +86,12 @@ $(c_ret_type) luainterop_$(func.host_func_name)(lua_State* l)
 >local lua_ret_type = lua_types[func.ret.type]
 >local c_ret_type = c_types[func.ret.type]
 // Host export function: $(func.description or "")
+// @param[in] l Internal lua state.
+// @return Number of lua return values.
 >for _, arg in ipairs(func.args or {}) do
 // Lua arg: $(arg.name) $(arg.description or "")
 >end -- func.args
 // Lua return: $(c_ret_type) $(func.ret.description or "")
-// @param[in] l Internal lua state.
-// @return Number of lua return values.
 static int luainterop_$(func.host_func_name)(lua_State* l)
 {
     // Get arguments
