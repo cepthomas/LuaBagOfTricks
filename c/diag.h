@@ -30,7 +30,6 @@ int diag_DumpTable(lua_State* l, const char* tbl_name);
 // Check/log stack size.
 // @param[in] l Internal lua state.
 // @param[in] expected What it should be.
-// @return int Status.
 void diag_EvalStack(lua_State* l, int expected);
 
 // Convert a status to string.

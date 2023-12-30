@@ -47,9 +47,6 @@ int logger_Log(log_level_t level, const char* format, ...)
 {
     static char buff[LOG_LINE_LEN];
 
-    // const char* pfn = strrchr(fn, '\\');
-    // pfn = pfn == NULL ? fn : pfn + 1;
-
     // Check filters.
     if(level >= p_level)
     {
@@ -67,6 +64,8 @@ int logger_Log(log_level_t level, const char* format, ...)
         }
 
         fprintf(p_fp, "%03.6f,%s,%s\n", p_CurrentSec() - p_start_sec, slevel, buff);
+        // const char* pfn = strrchr(fn, '\\');
+        // pfn = pfn == NULL ? fn : pfn + 1;
         // fprintf(p_fp, "%03.6f,%s,%s(%d),%s\n", p_CurrentSec() - p_start_sec, slevel, pfn, line, buff);
         fflush(p_fp);
     }

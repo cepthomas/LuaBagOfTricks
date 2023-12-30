@@ -67,6 +67,7 @@ for i = 1, #arg do
 
     if not valid_arg then error("Invalid command line arg: "..a) end
 end
+-- print(spec_fn, out_path)
 if not spec_fn or not out_path then error("Missing output path") end
 
 -- OK so far. Configure error function.
@@ -106,7 +107,7 @@ if ok then
             else
                 outfn = sx.strjoin(sep, { out_path, k } )
             end
-            print('>>>', sep, out_path, k)
+            -- print('>>>', sep, out_path, k)
             write_output(outfn, v)
             print("Generated code in " .. outfn)
         end

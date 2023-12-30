@@ -7,9 +7,9 @@ local tmpl = require('template')
 local args = {...}
 local spec = args[1]
 
--- TODO1 needs user supplied ErrorHandler() like cs. Replace luaL_error()
 
-local tmpl_src_c =
+----------------------------------------------------------------------------
+local tmpl_interop_c =
 [[
 ///// Warning - this file is created by gen_interop.lua, do not edit. /////
 >local ut = require('utils')
@@ -104,7 +104,7 @@ static int luainterop_$(func.host_func_name)(lua_State* l)
 >end -- func.args
 
     // Do the work. One result.
->local arg_specs = {}
+>local arg_specs = { "l" }
 >for _, arg in ipairs(func.args or {}) do
 >table.insert(arg_specs, arg.name)
 >end -- func.args
@@ -118,7 +118,7 @@ static int luainterop_$(func.host_func_name)(lua_State* l)
     return 1;
 }
 
->end -- lua_funcs
+>end -- host_funcs
 
 //---------------- Infrastructure -------------//
 
@@ -142,7 +142,8 @@ void luainterop_Load(lua_State* l)
 }
 ]]
 
-local tmpl_src_h =
+----------------------------------------------------------------------------
+local tmpl_interop_h =
 [[
 #ifndef LUAINTEROP_H
 #define LUAINTEROP_H
@@ -193,6 +194,37 @@ void luainterop_Load(lua_State* l);
 #endif // LUAINTEROP_H
 ]]
 
+
+----------------------------------------------------------------------------
+local tmpl_interopwork_h =
+[[
+#ifndef LUAINTEROPWORK_H
+#define LUAINTEROPWORK_H
+
+///// Warning - this file is created by gen_interop.lua, do not edit. /////
+>local ut = require('utils')
+>local sx = require("stringex")
+
+#include "common.h"
+#include "luainterop.h"
+
+//---------------- Work functions for interop -------------//
+>for _, func in ipairs(host_funcs) do
+
+//--------------------------------------------------------//
+>local arg_specs = { "lua_State* l" }
+>for _, arg in ipairs(func.args or {}) do
+>table.insert(arg_specs, c_types[arg.type] .. " " .. arg.name)
+>end -- func.args
+>sargs = sx.strjoin(", ", arg_specs)
+$(c_types[func.ret.type]) luainteropwork_$(func.host_func_name)($(sargs));
+>end -- host_funcs
+
+#endif // LUAINTEROPWORK_H
+]]
+
+
+----------------------------------------------------------------------------
 -- Type name conversions.
 local lua_types = { B = "boolean", I = "integer", N = "number", S ="string" }
 local c_types = { B = "bool", I = "int", N = "double", S = "char*" }
@@ -210,21 +242,30 @@ local tmpl_env =
     c_types=c_types
 }
 
-local ret = {} -- { "luainterop.c"=rendered, "luainterop.h"=rendered, err, dcode }
+local ret = {}
 
--- c part
-local rendered, err, dcode = tmpl.substitute(tmpl_src_c, tmpl_env)
-if not err then -- ok
-    ret["luainterop.c"] = rendered
-else -- failed, look at intermediary code
-    ret.err = err
-    ret.dcode = dcode
-end
+-- -- c interop part
+-- local rendered, err, dcode = tmpl.substitute(tmpl_interop_c, tmpl_env)
+-- if not err then -- ok
+--     ret["luainterop.c"] = rendered
+-- else -- failed, look at intermediary code
+--     ret.err = err
+--     ret.dcode = dcode
+-- end
 
--- h part
-rendered, err, dcode = tmpl.substitute(tmpl_src_h, tmpl_env)
+-- -- h interop part
+-- rendered, err, dcode = tmpl.substitute(tmpl_interop_h, tmpl_env)
+-- if not err then -- ok
+--     ret["luainterop.h"] = rendered
+-- else -- failed, look at intermediary code
+--     ret.err = err
+--     ret.dcode = dcode
+-- end
+
+-- h interopwork part
+rendered, err, dcode = tmpl.substitute(tmpl_interopwork_h, tmpl_env)
 if not err then -- ok
-    ret["luainterop.h"] = rendered
+    ret["luainteropwork.h"] = rendered
 else -- failed, look at intermediary code
     ret.err = err
     ret.dcode = dcode
