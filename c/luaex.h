@@ -20,6 +20,7 @@ void luaex_pushtableex(lua_State* l, tableex* tbl);
 tableex* luaex_totableex(lua_State* l, int ind);
 
 // Interface to 'lua_pcall', which sets appropriate message function and C-signal handler. Used to run all chunks.
+// Returns lua status.
 int luaex_docall(lua_State* l, int num_args, int num_ret);
 
 

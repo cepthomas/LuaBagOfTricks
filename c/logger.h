@@ -3,6 +3,8 @@
 
 #include <stdio.h>
 
+//TODO3 use cbot logger? Collisions with include "common.h"?
+
 
 // Log levels.
 typedef enum
@@ -14,9 +16,9 @@ typedef enum
 
 
 // Initialize the module.
-// @param fn File to write to.
+// @param fp Stream to write to.
 // @return Status.
-int logger_Init(const char* fn);
+int logger_Init(FILE* fp);
 
 // Set log level.
 // @param level

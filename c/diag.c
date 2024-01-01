@@ -12,7 +12,7 @@
 
 
 //--------------------------------------------------------//
-int diag_DumpStack(lua_State* l, const char* info)
+void diag_DumpStack(lua_State* l, const char* info)
 {
     static char buff[BUFF_LEN];
 
@@ -53,12 +53,10 @@ int diag_DumpStack(lua_State* l, const char* info)
     
         logger_Log(LVL_DEBUG, "    %s", buff);
     }
-
-    return 0;
 }
 
 //--------------------------------------------------------//
-int diag_DumpTable(lua_State* l, const char* tbl_name)
+void diag_DumpTable(lua_State* l, const char* tbl_name)
 {
     logger_Log(LVL_DEBUG, "table:%s", tbl_name);
 
@@ -78,8 +76,6 @@ int diag_DumpTable(lua_State* l, const char* tbl_name)
         // Remove value(-1), now key on top at(-1).
         lua_pop(l, 1);
     }
-    
-    return 0;
 }
 
 //--------------------------------------------------------//

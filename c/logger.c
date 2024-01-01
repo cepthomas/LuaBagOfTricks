@@ -21,9 +21,9 @@ double p_CurrentSec();
 
 
 //--------------------------------------------------------//
-int logger_Init(const char* fn)
+int logger_Init(FILE* fp)
 {
-    p_fp = fopen(fn, "w"); // or "a"
+    p_fp = fp;
     p_start_sec = p_CurrentSec();
 
     // Banner.

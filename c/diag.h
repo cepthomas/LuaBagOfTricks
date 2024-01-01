@@ -18,14 +18,12 @@
 // Diagnostic utility.
 // @param[in] l Internal lua state.
 // @param[in] info User info.
-// @return int Status.
-int diag_DumpStack(lua_State* l, const char* info);
+void diag_DumpStack(lua_State* l, const char* info);
 
 // Diagnostic utility.
 // @param[in] l Internal lua state.
 // @param[in] tbl_name User info.
-// @return int Status.
-int diag_DumpTable(lua_State* l, const char* tbl_name);
+void diag_DumpTable(lua_State* l, const char* tbl_name);
 
 // Check/log stack size.
 // @param[in] l Internal lua state.
