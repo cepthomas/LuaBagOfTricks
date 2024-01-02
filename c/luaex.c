@@ -33,7 +33,6 @@ int luaex_docall(lua_State* l, int narg, int nres)
 }
 
 //--------------------------------------------------------//
-// Capture error stack trace Message handler used to run all chunks.
 static int p_handler(lua_State* l)
 {
     char* msg = lua_tostring(l, 1);
@@ -59,13 +58,13 @@ static int p_handler(lua_State* l)
 
 
 //--------------------------------------------------------//
-void luaex_pushtableex(lua_State* l, tableex* tbl)
+void luaex_pushtableex(lua_State* l, tableex_t* tbl)
 {
 }
 
 //--------------------------------------------------------//
-tableex _t;
-tableex* luaex_totableex(lua_State* l, int ind)
+tableex_t _t;
+tableex_t* luaex_totableex(lua_State* l, int ind)
 {
     return &_t;
 }

@@ -5,22 +5,36 @@
 #include "lualib.h"
 #include "lauxlib.h"
 
-// TODO3 Add tableex type support similar to LuaEx.cs/TableEx.cs. structinator?
 
+//----------------------- Types -----------------------------//
+
+// TODO3 Add tableex type support similar to LuaEx.cs/TableEx.cs. See structinator.
 typedef struct tableex
 {
     int something;
-} tableex;
+    char* other;
+} tableex_t;
+
+//----------------------- Publics -----------------------------//
 
 // Push a table onto lua stack.
-void luaex_pushtableex(lua_State* l, tableex* tbl);
+// @param[in] l Internal lua state.
+// @param[in] tbl The table.
+// @return int Status
+void luaex_pushtableex(lua_State* l, tableex_t* tbl);
 
 // Make a TableEx from the lua table on the top of the stack.
-// Like other "to" functions except also does the pop.
-tableex* luaex_totableex(lua_State* l, int ind);
+// Note: Like other "to" functions except also does the pop.
+// @param[in] l Internal lua state.
+// @param[in] ind Where it is on the stack. Not implemented yet.
+// @return The table or NULL if invalid.
+tableex_t* luaex_totableex(lua_State* l, int ind);
 
 // Interface to 'lua_pcall', which sets appropriate message function and C-signal handler. Used to run all chunks.
-// Returns lua status.
+// @param[in] l Internal lua state.
+// @param[in] num_args Number of args.
+// @param[in] num_ret Number of return values.
+// @return lua status
 int luaex_docall(lua_State* l, int num_args, int num_ret);
 
 
