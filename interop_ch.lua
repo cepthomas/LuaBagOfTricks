@@ -89,7 +89,7 @@ $(c_ret_type) luainterop_$(func.host_func_name)(lua_State* l)
 // @param[in] l Internal lua state.
 // @return Number of lua return values.
 >for _, arg in ipairs(func.args or {}) do
-// Lua arg: $(arg.name) $(arg.description or "") -- TODO1 doc these better
+// Lua arg: $(arg.name) $(arg.description or "")
 >end -- func.args
 // Lua return: $(c_ret_type) $(func.ret.description or "")
 static int luainterop_$(func.host_func_name)(lua_State* l)
@@ -195,9 +195,8 @@ void luainterop_Load(lua_State* l);
 #endif // LUAINTEROP_H
 ]]
 
-
 ----------------------------------------------------------------------------
-local tmpl_interopwork_h = -- TODO1 add function doc.
+local tmpl_interopwork_h =
 [[
 #ifndef LUAINTEROPWORK_H
 #define LUAINTEROPWORK_H
@@ -213,6 +212,12 @@ local tmpl_interopwork_h = -- TODO1 add function doc.
 >for _, func in ipairs(host_funcs) do
 
 //--------------------------------------------------------//
+/// $(func.description or "")
+/// @param[in] l Internal lua state.
+>for _, arg in ipairs(func.args or {}) do
+/// @param[in] $(arg.name) $(arg.description or "")
+>end -- func.args
+/// @return $(func.ret.description)
 >local arg_specs = { "lua_State* l" }
 >for _, arg in ipairs(func.args or {}) do
 >table.insert(arg_specs, c_types[arg.type] .. " " .. arg.name)
@@ -245,23 +250,23 @@ local tmpl_env =
 
 local ret = {}
 
--- -- c interop part
--- local rendered, err, dcode = tmpl.substitute(tmpl_interop_c, tmpl_env)
--- if not err then -- ok
---     ret["luainterop.c"] = rendered
--- else -- failed, look at intermediary code
---     ret.err = err
---     ret.dcode = dcode
--- end
+-- c interop part
+local rendered, err, dcode = tmpl.substitute(tmpl_interop_c, tmpl_env)
+if not err then -- ok
+    ret["luainterop.c"] = rendered
+else -- failed, look at intermediary code
+    ret.err = err
+    ret.dcode = dcode
+end
 
--- -- h interop part
--- rendered, err, dcode = tmpl.substitute(tmpl_interop_h, tmpl_env)
--- if not err then -- ok
---     ret["luainterop.h"] = rendered
--- else -- failed, look at intermediary code
---     ret.err = err
---     ret.dcode = dcode
--- end
+-- h interop part
+rendered, err, dcode = tmpl.substitute(tmpl_interop_h, tmpl_env)
+if not err then -- ok
+    ret["luainterop.h"] = rendered
+else -- failed, look at intermediary code
+    ret.err = err
+    ret.dcode = dcode
+end
 
 -- h interopwork part
 rendered, err, dcode = tmpl.substitute(tmpl_interopwork_h, tmpl_env)
