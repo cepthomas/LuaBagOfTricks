@@ -35,7 +35,7 @@ int luaex_docall(lua_State* l, int narg, int nres)
 //--------------------------------------------------------//
 static int p_handler(lua_State* l)
 {
-    char* msg = lua_tostring(l, 1);
+    const char* msg = lua_tostring(l, 1);
     if (msg == NULL)  // is error object not a string?
     {
         // Does it have a metamethod that produces a string?

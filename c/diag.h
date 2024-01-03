@@ -13,7 +13,7 @@
 #include "logger.h"
 
 
-//----------------------- Diagnostics -----------------------------//
+//---------------- Public API ----------------------//
 
 /// Diagnostic utility.
 /// @param[in] l Internal lua state.

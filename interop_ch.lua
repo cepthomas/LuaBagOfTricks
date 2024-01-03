@@ -205,13 +205,11 @@ local tmpl_interopwork_h =
 >local ut = require('utils')
 >local sx = require("stringex")
 
-#include "common.h"
 #include "luainterop.h"
 
 //---------------- Work functions for interop -------------//
 >for _, func in ipairs(host_funcs) do
 
-//--------------------------------------------------------//
 /// $(func.description or "")
 /// @param[in] l Internal lua state.
 >for _, arg in ipairs(func.args or {}) do

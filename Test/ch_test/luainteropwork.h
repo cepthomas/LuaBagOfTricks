@@ -1,24 +1,21 @@
-#ifndef LUAINTEROP_WORK_H
-#define LUAINTEROP_WORK_H
+#ifndef LUAINTEROPWORK_H
+#define LUAINTEROPWORK_H
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <stdarg.h>
-#include <stdbool.h>
-#include <stdint.h>
-#include <string.h>
-#include <float.h>
-#include <errno.h>
-#include <math.h>
-#include "lua.h"
-#include "lualib.h"
-#include "lauxlib.h"
+///// Warning - this file is created by gen_interop.lua, do not edit. /////
+
 #include "luainterop.h"
 
-// Declaration of work functions.
+//---------------- Work functions for interop -------------//
 
-bool luainteropwork_MyLuaFunc3(double arg_one);
+/// fooga
+/// @param[in] l Internal lua state.
+/// @param[in] arg_one kakakakaka
+/// @return required return value
+bool luainteropwork_MyLuaFunc3(lua_State* l, double arg_one);
 
-double luainteropwork_FuncWithNoArgs();
+/// Func with no args
+/// @param[in] l Internal lua state.
+/// @return a returned thing
+double luainteropwork_FuncWithNoArgs(lua_State* l);
 
-#endif // LUAINTEROP_WORK_H
+#endif // LUAINTEROPWORK_H

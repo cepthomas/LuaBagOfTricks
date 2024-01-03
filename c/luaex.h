@@ -6,7 +6,7 @@
 #include "lauxlib.h"
 
 
-//----------------------- Types -----------------------------//
+//---------------- Public API ----------------------//
 
 /// TODO3 Add tableex type support similar to LuaEx.cs/TableEx.cs. See structinator.
 typedef struct tableex
@@ -15,7 +15,6 @@ typedef struct tableex
     char* other;
 } tableex_t;
 
-//----------------------- Publics -----------------------------//
 
 /// Push a table onto lua stack.
 /// @param[in] l Internal lua state.

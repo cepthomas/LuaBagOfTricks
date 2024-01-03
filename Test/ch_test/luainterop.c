@@ -100,10 +100,10 @@ double luainterop_NoArgsFunc(lua_State* l)
 //---------------- Call host functions from Lua -------------//
 
 // Host export function: fooga
-// Lua arg: arg_one kakakakaka
-// Lua return: bool required return value
 // @param[in] l Internal lua state.
 // @return Number of lua return values.
+// Lua arg: arg_one kakakakaka
+// Lua return: bool required return value
 static int luainterop_MyLuaFunc3(lua_State* l)
 {
     // Get arguments
@@ -112,21 +112,21 @@ static int luainterop_MyLuaFunc3(lua_State* l)
     else { luaL_error(l, "Bad arg type for arg_one"); }
 
     // Do the work. One result.
-    bool ret = luainteropwork_MyLuaFunc3(arg_one);
+    bool ret = luainteropwork_MyLuaFunc3(l, arg_one);
     lua_pushboolean(l, ret);
     return 1;
 }
 
 // Host export function: Func with no args
-// Lua return: double a returned thing
 // @param[in] l Internal lua state.
 // @return Number of lua return values.
+// Lua return: double a returned thing
 static int luainterop_FuncWithNoArgs(lua_State* l)
 {
     // Get arguments
 
     // Do the work. One result.
-    double ret = luainteropwork_FuncWithNoArgs();
+    double ret = luainteropwork_FuncWithNoArgs(l);
     lua_pushnumber(l, ret);
     return 1;
 }

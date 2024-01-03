@@ -5,6 +5,7 @@
 
 //TODO3 use cbot logger? Collisions with include "common.h"?
 
+//---------------- Public API ----------------------//
 
 /// Log levels.
 typedef enum
