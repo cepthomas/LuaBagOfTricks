@@ -19,9 +19,9 @@ add_executable(interop_gen_c
     main.c
     luainterop.c
     luainteropwork.c
-    ${C_SRC}/diag.c
-    ${C_SRC}/logger.c
-    ${C_SRC}/luaex.c
+    ${C_SRC}/private/diag.c
+    ${C_SRC}/private/logger.c
+    ${C_SRC}/private/luaex.c
     ${LUA_SRC}/src/lapi.c
     ${LUA_SRC}/src/lauxlib.c
     ${LUA_SRC}/src/lbaselib.c

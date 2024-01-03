@@ -1,4 +1,4 @@
--- GP utilities: tables, math, validation, errors, ...
+--- GP utilities: tables, math, validation, errors, ...
 
 local sx = require("stringex")
 
@@ -6,7 +6,7 @@ local M = {}
 
 
 ---------------------------------------------------------------
--- Execute a file and return the output.
+--- Execute a file and return the output.
 -- @param cmd Command to run.
 -- @return Output text.
 function M.execute_capture(cmd)
@@ -17,7 +17,7 @@ function M.execute_capture(cmd)
 end
 
 ---------------------------------------------------------------
--- If using debugger, bind lua error() function to it. Optional terminal.
+--- If using debugger, bind lua error() function to it. Optional terminal.
 -- @param use_dbgr Use debugger.
 -- @param use_term Use terminal for debugger.
 function M.config_error_handling(use_dbgr, use_term)
@@ -49,7 +49,7 @@ function M.config_error_handling(use_dbgr, use_term)
 end
 
 -----------------------------------------------------------------------------
--- Diagnostic.
+--- Diagnostic.
 -- @param tbl What to dump.
 -- @param name Of the tbl.
 -- @param indent Nesting.
@@ -83,7 +83,7 @@ function M.dump_table(tbl, name, indent)
 end
 
 -----------------------------------------------------------------------------
--- Diagnostic.
+--- Diagnostic.
 -- @param tbl What to dump.
 -- @param name Of tbl.
 -- @return string list
@@ -93,7 +93,7 @@ function M.dump_table_string(tbl, name)
 end
 
 -----------------------------------------------------------------------------
--- Gets the file and line of the caller.
+--- Gets the file and line of the caller.
 -- @param level How deep to look:
 --    0 is the getinfo() itself
 --    1 is the function that called getinfo() - get_caller_info()
@@ -110,7 +110,7 @@ function M.get_caller_info(level)
 end
 
 -----------------------------------------------------------------------------
--- Remap a value to new coordinates.
+--- Remap a value to new coordinates.
 -- @param val
 -- @param start1
 -- @param stop1
@@ -122,7 +122,7 @@ function M.map(val, start1, stop1, start2, stop2)
 end
 
 -----------------------------------------------------------------------------
--- Bounds limits a value.
+--- Bounds limits a value.
 -- @param val
 -- @param min
 -- @param max
@@ -134,7 +134,7 @@ function M.constrain(val, min, max)
 end
 
 -----------------------------------------------------------------------------
--- Ensure integral multiple of resolution, GTE min, LTE max.
+--- Ensure integral multiple of resolution, GTE min, LTE max.
 -- @param val
 -- @param min
 -- @param max
@@ -147,7 +147,7 @@ function M.constrain(val, min, max, resolution)
 end
 
 -----------------------------------------------------------------------------
--- Snap to closest neighbor.
+--- Snap to closest neighbor.
 -- @param val
 -- @param granularity">The neighbors property line.
 -- @param round">Round or truncate.

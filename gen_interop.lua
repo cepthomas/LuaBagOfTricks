@@ -1,4 +1,4 @@
--- Generate lua interop for C, C#.
+-- Generate lua interop for C, C#. TODO1 support /private/*.c
 
 -- Later maybe: enums, markdown, ...
 

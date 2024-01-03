@@ -89,7 +89,7 @@ $(c_ret_type) luainterop_$(func.host_func_name)(lua_State* l)
 // @param[in] l Internal lua state.
 // @return Number of lua return values.
 >for _, arg in ipairs(func.args or {}) do
-// Lua arg: $(arg.name) $(arg.description or "")
+// Lua arg: $(arg.name) $(arg.description or "") -- TODO1 doc these better
 >end -- func.args
 // Lua return: $(c_ret_type) $(func.ret.description or "")
 static int luainterop_$(func.host_func_name)(lua_State* l)
@@ -142,6 +142,7 @@ void luainterop_Load(lua_State* l)
 }
 ]]
 
+
 ----------------------------------------------------------------------------
 local tmpl_interop_h =
 [[
@@ -169,12 +170,12 @@ local tmpl_interop_h =
 >for _, func in ipairs(lua_funcs) do
 >local lua_ret_type = lua_types[func.ret.type]
 >local c_ret_type = c_types[func.ret.type]
-// Lua export function: $(func.description or "")
-// @param[in] l Internal lua state.
+/// Lua export function: $(func.description or "")
+/// @param[in] l Internal lua state.
 >for _, arg in ipairs(func.args or {}) do
-// @param[in] $(arg.name) $(arg.description or "")
+/// @param[in] $(arg.name) $(arg.description or "")
 >end -- func.args
-// @return $(c_ret_type) $(func.ret.description or "")
+/// @return $(c_ret_type) $(func.ret.description or "")
 >local arg_specs = {}
 >for _, arg in ipairs(func.args or {}) do
 >table.insert(arg_specs, c_types[arg.type] .. " " .. arg.name)
@@ -196,7 +197,7 @@ void luainterop_Load(lua_State* l);
 
 
 ----------------------------------------------------------------------------
-local tmpl_interopwork_h =
+local tmpl_interopwork_h = -- TODO1 add function doc.
 [[
 #ifndef LUAINTEROPWORK_H
 #define LUAINTEROPWORK_H

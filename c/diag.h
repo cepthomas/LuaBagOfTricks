@@ -15,24 +15,24 @@
 
 //----------------------- Diagnostics -----------------------------//
 
-// Diagnostic utility.
-// @param[in] l Internal lua state.
-// @param[in] info User info.
+/// Diagnostic utility.
+/// @param[in] l Internal lua state.
+/// @param[in] info User info.
 void diag_DumpStack(lua_State* l, const char* info);
 
-// Diagnostic utility.
-// @param[in] l Internal lua state.
-// @param[in] tbl_name User info.
+/// Diagnostic utility.
+/// @param[in] l Internal lua state.
+/// @param[in] tbl_name User info.
 void diag_DumpTable(lua_State* l, const char* tbl_name);
 
-// Check/log stack size.
-// @param[in] l Internal lua state.
-// @param[in] expected What it should be.
+/// Check/log stack size.
+/// @param[in] l Internal lua state.
+/// @param[in] expected What it should be.
 void diag_EvalStack(lua_State* l, int expected);
 
-// Convert a status to string.
-// @param[in] err Status to examine.
-// @return String or NULL if not valid.
+/// Convert a status to string.
+/// @param[in] err Status to examine.
+/// @return String or NULL if not valid.
 const char* diag_LuaStatusToString(int err);
 
 #endif // C_DIAG_H
