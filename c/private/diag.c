@@ -4,11 +4,7 @@
 #include "diag.h"
 
 
-//--------------------- Defs -----------------------------//
-
 #define BUFF_LEN 100
-
-//------------------- Privates ---------------------------//
 
 
 //--------------------------------------------------------//
@@ -89,19 +85,19 @@ void diag_EvalStack(lua_State* l, int expected)
 }
 
 //--------------------------------------------------------//
-const char* diag_LuaStatusToString(int err)
+const char* diag_LuaStatusToString(int stat)
 {
-    const char* serr = NULL;
-    switch(err)
+    const char* sstat = NULL;
+    switch(stat)
     {
-        case LUA_OK: serr = "LUA_OK"; break;
-        case LUA_YIELD: serr = "LUA_YIELD"; break;
-        case LUA_ERRRUN: serr = "LUA_ERRRUN"; break;
-        case LUA_ERRSYNTAX: serr = "LUA_ERRSYNTAX"; break; // syntax error during pre-compilation
-        case LUA_ERRMEM: serr = "LUA_ERRMEM"; break; // memory allocation error
-        case LUA_ERRERR: serr = "LUA_ERRERR"; break; // error while running the error handler function
-        case LUA_ERRFILE: serr = "LUA_ERRFILE"; break; // couldn't open the given file
+        case LUA_OK: sstat = "LUA_OK"; break;
+        case LUA_YIELD: sstat = "LUA_YIELD"; break;
+        case LUA_ERRRUN: sstat = "LUA_ERRRUN"; break;
+        case LUA_ERRSYNTAX: sstat = "LUA_ERRSYNTAX"; break; // syntax error during pre-compilation
+        case LUA_ERRMEM: sstat = "LUA_ERRMEM"; break; // memory allocation error
+        case LUA_ERRERR: sstat = "LUA_ERRERR"; break; // error while running the error handler function
+        case LUA_ERRFILE: sstat = "LUA_ERRFILE"; break; // couldn't open the given file
         default: break; // nothing for now.
     }
-    return serr;
+    return sstat;
 }

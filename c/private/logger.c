@@ -10,45 +10,42 @@
 
 //--------------------------------------------------------//
 // Logging support items.
-log_level_t p_level = LVL_INFO;
-FILE* p_fp = NULL;
-double p_start_sec;
+static log_level_t _level = LVL_INFO;
+static FILE* _fp = NULL;
+static double _start_sec;
 
 #define LOG_LINE_LEN 100
 
 // Current time.
-double p_CurrentSec();
+static double _CurrentSec();
 
 
 //--------------------------------------------------------//
-int logger_Init(FILE* fp)
+void logger_Init(FILE* fp)
 {
-    p_fp = fp;
-    p_start_sec = p_CurrentSec();
+    _fp = fp;
+    _start_sec = _CurrentSec();
 
     // Banner.
     time_t now = time(NULL);
     char snow[32];
     strftime(snow, 32, "%Y-%m-%d %H:%M:%S", localtime(&now));
-    fprintf(p_fp, "================ Log start %s =====================\n", snow);
-
-    return 0;
+    fprintf(_fp, "================ Log start %s =====================\n", snow);
 }
 
 //--------------------------------------------------------//
-int logger_SetFilters(log_level_t level)
+void logger_SetFilters(log_level_t level)
 {
-    p_level = level;
-    return 0;
+    _level = level;
 }
 
 //--------------------------------------------------------//
-int logger_Log(log_level_t level, const char* format, ...)
+void logger_Log(log_level_t level, const char* format, ...)
 {
     static char buff[LOG_LINE_LEN];
 
     // Check filters.
-    if(level >= p_level)
+    if(level >= _level)
     {
         va_list args;
         va_start(args, format);
@@ -63,19 +60,17 @@ int logger_Log(log_level_t level, const char* format, ...)
             case LVL_ERROR: slevel = "ERR"; break;
         }
 
-        fprintf(p_fp, "%03.6f,%s,%s\n", p_CurrentSec() - p_start_sec, slevel, buff);
+        fprintf(_fp, "%03.6f,%s,%s\n", _CurrentSec() - _start_sec, slevel, buff);
         // const char* pfn = strrchr(fn, '\\');
         // pfn = pfn == NULL ? fn : pfn + 1;
-        // fprintf(p_fp, "%03.6f,%s,%s(%d),%s\n", p_CurrentSec() - p_start_sec, slevel, pfn, line, buff);
-        fflush(p_fp);
+        // fprintf(_fp, "%03.6f,%s,%s(%d),%s\n", _CurrentSec() - _start_sec, slevel, pfn, line, buff);
+        fflush(_fp);
     }
-
-    return 0;
 }
 
 
 //--------------------------------------------------------//
-double p_CurrentSec()
+double _CurrentSec()
 {
     struct timeval tv;
     struct timezone tz;

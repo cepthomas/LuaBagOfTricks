@@ -31,8 +31,8 @@ void diag_DumpTable(lua_State* l, const char* tbl_name);
 void diag_EvalStack(lua_State* l, int expected);
 
 /// Convert a status to string.
-/// @param[in] err Status to examine.
+/// @param[in] stat Status to examine.
 /// @return String or NULL if not valid.
-const char* diag_LuaStatusToString(int err);
+const char* diag_LuaStatusToString(int stat);
 
 #endif // C_DIAG_H

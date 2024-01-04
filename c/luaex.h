@@ -19,21 +19,20 @@ typedef struct tableex
 /// Push a table onto lua stack.
 /// @param[in] l Internal lua state.
 /// @param[in] tbl The table.
-/// @return int Status
 void luaex_pushtableex(lua_State* l, tableex_t* tbl);
 
 /// Make a TableEx from the lua table on the top of the stack.
 /// Note: Like other "to" functions except also does the pop.
 /// @param[in] l Internal lua state.
 /// @param[in] ind Where it is on the stack. Not implemented yet.
-/// @return The table or NULL if invalid.
+/// @return The new table or NULL if invalid.
 tableex_t* luaex_totableex(lua_State* l, int ind);
 
 /// Interface to 'lua_pcall', which sets appropriate message function and C-signal handler. Used to run all chunks.
 /// @param[in] l Internal lua state.
 /// @param[in] num_args Number of args.
 /// @param[in] num_ret Number of return values.
-/// @return lua status
+/// @return LUA_STATUS
 int luaex_docall(lua_State* l, int num_args, int num_ret);
 
 
