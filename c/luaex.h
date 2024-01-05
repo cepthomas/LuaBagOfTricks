@@ -28,7 +28,7 @@ void luaex_pushtableex(lua_State* l, tableex_t* tbl);
 /// @return The new table or NULL if invalid.
 tableex_t* luaex_totableex(lua_State* l, int ind);
 
-/// Interface to 'lua_pcall', which sets appropriate message function and C-signal handler. Used to run all chunks.
+/// Interface to lua_pcall() with error message function. Used to run all function chunks.
 /// @param[in] l Internal lua state.
 /// @param[in] num_args Number of args.
 /// @param[in] num_ret Number of return values.

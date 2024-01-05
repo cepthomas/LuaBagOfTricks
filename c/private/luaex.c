@@ -41,6 +41,7 @@ static int _handler(lua_State* l)
 //--------------------------------------------------------//
 int luaex_docall(lua_State* l, int narg, int nres)
 {
+    // Modeled after docall (lua_State *L, int narg, int nres).
     int lstat = LUA_OK;
     int fbase = lua_gettop(l) - narg;  // function index
     lua_pushcfunction(l, _handler);  // push message handler

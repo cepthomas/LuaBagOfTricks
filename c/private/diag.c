@@ -1,6 +1,5 @@
 #include <stdarg.h>
 #include <string.h>
-#include "logger.h"
 #include "diag.h"
 
 
@@ -12,7 +11,7 @@ void diag_DumpStack(lua_State* l, const char* info)
 {
     static char buff[BUFF_LEN];
 
-    logger_Log(LVL_DEBUG, "Dump stack:%s (l:%p)", info, l);
+    printf("Dump stack:%s (l:%p)", info, l);
 
     for(int i = lua_gettop(l); i >= 1; i--)
     {
@@ -47,14 +46,14 @@ void diag_DumpStack(lua_State* l, const char* info)
                 break;
         }
     
-        logger_Log(LVL_DEBUG, "    %s", buff);
+        printf("    %s", buff);
     }
 }
 
 //--------------------------------------------------------//
 void diag_DumpTable(lua_State* l, const char* tbl_name)
 {
-    logger_Log(LVL_DEBUG, "table:%s", tbl_name);
+    printf("table:%s", tbl_name);
 
     // Put a nil key on stack.
     lua_pushnil(l);
@@ -67,7 +66,7 @@ void diag_DumpTable(lua_State* l, const char* tbl_name)
 
         // Get type of value(-1).
         const char* type = luaL_typename(l, -1);
-        logger_Log(LVL_DEBUG, "    %s=%s", kname, type);
+        printf("    %s=%s", kname, type);
 
         // Remove value(-1), now key on top at(-1).
         lua_pop(l, 1);
@@ -80,7 +79,7 @@ void diag_EvalStack(lua_State* l, int expected)
     int num = lua_gettop(l);
     if (num != expected)
     {
-        logger_Log(LVL_DEBUG, "Expected %d stack but is %d", expected, num);
+        printf("Expected %d stack but is %d", expected, num);
     }
 }
 
