@@ -22,100 +22,10 @@ Used for generating language specific interop.
 Slightly modified version of the nifty [debugger.lua](https://github.com/slembcke/debugger.lua).
 
 ## interop
-Generates C# and C code for the standard lua interop. The ``.\Test projects` demonstrate how to use it.
-
-How to define an API:
-``` Lua
--- Example spec for generating interop, with doc comments.
--- Supported arg and return value types: B=boolean I=integer N=number S=string T=tableex.
--- OPT are optional fields.
--- Return type is required, void not supported.
--- Note: the C version needs some more infrastructure to support T.
-
-local M = {}
-
--- Syntax-specific options.
-M.config =
-{
-    -- General
-    lua_lib_name = "gen_lib", -- as used by luaL_requiref() / RequireF()
-    ----- C# specific
-    namespace = "MyLib",
-    class = "MyClass",
-    add_refs = -- OPT -> using
-    {
-        "System.Diagnostics",
-        "OtherAssembly",
-    },
-    ----- C specific
-    add_refs = -- OPT -> #include
-    {
-        "<errno.h>",
-        "<other_stuff.h>",
-    },
-}
-
--- Host calls lua.
-M.lua_export_funcs =
-{
-    {
-        lua_func_name = "my_lua_func1",
-        host_func_name = "MyLuaFunc1",
-        description = "Tell me something good.", --OPT
-        args = --OPT
-        {
-            {
-                name = "arg_one",
-                type = "S",
-                description = "some string" --OPT
-            },
-            {
-                name = "arg_two",
-                type = "I",
-                --description = "missing desc" --OPT
-            },
-            -- etc for other arguments
-        },
-        ret =
-        {
-            type = "N",
-            description = "a return value" --OPT
-        }
-    },
-    -- etc for other functions
-}
-
--- Lua calls host.
-M.host_export_funcs =
-{
-    {
-        lua_func_name = "my_lua_func2",
-        host_func_name = "MyLuaFunc2",
-        description = "fooga", --OPT
-        args = --OPT
-        {
-            {
-                name = "arg_one",
-                type = "N",
-                description = "kakakakaka" --OPT
-            },
-            -- etc for other arguments
-        },
-        ret =
-        {
-            type = "I",
-            description = "a returned thing" --OPT
-        }
-    },
-    -- etc for other functions
-}
-
-return M
-```
+Generates C# and C code for the standard lua interop. The Test projects demonstrate how to use it:
+- Test\cs_test\interop_spec_cs.lua
+- Test\CH_test\interop_spec_CH.lua
 
 ## c dir
 
-Several functions to support the C side of lua applications:
-- Rudimentary logger.
-- Return error information from the lua script on call.
-- Some general diagnostics.
+Several functions to support the C side of lua applications.

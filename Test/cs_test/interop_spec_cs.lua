@@ -1,13 +1,17 @@
--- See interop_spec.lua for legend.
+-- Spec to gen C# interop code.
+-- All description and args fields are optional.
+-- A return value is required, even if just a dummy.
+-- Supported data types: B->bool  I->int  N->double  S->string T->TableEx
+
 
 local M = {}
 
 M.config =
 {
-    lua_lib_name = "gen_lib",
-    namespace = "MyLuaInteropLib",
-    class = "MyClass",
-    add_refs = { "System.Diagnostics", },
+    lua_lib_name = "gen_lib",             -- -> lua lib name
+    namespace = "MyLuaInteropLib",        -- -> C# namespace
+    class = "MyClass",                    -- -> C# using
+    add_refs = { "System.Diagnostics", }, -- -> using (optional)
 }
 
 -- Host calls lua.

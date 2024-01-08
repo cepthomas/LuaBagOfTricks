@@ -8,7 +8,7 @@
 
 //---------------- Public API ----------------------//
 
-/// TODO3 Add tableex type support similar to LuaEx.cs/TableEx.cs. See structinator.
+/// TODO2 Add tableex type support similar to LuaEx.cs/TableEx.cs. See structinator.
 typedef struct tableex
 {
     int something;
@@ -29,6 +29,7 @@ void luaex_pushtableex(lua_State* l, tableex_t* tbl);
 tableex_t* luaex_totableex(lua_State* l, int ind);
 
 /// Interface to lua_pcall() with error message function. Used to run all function chunks.
+/// Modeled after docall(...).
 /// @param[in] l Internal lua state.
 /// @param[in] num_args Number of args.
 /// @param[in] num_ret Number of return values.
