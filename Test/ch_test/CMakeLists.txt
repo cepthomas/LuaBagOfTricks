@@ -4,7 +4,7 @@ project(interop_gen_c)
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_CXX_STANDARD 11)
 
-set(LUA_SRC "C:/Lua")
+set(LUA "C:/Lua")
 set(C_SRC "../../c")
 
 # needs -g to debug.
@@ -12,7 +12,7 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall -Wno-deprecated-declarations -Wno-u
 
 include_directories(
     ${C_SRC}
-    ${LUA_SRC}/include
+    ${LUA}/include
     )
 
 # Source files.
