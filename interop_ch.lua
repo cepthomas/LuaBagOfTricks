@@ -231,7 +231,7 @@ $(c_types[func.ret.type]) luainteropwork_$(func.host_func_name)($(sargs));
 ----------------------------------------------------------------------------
 -- Type name conversions.
 local lua_types = { B = "boolean", I = "integer", N = "number", S ="string" }
-local c_types = { B = "bool", I = "int", N = "double", S = "char*" }
+local c_types = { B = "bool", I = "int", N = "double", S = "const char*" }
 
 -- Make the output content.
 local tmpl_env =
