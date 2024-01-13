@@ -26,10 +26,11 @@ local tmpl_interop_c =
 #include "lua.h"
 #include "lualib.h"
 #include "lauxlib.h"
-#include "luaex.h"
 
 #include "luainterop.h"
 #include "luainteropwork.h"
+#include "luaex.h"
+
 >if config.add_refs ~= nil then
 >for _, inc in ipairs(config.add_refs) do
 #include $(inc)
