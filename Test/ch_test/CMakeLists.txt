@@ -2,13 +2,12 @@ cmake_minimum_required(VERSION 3.5)
 project(interop_gen_c)
 
 set(CMAKE_C_STANDARD 99)
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall")
 set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall")
 
 set(LUA "C:/Lua")
 set(C_SRC "../../c")
-
-# needs -g to debug.
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall -Wno-deprecated-declarations -Wno-unused-variable -Wno-unused-but-set-variable")
 
 include_directories(
     ${C_SRC}
