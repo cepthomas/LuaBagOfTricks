@@ -45,7 +45,7 @@ void luautils_EvalStack(lua_State* l, int expected);
 /// Helper macro to dump stack.
 #define DUMP_STACK(L, info)  luautils_DumpStack(L, __FILE__, __LINE__, info);
 
-/// Helper macro to check then handle error..
+/// Helper macro to check then handle error.
 #define PROCESS_LUA_ERROR(L, err, fmt, ...)  if(err >= LUA_ERRRUN) { luautils_LuaError(L, __FILE__, __LINE__, err, fmt, ##__VA_ARGS__); }
 
 /// Helper macro to check/log stack size.
