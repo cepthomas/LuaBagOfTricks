@@ -14,11 +14,13 @@
 
 #include "luainterop.h"
 #include "luainteropwork.h"
+#include "luaex.h"
+
 #include "another.h"
 
 //---------------- Call lua functions from host -------------//
 
-int luainterop_MyLuaFunc(lua_State* l, char* arg_one, int arg_two, int arg_three)
+int luainterop_MyLuaFunc(lua_State* l, const char* arg_one, int arg_two, int arg_three)
 {
     int num_args = 0;
     int num_ret = 1;

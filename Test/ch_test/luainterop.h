@@ -23,7 +23,7 @@
 /// @param[in] arg_two a nice integer
 /// @param[in] arg_three 
 /// @return int a returned thing
-int luainterop_MyLuaFunc(lua_State* l, char* arg_one, int arg_two, int arg_three);
+int luainterop_MyLuaFunc(lua_State* l, const char* arg_one, int arg_two, int arg_three);
 
 /// Lua export function: wooga wooga
 /// @param[in] l Internal lua state.

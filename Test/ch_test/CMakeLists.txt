@@ -8,10 +8,10 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall")
 
 set(LUA "C:/Lua")
 set(C_SRC "../../c")
-
+C:\Dev\repos\Lua\LuaBagOfTricks\Test\ch_test\
 include_directories(
-    ${C_SRC}
     ${LUA}/include
+    # ${C_SRC}
     )
 
 # Source files.
@@ -19,12 +19,12 @@ add_executable(interop_gen_c
     main.c
     luainterop.c
     luainteropwork.c
-    ${C_SRC}/private/diag.c
-    ${C_SRC}/private/logger.c
-    ${C_SRC}/private/luaex.c
+    # ${C_SRC}/private/diag.c
+    # ${C_SRC}/private/logger.c
+    # ${C_SRC}/private/luaex.c
     )
 
 # Libs. 64 bit build.
-target_link_libraries(nebulua
+target_link_libraries(interop_gen_c
     ${LUA}/Win64/lua54.dll
     )
