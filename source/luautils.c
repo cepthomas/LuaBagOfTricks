@@ -7,7 +7,7 @@
 #define BUFF_LEN 100
 
 //--------------------------------------------------------//
-int luautils_DumpStack(lua_State* L, const char* fn, int line, const char* info)
+int luautils_DumpStack(lua_State* L, const char* info)
 {
     static char buff[BUFF_LEN];
 
@@ -53,7 +53,7 @@ int luautils_DumpStack(lua_State* L, const char* fn, int line, const char* info)
 }
 
 //--------------------------------------------------------//
-void luautils_LuaError(lua_State* L, const char* fn, int line, int err, const char* format, ...)
+void luautils_LuaError(lua_State* L, int err, const char* format, ...)
 {
     static char buff[BUFF_LEN];
 

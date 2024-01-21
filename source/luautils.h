@@ -12,18 +12,14 @@
 
 /// Dump the lua stack contents.
 /// @param L Lua state.
-/// @param fn Caller location.
-/// @param line Caller location.
 /// @param info Extra info.
-int luautils_DumpStack(lua_State *L, const char* fn, int line, const char* info);
+int luautils_DumpStack(lua_State *L, const char* info);
 
 /// Report a bad thing detected by this component.
 /// @param L Lua state.
-/// @param fn Caller location.
-/// @param line Caller location.
 /// @param err Specific Lua error.
 /// @param format Standard string stuff.
-void luautils_LuaError(lua_State* L, const char* fn, int err, int line, const char* format, ...);
+void luautils_LuaError(lua_State* L, int err, const char* format, ...);
 
 /// Make a readable string.
 /// @param status Specific Lua status.
