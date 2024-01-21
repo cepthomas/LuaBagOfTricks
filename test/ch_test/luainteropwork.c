@@ -5,7 +5,6 @@
 #include <stdint.h>
 #include <string.h>
 #include <float.h>
-#include <errno.h>
 #include "lua.h"
 #include "lualib.h"
 #include "lauxlib.h"

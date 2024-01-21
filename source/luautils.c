@@ -4,20 +4,14 @@
 
 #include "luautils.h"
 
-
-//---------------- Private Declarations ------------------//
-
 #define BUFF_LEN 100
-
-
-//---------------- Public Implementation -----------------//
 
 //--------------------------------------------------------//
 int luautils_DumpStack(lua_State* L, const char* fn, int line, const char* info)
 {
     static char buff[BUFF_LEN];
 
-    printf("Dump stack:%s (L:%p)", info, L); //TODO1 something better than printf?
+    printf("Dump stack:%s (L:%p)", info, L); //TODO2 something better than printf?
 
     for(int i = lua_gettop(L); i >= 1; i--)
     {
@@ -145,5 +139,3 @@ void luautils_EvalStack(lua_State* l, int expected)
         printf("Expected %d stack but is %d", expected, num);
     }
 }
-
-//---------------- Private Implementation -------------//

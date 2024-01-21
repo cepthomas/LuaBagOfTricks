@@ -7,11 +7,11 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall")
 
 set(LUA "C:/Lua")
-set(C_SRC "../../source")
+set(CSRC "../../source")
 
 include_directories(
     ${LUA}/include
-    ${C_SRC}
+    ${CSRC}
     )
 
 # Source files.
@@ -19,7 +19,8 @@ add_executable(interop_gen_c
     main.c
     luainterop.c
     luainteropwork.c
-    ${C_SRC}/luaex.c
+    ${CSRC}/luaex.c
+    ${CSRC}/luautils.c
     )
 
 # Libs. 64 bit build.
