@@ -26,6 +26,6 @@ Generates C# and C code for the standard lua interop. The Test projects demonstr
 - Test\cs_test\interop_spec_cs.lua
 - Test\CH_test\interop_spec_CH.lua
 
-## c dir
+## source dir
 
-Several functions to support the C side of lua applications.
+Several functions to support the C side of lua applications. Currently intended to be simple cut-and-paste.
