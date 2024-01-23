@@ -13,7 +13,7 @@ function M.interp(str, vars)
         vars = str
         str = vars[1]
     end
-    return (string.gsub(str, "({([^}]+)})", function(whole, i) return vars[i] or whole end))
+    return (str:gsub("({([^}]+)})", function(whole, i) return vars[i] or whole end))
 end
 
 -----------------------------------------------------------------------------
@@ -47,16 +47,17 @@ end
 function M.strsplit(text, delimiter)
     local list = {}
     local pos = 1
-    if string.find("", delimiter, 1) then -- this would result in endless loops
+    if string.find("", delimiter, 1, true) then -- this would result in endless loops
         error("Delimiter matches empty string.")
     end
+
     while 1 do
-        local first, last = string.find(text, delimiter, pos)
-        if first then -- found?
-            table.insert(list, string.sub(text, pos, first - 1))
+        local first, last = text:find(delimiter, pos, true)
+        if first ~= nil then -- found?
+            table.insert(list, text:sub(pos, first - 1))
             pos = last + 1
-        else
-            table.insert(list, string.sub(text, pos))
+        else -- no delim, take it all
+            table.insert(list, text:sub(pos))
             break
         end
     end
@@ -77,8 +78,10 @@ end
 -- @string s a string
 -- @param prefix a string or an array of strings
 function M.startswith(s, prefix)
-    assert_string(1, s)
-    return test_affixes(s, prefix, raw_startswith)
+    return s:find(prefix, 1, true) == 1
+
+    -- assert_string(1, s)
+    -- return test_affixes(s, prefix, raw_startswith)
 end
 
 -----------------------------------------------------------------------------
@@ -86,17 +89,20 @@ end
 -- @string s a string
 -- @param suffix a string or an array of strings
 function M.endswith(s, suffix)
-    assert_string(1, s)
-    return test_affixes(s, suffix, raw_endswith)
+    return #s >= #suffix and s:find(suffix, #s-#suffix+1, true) and true or false
+    -- assert_string(1, s)
+    -- return test_affixes(s, suffix, raw_endswith)
 end
 
-local function raw_startswith(s, prefix)
-    return find(s, prefix, 1, true) == 1
-end
+-- -----------------------------------------------------------------------------
+-- local function raw_startswith(s, prefix)
+--     return find(s, prefix, 1, true) == 1
+-- end
 
-local function raw_endswith(s, suffix)
-    return #s >= #suffix and find(s, suffix, #s-#suffix+1, true) and true or false
-end
+-- -----------------------------------------------------------------------------
+-- local function raw_endswith(s, suffix)
+--     return #s >= #suffix and find(s, suffix, #s-#suffix+1, true) and true or false
+-- end
 
 
 -----------------------------------------------------------------------------

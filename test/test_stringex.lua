@@ -1,0 +1,69 @@
+-- Unit tests for stringex.
+
+local sx = require("stringex")
+
+local M = {}
+
+-----------------------------------------------------------------------------
+function M.setup(pn)
+    -- pn.UT_INFO("setup()!!!")
+end
+
+-----------------------------------------------------------------------------
+function M.teardown(pn)
+    -- pn.UT_INFO("teardown()!!!")
+end
+
+-----------------------------------------------------------------------------
+function M.suite_stringex(pn)
+    pn.UT_INFO("Test all functions in stringex.lua")
+
+    -- Test strtrim().
+    local s = "  I have whitespace    "
+    pn.UT_EQUAL(sx.strtrim(s), "I have whitespace")
+
+    -- Test strjoin().
+    local l = {123, "orange monkey", 765.12, "BlueBlueBlue", "ano", "ther", 222}
+    pn.UT_EQUAL(sx.strjoin("XXX", l), "123XXXorange monkeyXXX765.12XXXBlueBlueBlueXXXanoXXXtherXXX222")
+
+    -- Test strsplit().
+    s = "Ut,turpis,adipiscing,luctus,,pharetra,condimentum, "
+    l = sx.strsplit(s, ",")
+    pn.UT_EQUAL(#l, 8, "Number of list entries")
+    pn.UT_EQUAL(l[1], "Ut")
+    pn.UT_EQUAL(l[2], "turpis")
+    pn.UT_EQUAL(l[3], "adipiscing")
+    pn.UT_EQUAL(l[4], "luctus")
+    pn.UT_EQUAL(l[5], "")
+    pn.UT_EQUAL(l[6], "pharetra")
+    pn.UT_EQUAL(l[7], "condimentum")
+
+    s = "No delimiters in here"
+    l = sx.strsplit(s, ".")
+    pn.UT_EQUAL(#l, 1, "Number of list entries")
+    pn.UT_EQUAL(l[1], "No delimiters in here")
+    pn.UT_NIL(l[2])
+
+
+    -- Test interp().
+    -- Simple interpolated string function. Stolen/modified from http://lua-users.org/wiki/StringInterpolation.
+    -- @param str Source string.
+    -- @param vars Replacement values dict.
+    s = sx.interp( [[Hello {name}, welcome to {company}.]], { name = 'roberto', company = 'thieves inc' } )
+    pn.UT_EQUAL(s, "Hello roberto, welcome to thieves inc.")
+
+
+    -- Test ...with().
+    s = "luctus Ut adipiscing condimentum "
+    pn.UT_TRUE(sx.startswith(s, "luctus "))
+    pn.UT_FALSE(sx.startswith(s, " luc"))
+    pn.UT_FALSE(sx.startswith(s, "xyz"))
+    pn.UT_TRUE(sx.endswith(s, "ntum "))
+    pn.UT_FALSE(sx.endswith(s, "ntum"))
+    pn.UT_FALSE(sx.endswith(s, "xyz"))
+
+end
+
+-----------------------------------------------------------------------------
+-- Return the module.
+return M

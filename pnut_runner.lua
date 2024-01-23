@@ -107,8 +107,21 @@ end
 -- Overall status.
 if app_fail then pf_run = "Runner Fail"
 elseif script_fail then pf_run = "Script Fail"
-elseif suites_failed == 0 then pf_run = "Test Pass"
-else pf_run = "Test Fail" end
+elseif pn.suites_failed == 0 then pf_run = "Test Pass"
+else pf_run = "Test Fail"
+end
+
+-- #------------------------------------------------------------------
+-- # Unit Test Report
+-- # Start Time: 01/23/24 14:42:42
+-- # Duration: 0.0
+-- # Suites Run: 3
+-- # Suites Failed: 0
+-- # Cases Run: 27
+-- # Cases Failed: 0
+-- # Run Result: Test Fail
+-- #------------------------------------------------------------------
+
 
 -- Report.
 report_line("#------------------------------------------------------------------")
