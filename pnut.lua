@@ -1,14 +1,19 @@
--- Core module for executing the test suites themselves. Has all the assert functions.
+--[[
+Core module for executing the test suites themselves.
+Has all the assert functions - UT_XXX(info).
+    - Each has an optional info arg for reporting.
+    - Each returns a bool pass status.
+]]
 
 local ut = require("utils")
 
 local M = {}
 
 -- Create an execution context.
-M.suites_run = 0
-M.suites_failed = 0
-M.cases_run = 0
-M.cases_failed = 0
+M.num_suites_run = 0
+M.num_suites_failed = 0
+M.num_cases_run = 0
+M.num_cases_failed = 0
 M.result_text = {}
 
 -- Current states.
@@ -32,18 +37,20 @@ end
 -----------------------------------------------------------------------------
 -- A case has failed so update all states and counts.
 -- @param msg message.
-local function case_failed(msg)
+-- @param info optional additional info.
+local function case_failed(msg, info)
     -- Update the states and counts.
     if curr_suite_pass then
         curr_suite_pass = false
-        M.suites_failed = M.suites_failed + 1
+        M.num_suites_failed = M.num_suites_failed + 1
     end
 
-    M.cases_failed = M.cases_failed + 1
+    M.num_cases_failed = M.num_cases_failed + 1
 
     -- Print failure information.
     local caller = ut.get_caller_info(4)
-    write_error(caller[1] .. "(" .. caller[2] .. "): " .. msg)
+    info = info or ""
+    write_error(caller[1] .. ":" .. caller[2] .. ": " .. msg .. ". " .. info)
 end
 
 -----------------------------------------------------------------------------
@@ -57,7 +64,7 @@ function M.start_suite(desc)
     curr_suite_pass = true
     curr_case_pass = true
 
-    M.suites_run = M.suites_run + 1
+    M.num_suites_run = M.num_suites_run + 1
 end
 
 -----------------------------------------------------------------------------
@@ -65,6 +72,7 @@ end
 -- @param info free text.
 function M.UT_INFO(info)
     write_line(info)
+    return true
 end
 
 -----------------------------------------------------------------------------
@@ -72,112 +80,159 @@ end
 -- @param info free text.
 function M.UT_ERROR(info)
     write_error(info)
+    return false
 end
 
 -----------------------------------------------------------------------------
 -- Tests expression and registers a failure if not true.
 -- @param expr Boolean expression.
-function M.UT_TRUE(expr)
-    M.cases_run = M.cases_run + 1
+-- @param info optional additional info.
+function M.UT_TRUE(expr, info)
+    local pass = true
+    M.num_cases_run = M.num_cases_run + 1
     if expr == false then
-        case_failed("Expression is not true")
+        case_failed("Expression is not true", info)
+        pass = false
     end
+    return pass
 end
 
 -----------------------------------------------------------------------------
 -- Tests expression and registers a failure if not true.
 -- @param expr Boolean expression.
-function M.UT_FALSE(expr)
-    M.cases_run = M.cases_run + 1
+-- @param info optional additional info.
+function M.UT_FALSE(expr, info)
+    local pass = true
+    M.num_cases_run = M.num_cases_run + 1
     if expr == true then
-        case_failed("Expression is not false")
+        case_failed("Expression is not false", info)
+        pass = false
     end
+    return pass
 end
 
 -----------------------------------------------------------------------------
 -- Tests expression and registers a failure if not true.
 -- @param expr Boolean expression.
-function M.UT_NOT_NIL(expr)
-    M.cases_run = M.cases_run + 1
+-- @param info optional additional info.
+function M.UT_NOT_NIL(expr, info)
+    local pass = true
+    M.num_cases_run = M.num_cases_run + 1
     if expr == nil then
-        case_failed("Expression is nil")
+        case_failed("Expression is nil", info)
+        pass = false
     end
+    return pass
 end
 
 -----------------------------------------------------------------------------
 -- Tests expression and registers a failure if not true.
 -- @param expr Boolean expression.
-function M.UT_NIL(expr)
-    M.cases_run = M.cases_run + 1
+-- @param info optional additional info.
+function M.UT_NIL(expr, info)
+    local pass = true
+    M.num_cases_run = M.num_cases_run + 1
     if expr ~= nil then
-        case_failed("Expression is not nil")
+        case_failed("Expression is not nil", info)
+        pass = false
     end
+    return pass
 end
 
 -----------------------------------------------------------------------------
 -- Tests expression and registers a failure if not equal.
 -- @param val1 First value.
 -- @param val2 Second value.
-function M.UT_EQUAL(val1, val2)
-    M.cases_run = M.cases_run + 1
+-- @param info optional additional info.
+function M.UT_EQUAL(val1, val2, info)
+    local pass = true
+    M.num_cases_run = M.num_cases_run + 1
     if val1 ~= val2 then
-        case_failed(tostring(val1) .. " is not equal to " .. tostring(val2))
+        local msg = tostring(val1) .. " is not equal to " .. tostring(val2)
+        case_failed(msg, info)
+        pass = false
     end
+    return pass
 end
 
 -----------------------------------------------------------------------------
 -- Tests expression and registers a failure if equal.
 -- @param val1 First value.
 -- @param val2 Second value.
-function M.UT_NOT_EQUAL(val1, val2)
-    M.cases_run = M.cases_run + 1
+-- @param info optional additional info.
+function M.UT_NOT_EQUAL(val1, val2, info)
+    local pass = true
+    M.num_cases_run = M.num_cases_run + 1
     if val1 == val2 then
-        case_failed(tostring(val1) .. " is equal to " .. tostring(val2))
+        local msg = tostring(val1) .. " is equal to " .. tostring(val2)
+        case_failed(msg, info)
+        pass = false
     end
+    return pass
 end
 
 -----------------------------------------------------------------------------
 -- Tests expression and registers a failure if not less than.
 -- @param val1 First value.
 -- @param val2 Second value.
-function M.UT_LESS(val1, val2)
-    M.cases_run = M.cases_run + 1
+-- @param info optional additional info.
+function M.UT_LESS(val1, val2, info)
+    local pass = true
+    M.num_cases_run = M.num_cases_run + 1
     if not(val1 < val2) then
-        case_failed(tostring(val1) .. " is not less than " .. tostring(val2))
+        local msg = tostring(val1) .. " is not less than " .. tostring(val2)
+        case_failed(msg, info)
+        pass = false
     end
+    return pass
 end
 
 -----------------------------------------------------------------------------
 -- Tests expression and registers a failure if not less than or equal.
 -- @param val1 First value.
 -- @param val2 Second value.
-function M.UT_LESS_OR_EQUAL(val1, val2)
-    M.cases_run = M.cases_run + 1
+-- @param info optional additional info.
+function M.UT_LESS_OR_EQUAL(val1, val2, info)
+    local pass = true
+    M.num_cases_run = M.num_cases_run + 1
     if not(val1 <= val2) then
-        case_failed(tostring(val1) .. " is not less than or equal to " .. tostring(val2))
+        local msg = tostring(val1) .. " is not less than or equal to " .. tostring(val2)
+        case_failed(msg, info)
+        pass = false
     end
+    return pass
 end
 
 -----------------------------------------------------------------------------
 -- Tests expression and registers a failure if not greater than.
 -- @param val1 First value.
 -- @param val2 Second value.
-function M.UT_GREATER(val1, val2)
-    M.cases_run = M.cases_run + 1
+-- @param info optional additional info.
+function M.UT_GREATER(val1, val2, info)
+    local pass = true
+    M.num_cases_run = M.num_cases_run + 1
     if not(val1 > val2) then
-        case_failed(tostring(val1) .. " is not greater than " .. tostring(val2))
+        local msg = tostring(val1) .. " is not greater than " .. tostring(val2)
+        case_failed(msg, info)
+        pass = false
     end
+    return pass
 end
 
 -----------------------------------------------------------------------------
 -- Tests expression and registers a failure if not greater than or equal.
 -- @param val1 First value.
 -- @param val2 Second value.
-function M.UT_GREATER_OR_EQUAL(val1, val2)
-    M.cases_run = M.cases_run + 1
+-- @param info optional additional info.
+function M.UT_GREATER_OR_EQUAL(val1, val2, info)
+    local pass = true
+    M.num_cases_run = M.num_cases_run + 1
     if not(val1 >= val2) then
-        case_failed(tostring(val1) .. " is not greater than or equal to " .. tostring(val2))
+        local msg = tostring(val1) .. " is not greater than or equal to " .. tostring(val2)
+        case_failed(msg, info)
+        pass = false
     end
+    return pass
 end
 
 -----------------------------------------------------------------------------
@@ -185,11 +240,16 @@ end
 -- @param val1 First value.
 -- @param val2 Second value.
 -- @param tol Within tolerance.
-function M.UT_CLOSE(val1, val2, tol)
-    M.cases_run = M.cases_run + 1
+-- @param info optional additional info.
+function M.UT_CLOSE(val1, val2, tol, info)
+    local pass = true
+    M.num_cases_run = M.num_cases_run + 1
     if math.abs(val1 - val2) > tol then
-        case_failed(tostring(val1) .. " is not close to " .. tostring(val2))
+        local msg = tostring(val1) .. " is not close to " .. tostring(val2)
+        case_failed(msg, info)
+        pass = false
     end
+    return pass
 end
 
 -----------------------------------------------------------------------------

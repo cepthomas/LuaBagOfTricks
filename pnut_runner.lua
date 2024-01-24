@@ -25,14 +25,13 @@ end
 -- Report writer.
 local function report_line(line)
     print(line)
+    -- local rf = nil
+    -- local report_fn = nil -- or from user
+    -- local function report_line(line)
+    --     if rf ~= nil then
+    --         rf:write(line, "\n")
+    --     end
 end
--- local rf = nil
--- local report_fn = nil -- or from user
--- local function report_line(line)
---     if rf ~= nil then
---         rf:write(line, "\n")
---     end
--- end
 
 -----------------------------------------------------------------------------
 -- Get the cmd line args.
@@ -50,7 +49,7 @@ for i = 1, #arg do
     local mod = scrfn:gsub('.lua', '')
 
     local mut = require(mod) -- loads into global
-    -- or
+    -- or:
     -- vv = loadfile(scrfn) -- loads file
     -- mut = vv() -- executes it returning the module
 
@@ -67,13 +66,15 @@ for i = 1, #arg do
             -- Found something to do. Run it in between optional test boilerplate.
             pn.start_suite(k.." in "..scrfn)
 
-            local ok, result = pcall(mut["setup"], pn) -- optional
+            -- Optional setup().
+            local ok, result = pcall(mut["setup"], pn)
             if not ok then
                 internal_error(result)
                 script_fail = true
                 goto done
             end
 
+            -- Run the suite.
             ok, result = pcall(v, pn)
             if not ok then
                 internal_error(result)
@@ -81,7 +82,8 @@ for i = 1, #arg do
                 goto done
             end
 
-            ok, result = pcall(mut["teardown"], pn) -- optional
+            -- Optional teardown().
+            ok, result = pcall(mut["teardown"], pn)
             if not ok then
                 internal_error(result)
                 script_fail = true
@@ -107,20 +109,9 @@ end
 -- Overall status.
 if app_fail then pf_run = "Runner Fail"
 elseif script_fail then pf_run = "Script Fail"
-elseif pn.suites_failed == 0 then pf_run = "Test Pass"
+elseif pn.num_suites_failed == 0 then pf_run = "Test Pass"
 else pf_run = "Test Fail"
 end
-
--- #------------------------------------------------------------------
--- # Unit Test Report
--- # Start Time: 01/23/24 14:42:42
--- # Duration: 0.0
--- # Suites Run: 3
--- # Suites Failed: 0
--- # Cases Run: 27
--- # Cases Failed: 0
--- # Run Result: Test Fail
--- #------------------------------------------------------------------
 
 
 -- Report.
@@ -128,10 +119,10 @@ report_line("#------------------------------------------------------------------
 report_line("# Unit Test Report")
 report_line("# Start Time: "..start_date)
 report_line("# Duration: "..dur)
-report_line("# Suites Run: "..pn.suites_run)
-report_line("# Suites Failed: "..pn.suites_failed)
-report_line("# Cases Run: "..pn.cases_run)
-report_line("# Cases Failed: "..pn.cases_failed)
+report_line("# Suites Run: "..pn.num_suites_run)
+report_line("# Suites Failed: "..pn.num_suites_failed)
+report_line("# Cases Run: "..pn.num_cases_run)
+report_line("# Cases Failed: "..pn.num_cases_failed)
 report_line("# Run Result: "..pf_run)
 report_line("#------------------------------------------------------------------")
 report_line("")
