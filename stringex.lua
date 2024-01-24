@@ -2,6 +2,9 @@
 
 local M = {}
 
+-- TODO2 maybe a char_at(s, index) return s:sub(index, 1)
+
+
 ---------------------------------------------------------------
 -- Simple interpolated string function. Stolen/modified from http://lua-users.org/wiki/StringInterpolation.
 -- ex: interp( [[Hello {name}, welcome to {company}.]], { name = name, company = get_company_name() } )
@@ -43,8 +46,9 @@ end
 --   Borrowed from http://lua-users.org/wiki/SplitJoin.
 -- @param text The string to split.
 -- @param delimiter Delimiter.
+-- @param trim Remove leading and trailing whitespace, and empty entries.
 -- @return list Split input.
-function M.strsplit(text, delimiter)
+function M.strsplit(text, delimiter, trim)
     local list = {}
     local pos = 1
     if string.find("", delimiter, 1, true) then -- this would result in endless loops
@@ -54,10 +58,26 @@ function M.strsplit(text, delimiter)
     while 1 do
         local first, last = text:find(delimiter, pos, true)
         if first ~= nil then -- found?
-            table.insert(list, text:sub(pos, first - 1))
+            local s = text:sub(pos, first - 1)
+            if trim then
+                s = M.strtrim(s)
+                if #s > 0 then
+                    table.insert(list, s)
+                end
+            else
+                table.insert(list, s)
+            end
             pos = last + 1
         else -- no delim, take it all
-            table.insert(list, text:sub(pos))
+            local s = text:sub(pos)
+            if trim then
+                s = M.strtrim(s)
+                if #s > 0 then
+                    table.insert(list, s)
+                end
+            else
+                table.insert(list, s)
+            end
             break
         end
     end
@@ -93,17 +113,6 @@ function M.endswith(s, suffix)
     -- assert_string(1, s)
     -- return test_affixes(s, suffix, raw_endswith)
 end
-
--- -----------------------------------------------------------------------------
--- local function raw_startswith(s, prefix)
---     return find(s, prefix, 1, true) == 1
--- end
-
--- -----------------------------------------------------------------------------
--- local function raw_endswith(s, suffix)
---     return #s >= #suffix and find(s, suffix, #s-#suffix+1, true) and true or false
--- end
-
 
 -----------------------------------------------------------------------------
 -- Return the module.

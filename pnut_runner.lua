@@ -46,7 +46,7 @@ end
 for i = 1, #arg do
     -- load script
     local scrfn = arg[i]
-    local mod = scrfn:gsub('.lua', '')
+    local mod = scrfn:gsub('%.lua', '')
 
     local mut = require(mod) -- loads into global
     -- or:
@@ -112,7 +112,6 @@ elseif script_fail then pf_run = "Script Fail"
 elseif pn.num_suites_failed == 0 then pf_run = "Test Pass"
 else pf_run = "Test Fail"
 end
-
 
 -- Report.
 report_line("#------------------------------------------------------------------")

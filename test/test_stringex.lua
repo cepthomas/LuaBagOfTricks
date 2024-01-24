@@ -27,16 +27,28 @@ function M.suite_stringex(pn)
     pn.UT_EQUAL(sx.strjoin("XXX", l), "123XXXorange monkeyXXX765.12XXXBlueBlueBlueXXXanoXXXtherXXX222")
 
     -- Test strsplit().
-    s = "Ut,turpis,adipiscing,luctus,,pharetra,condimentum, "
-    l = sx.strsplit(s, ",")
-    pn.UT_EQUAL(#l, 8, "Number of list entries")
+    s = "Ut,,turpis,   adipiscing,luctus,,pharetra   ,condimentum, "
+    -- Without trim.
+    l = sx.strsplit(s, ",", false)
+    pn.UT_EQUAL(#l, 9, "Number of list entries")
+    pn.UT_EQUAL(l[1], "Ut")
+    pn.UT_EQUAL(l[2], "")
+    pn.UT_EQUAL(l[3], "turpis")
+    pn.UT_EQUAL(l[4], "   adipiscing")
+    pn.UT_EQUAL(l[5], "luctus")
+    pn.UT_EQUAL(l[6], "")
+    pn.UT_EQUAL(l[7], "pharetra   ")
+    pn.UT_EQUAL(l[8], "condimentum")
+    pn.UT_EQUAL(l[9], " ")
+    -- With trim.
+    l = sx.strsplit(s, ",", true)
+    pn.UT_EQUAL(#l, 6, "Number of list entries")
     pn.UT_EQUAL(l[1], "Ut")
     pn.UT_EQUAL(l[2], "turpis")
     pn.UT_EQUAL(l[3], "adipiscing")
     pn.UT_EQUAL(l[4], "luctus")
-    pn.UT_EQUAL(l[5], "")
-    pn.UT_EQUAL(l[6], "pharetra")
-    pn.UT_EQUAL(l[7], "condimentum")
+    pn.UT_EQUAL(l[5], "pharetra")
+    pn.UT_EQUAL(l[6], "condimentum")
 
     s = "No delimiters in here"
     l = sx.strsplit(s, ".")

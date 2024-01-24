@@ -148,7 +148,7 @@ function M.UT_EQUAL(val1, val2, info)
     local pass = true
     M.num_cases_run = M.num_cases_run + 1
     if val1 ~= val2 then
-        local msg = tostring(val1) .. " is not equal to " .. tostring(val2)
+        local msg = string.format("[%s] is not equal to [%s]", tostring(val1), tostring(val2))
         case_failed(msg, info)
         pass = false
     end
@@ -164,7 +164,7 @@ function M.UT_NOT_EQUAL(val1, val2, info)
     local pass = true
     M.num_cases_run = M.num_cases_run + 1
     if val1 == val2 then
-        local msg = tostring(val1) .. " is equal to " .. tostring(val2)
+        local msg = string.format("[%s] is equal to [%s]", tostring(val1), tostring(val2))
         case_failed(msg, info)
         pass = false
     end
@@ -180,7 +180,7 @@ function M.UT_LESS(val1, val2, info)
     local pass = true
     M.num_cases_run = M.num_cases_run + 1
     if not(val1 < val2) then
-        local msg = tostring(val1) .. " is not less than " .. tostring(val2)
+        local msg = string.format("[%s] is not less than [%s]", tostring(val1), tostring(val2))
         case_failed(msg, info)
         pass = false
     end
@@ -196,7 +196,7 @@ function M.UT_LESS_OR_EQUAL(val1, val2, info)
     local pass = true
     M.num_cases_run = M.num_cases_run + 1
     if not(val1 <= val2) then
-        local msg = tostring(val1) .. " is not less than or equal to " .. tostring(val2)
+        local msg = string.format("[%s] is not less than or equal to [%s]", tostring(val1), tostring(val2))
         case_failed(msg, info)
         pass = false
     end
@@ -212,7 +212,7 @@ function M.UT_GREATER(val1, val2, info)
     local pass = true
     M.num_cases_run = M.num_cases_run + 1
     if not(val1 > val2) then
-        local msg = tostring(val1) .. " is not greater than " .. tostring(val2)
+        local msg = string.format("[%s] is not greater than [%s]", tostring(val1), tostring(val2))
         case_failed(msg, info)
         pass = false
     end
@@ -228,7 +228,7 @@ function M.UT_GREATER_OR_EQUAL(val1, val2, info)
     local pass = true
     M.num_cases_run = M.num_cases_run + 1
     if not(val1 >= val2) then
-        local msg = tostring(val1) .. " is not greater than or equal to " .. tostring(val2)
+        local msg = string.format("[%s] is not greater than or equal to [%s]", tostring(val1), tostring(val2))
         case_failed(msg, info)
         pass = false
     end
@@ -245,7 +245,7 @@ function M.UT_CLOSE(val1, val2, tol, info)
     local pass = true
     M.num_cases_run = M.num_cases_run + 1
     if math.abs(val1 - val2) > tol then
-        local msg = tostring(val1) .. " is not close to " .. tostring(val2)
+        local msg = string.format("[%s] is not close to [%s]", tostring(val1), tostring(val2))
         case_failed(msg, info)
         pass = false
     end
