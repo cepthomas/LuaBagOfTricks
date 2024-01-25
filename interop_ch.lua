@@ -47,6 +47,7 @@ local tmpl_interop_c =
 >table.insert(arg_specs, c_types[arg.type] .. " " .. arg.name)
 >end -- func.args
 >sargs = sx.strjoin(", ", arg_specs)
+//--------------------------------------------------------//
 >if #sargs > 0 then
 $(c_ret_type) luainterop_$(func.host_func_name)(lua_State* l, $(sargs))
 >else
@@ -86,6 +87,7 @@ $(c_ret_type) luainterop_$(func.host_func_name)(lua_State* l)
 >for _, func in ipairs(host_funcs) do
 >local lua_ret_type = lua_types[func.ret.type]
 >local c_ret_type = c_types[func.ret.type]
+//--------------------------------------------------------//
 // Host export function: $(func.description or "")
 // @param[in] l Internal lua state.
 // @return Number of lua return values.
