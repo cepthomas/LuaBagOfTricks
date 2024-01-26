@@ -2,7 +2,7 @@
 
 local M = {}
 
--- TODO2 maybe a char_at(s, index) return s:sub(index, 1)
+-- TODO1 maybe a char_at(s, index) return s:sub(index, 1)
 
 
 ---------------------------------------------------------------
