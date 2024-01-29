@@ -2,8 +2,6 @@
 
 local M = {}
 
--- TODO1 maybe a char_at(s, index) return s:sub(index, 1)
-
 
 ---------------------------------------------------------------
 -- Simple interpolated string function. Stolen/modified from http://lua-users.org/wiki/StringInterpolation.

@@ -37,6 +37,11 @@ local tmpl_interop_c =
 >end
 >end
 
+#ifdef _WIN32
+// Ignore some generated code warnings
+#pragma warning( disable : 6001 4244 4703 )
+#endif
+
 //---------------- Call lua functions from host -------------//
 
 >for _, func in ipairs(lua_funcs) do
