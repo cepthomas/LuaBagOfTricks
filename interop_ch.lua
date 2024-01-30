@@ -37,7 +37,7 @@ local tmpl_interop_c =
 >end
 >end
 
-#ifdef _WIN32
+#if defined(_MSC_VER)
 // Ignore some generated code warnings
 #pragma warning( disable : 6001 4244 4703 )
 #endif
