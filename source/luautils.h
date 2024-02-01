@@ -45,6 +45,6 @@ void luautils_EvalStack(lua_State* l, int expected);
 #define PROCESS_LUA_ERROR(L, err, fmt, ...)  if(err >= LUA_ERRRUN) { luautils_LuaError(L, __FILE__, __LINE__, err, fmt, ##__VA_ARGS__); }
 
 /// Helper macro to check/log stack size.
-#define EVAL_STACK(L, expected)  { int num = lua_gettop(L); if (num != expected) { logger_Log(LVL_DEBUG, __FILE__, __LINE__, "Expected %d stack but is %d", expected, num); } }
+#define EVAL_STACK(L, expected)  { int num = lua_gettop(L); if (num != expected) { LOG_ERROR("Expected %d stack but is %d", expected, num); } }
 
 #endif // LUAUTILS_H
