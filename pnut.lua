@@ -31,7 +31,7 @@ end
 -- Error msg output to file and log.
 -- @param msg The info to write.
 local function write_error(msg)
-    write_line("! " .. msg)
+    write_line("! "..msg)
 end
 
 -----------------------------------------------------------------------------
@@ -50,14 +50,14 @@ local function case_failed(msg, info)
     -- Print failure information.
     local caller = ut.get_caller_info(4)
     info = info or ""
-    write_error(caller[1] .. ":" .. caller[2] .. ": " .. msg .. ". " .. info)
+    write_error(caller[1]..":"..caller[2].." "..msg..". "..info)
 end
 
 -----------------------------------------------------------------------------
 -- Start a new suite.
 -- @param desc Free text.
 function M.start_suite(desc)
-    write_line("\nRunning Suite: " .. desc)
+    write_line("\nRunning Suite: "..desc)
     write_line("-----------------------------------------------------------")
 
     -- Reset the current p/f states.
