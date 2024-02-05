@@ -11,7 +11,7 @@ int luautils_DumpStack(lua_State* L, const char* info)
 {
     static char buff[BUFF_LEN];
 
-    printf("Dump stack:%s (L:%p)", info, L); // TODO3 something better than printf?
+    printf("Dump stack:%s (L:%p)\n", info, L); // TODO3 something better than printf?
 
     for(int i = lua_gettop(L); i >= 1; i--)
     {
@@ -46,7 +46,7 @@ int luautils_DumpStack(lua_State* L, const char* info)
                 break;
         }
     
-        printf("   %s", buff);
+        printf("   %s\n", buff);
     }
 
     return 0;
@@ -62,12 +62,12 @@ void luautils_LuaError(lua_State* L, int err, const char* format, ...)
     printf(format, args);
     va_end(args);
 
-    printf("   %s", luautils_LuaStatusToString(err));
+    printf("   %s\n", luautils_LuaStatusToString(err));
 
     // Dump trace.
     luaL_traceback(L, L, NULL, 1);
     snprintf(buff, BUFF_LEN-1, "%s | %s | %s", lua_tostring(L, -1), lua_tostring(L, -2), lua_tostring(L, -3));
-    printf("   %s", buff);
+    printf("   %s\n", buff);
 
     lua_error(L); // never returns
 }
@@ -93,7 +93,7 @@ const char* luautils_LuaStatusToString(int stat)
 //--------------------------------------------------------//
 int luautils_DumpTable(lua_State* L, const char* name)
 {
-    printf(name);
+    printf("%s\n", name);
 
     // Put a nil key on stack.
     lua_pushnil(L);
@@ -107,7 +107,7 @@ int luautils_DumpTable(lua_State* L, const char* name)
         // Get type of value(-1).
         const char* type = luaL_typename(L, -1);
 
-        printf("   %s=%s", name, type);
+        printf("   %s=%s\n", name, type);
 
         // Remove value(-1), now key on top at(-1).
         lua_pop(L, 1);
@@ -136,6 +136,6 @@ void luautils_EvalStack(lua_State* l, int expected)
     int num = lua_gettop(l);
     if (num != expected)
     {
-        printf("Expected %d stack but is %d", expected, num);
+        printf("Expected %d stack but is %d\n", expected, num);
     }
 }
