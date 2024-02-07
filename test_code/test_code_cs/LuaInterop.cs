@@ -116,7 +116,7 @@ namespace MyLuaInteropLib
             else { ErrorHandler(new SyntaxException($"Bad arg type for {arg_one}")); return 0; }
 
             // Do the work. One result.
-            bool ret = MyLuaFunc3Work(arg_one);
+            bool ret = MyLuaFunc3_Work(arg_one);
             l.PushBoolean(ret);
             return 1;
         }
@@ -133,7 +133,7 @@ namespace MyLuaInteropLib
             // Get arguments
 
             // Do the work. One result.
-            double ret = FuncWithNoArgsWork();
+            double ret = FuncWithNoArgs_Work();
             l.PushNumber(ret);
             return 1;
         }

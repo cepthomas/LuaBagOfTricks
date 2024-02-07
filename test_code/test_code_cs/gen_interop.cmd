@@ -5,5 +5,5 @@ echo off
 
 :: Build the interop. Note: need explicit paths - lua doesn't know file system.
 pushd "..\.."
-lua gen_interop.lua -cs -d -t test\cs_test\interop_spec_cs.lua test\cs_test
+lua gen_interop.lua -cs -d -t test_code\test_code_cs\interop_spec_cs.lua test_code\test_code_cs
 popd

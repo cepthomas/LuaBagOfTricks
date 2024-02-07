@@ -18,8 +18,14 @@
 
 #include "another.h"
 
+#if defined(_MSC_VER)
+// Ignore some generated code warnings
+#pragma warning( disable : 6001 4244 4703 )
+#endif
+
 //---------------- Call lua functions from host -------------//
 
+//--------------------------------------------------------//
 int luainterop_MyLuaFunc(lua_State* l, const char* arg_one, int arg_two, int arg_three)
 {
     int num_args = 0;
@@ -49,6 +55,7 @@ int luainterop_MyLuaFunc(lua_State* l, const char* arg_one, int arg_two, int arg
     return ret;
 }
 
+//--------------------------------------------------------//
 double luainterop_MyLuaFunc2(lua_State* l, bool arg_one)
 {
     int num_args = 0;
@@ -74,6 +81,7 @@ double luainterop_MyLuaFunc2(lua_State* l, bool arg_one)
     return ret;
 }
 
+//--------------------------------------------------------//
 double luainterop_NoArgsFunc(lua_State* l)
 {
     int num_args = 0;
@@ -100,6 +108,7 @@ double luainterop_NoArgsFunc(lua_State* l)
 
 //---------------- Call host functions from Lua -------------//
 
+//--------------------------------------------------------//
 // Host export function: fooga
 // @param[in] l Internal lua state.
 // @return Number of lua return values.
@@ -118,6 +127,7 @@ static int luainterop_MyLuaFunc3(lua_State* l)
     return 1;
 }
 
+//--------------------------------------------------------//
 // Host export function: Func with no args
 // @param[in] l Internal lua state.
 // @return Number of lua return values.

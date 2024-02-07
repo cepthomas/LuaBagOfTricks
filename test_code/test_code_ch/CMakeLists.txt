@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall")
 
 set(LUA "C:/Lua")
-set(CSRC "../../source")
+set(CSRC "../../source_code")
 
 include_directories(
     ${LUA}/include
