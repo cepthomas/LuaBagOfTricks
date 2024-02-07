@@ -1,4 +1,4 @@
-# LuaBagOfTricks
+# LuaBagOfTricks TODO1 clean up
 
 - Making lua life easier. For me.
 - Uses Lua 5.4 on Windows. It's pure Lua so far so *should* work anywhere.
