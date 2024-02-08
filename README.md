@@ -1,7 +1,6 @@
-# LuaBagOfTricks TODO1 clean up
-
+# Lua Bag Of Tricks
 - Making lua life easier. For me.
-- Uses Lua 5.4 on Windows. It's pure Lua so far so *should* work anywhere.
+- Pure Lua so far so *should* work anywhere.
 
 ## pnut
 `pnut.lua` and `pnut_runner.lua` comprise a minimalist unit test framework based on previous implementations in C/C++/C#.
@@ -22,10 +21,13 @@ Used for generating language specific interop.
 Slightly modified version of the nifty [debugger.lua](https://github.com/slembcke/debugger.lua).
 
 ## interop
-Generates C# and C code for the standard lua interop. The Test projects demonstrate how to use it:
-- Test\cs_test\interop_spec_cs.lua
-- Test\CH_test\interop_spec_CH.lua
+Generates C# and C code for the standard lua interop via `gen_interop.lua`.
+Two test projects demonstrate how to use it:
+- Test\test_code_cs
+- Test\test_code_ch
 
-## source dir
+## validators
+Utilities for validation of lua data types. They all fail fatally by calling `error()`.
 
-Several functions to support the C side of lua applications. Currently intended to be simple cut-and-paste.
+## C source_code
+Several functions to support the C side of lua applications. Take what is needed by simple cut-and-paste.
