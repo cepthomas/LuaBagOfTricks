@@ -41,7 +41,8 @@ function M.val_integer(v, min, max, info)
     ok = ok and (min ~= nil and v >= min)
     if not ok and M.fatal then
         local s = string.format("Invalid integer:%s %s", tostring(v), info or "")
-        error(s, M.depth) -- who called me
+        return s
+        -- error(s, M.depth) -- who called me
     end
     return ok
 end
