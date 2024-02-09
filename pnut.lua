@@ -144,6 +144,38 @@ end
 -- @param val1 First value.
 -- @param val2 Second value.
 -- @param info optional additional info.
+function M.UT_STR_EQUAL(val1, val2, info)
+    local pass = true
+    M.num_cases_run = M.num_cases_run + 1
+    if tostring(val1) ~= tostring(val2) then
+        local msg = string.format("[%s] is not equal to [%s]", tostring(val1), tostring(val2))
+        case_failed(msg, info)
+        pass = false
+    end
+    return pass
+end
+
+-----------------------------------------------------------------------------
+-- Tests expression and registers a failure if equal.
+-- @param val1 First value.
+-- @param val2 Second value.
+-- @param info optional additional info.
+function M.UT_STR_NOT_EQUAL(val1, val2, info)
+    local pass = true
+    M.num_cases_run = M.num_cases_run + 1
+    if tostring(val1) == tostring(val2) then
+        local msg = string.format("[%s] is equal to [%s]", tostring(val1), tostring(val2))
+        case_failed(msg, info)
+        pass = false
+    end
+    return pass
+end
+
+-----------------------------------------------------------------------------
+-- Tests expression and registers a failure if not equal.
+-- @param val1 First value.
+-- @param val2 Second value.
+-- @param info optional additional info.
 function M.UT_EQUAL(val1, val2, info)
     local pass = true
     M.num_cases_run = M.num_cases_run + 1
