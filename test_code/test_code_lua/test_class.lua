@@ -17,14 +17,14 @@ function Animal:__tostring()
     return self.name..': '..self:speak()
 end
 
--- create
+---------- create
 Dog = class(Animal)
 
 function Dog:speak()
     return 'bark'
 end
 
--- inherit
+---------- inherit
 Cat = class(Animal,
     function(c, name, breed)
         Animal.__init(c, name) -- must init base!
@@ -35,7 +35,7 @@ function Cat:speak()
     return 'meow'
 end
 
--- create
+---------- create
 Lion = class(Cat)
 
 function Lion:speak()

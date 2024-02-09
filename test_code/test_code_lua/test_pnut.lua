@@ -32,6 +32,9 @@ function M.suite_basic(pn)
     pn.UT_NOT_NIL(nil) -- fail
     pn.UT_NOT_NIL(2) -- pass
 
+    pn.UT_STR_EQUAL(111, "111") -- pass
+    pn.UT_NOT_STR_EQUAL("222", "111") -- pass
+
     pn.UT_EQUAL(111, 111) -- pass
     pn.UT_EQUAL(111, 112) -- fail
     pn.UT_EQUAL(111, "111") -- fail

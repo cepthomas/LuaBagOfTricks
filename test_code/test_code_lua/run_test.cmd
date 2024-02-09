@@ -6,7 +6,7 @@ set LUA_PATH=;;C:\Dev\repos\Lua\LuaBagOfTricks\?.lua;C:\Dev\repos\Lua\LuaBagOfTr
 
 pushd ".."
 
-:: Run the unit tests.TODO1
+:: Run the unit tests.
 rem lua pnut_runner.lua  Test\test_stringex.lua  Test\test_utils.lua  Test\test_class.lua
 lua pnut_runner.lua  Test\test_stringex.lua
 rem lua pnut_runner.lua  Test\test_pnut.lua
