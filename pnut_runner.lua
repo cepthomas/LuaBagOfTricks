@@ -48,14 +48,10 @@ for i = 1, #arg do
     local scrfn = arg[i]
     local mod = scrfn:gsub('%.lua', '')
 
-    local mut = require(mod) -- loads into global
-    -- or:
-    -- vv = loadfile(scrfn) -- loads file
-    -- mut = vv() -- executes it returning the module
-
-    if mut == nil then
-        -- log a message and exit.
-        internal_error("Invalid file: "..scrfn)
+    -- Load file in protected mode.
+    ok, mut = pcall(require, mod)
+    if not ok then
+        internal_error(string.format("Failed to load file: %s\n%s ", scrfn, mut))
         app_fail = true
         goto done
     end
