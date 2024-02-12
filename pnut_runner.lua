@@ -46,12 +46,13 @@ end
 for i = 1, #arg do
     -- load script
     local scrfn = arg[i]
+    -- print(">>>", scrfn)
     local mod = scrfn:gsub('%.lua', '')
 
     -- Load file in protected mode.
     ok, mut = pcall(require, mod)
-    if not ok then
-        internal_error(string.format("Failed to load file: %s\n%s ", scrfn, mut))
+    if not ok or type(mut) ~= "table" then
+        internal_error(string.format("Failed to load file %s: %s ", scrfn, mut))
         app_fail = true
         goto done
     end
