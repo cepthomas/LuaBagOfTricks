@@ -1,6 +1,6 @@
 -- Generate lua interop for C, C#.
-
--- Later maybe: enums, markdown, ...
+-- It's generally simpler to make the types more lua-friendly as C handles translation a bit easier.
+-- Later maybe: enums, markdown, out pointers ...
 
 local ut = require('utils')
 local sx = require("stringex")

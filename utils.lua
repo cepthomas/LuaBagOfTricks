@@ -109,6 +109,44 @@ function M.get_caller_info(level)
     return ret
 end
 
+
+----------------------------------------------------------------------------
+-- function M.is_integer(v) return type(v) == "number" and math.ceil(v) == v end
+function M.is_integer(v) return M.to_integer(v) ~= nil end
+function M.is_number(v) return v ~= nil and type(v) == 'number' end
+function M.is_string(v) return v ~= nil and type(v) == 'string' end
+function M.is_boolean(v) return v ~= nil and type(v) == 'boolean' end
+function M.is_function(v) return v ~= nil and type(v) == 'function' end
+function M.is_table(v) return v ~= nil and type(v) == 'table' end
+
+
+-----------------------------------------------------------------------------
+--- Convert value to integer.
+-- @param v value to convert
+-- @return integer or nil if not convertible
+function M.to_integer(v)
+    if type(v) == "number" and math.ceil(v) == v then return v
+    elseif type(v) == "string" then return tonumber(v, 10)
+    else return nil
+    end
+end
+
+-----------------------------------------------------------------------------
+--- Like tostring() without address info. Mainly for unit testing.
+-- @param v value to convert
+-- @return string
+function M.tostringcln(v)
+    ret = "???"
+    vtp = type(v)
+    if vtp == "table" then ret = "table"
+    elseif vtp == "function" then ret = "function"
+    elseif vtp == "thread" then ret = "thread"
+    elseif vtp == "userdata" then ret = "userdata"
+    else ret = tostring(v)
+    end
+    return ret
+end
+
 -----------------------------------------------------------------------------
 --- Remap a value to new coordinates.
 -- @param val
