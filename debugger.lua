@@ -597,7 +597,7 @@ end
 
 -- Conditionally enable color support. https://stackoverflow.com/a/33206814
 function dbg.enable_color()
-	COLOR_GRAY = string.char(27) .. "[90m"
+	COLOR_GRAY = string.char(27) .. "[95m" --"[90m"
 	COLOR_RED = string.char(27) .. "[91m"
 	COLOR_BLUE = string.char(27) .. "[94m"
 	COLOR_YELLOW = string.char(27) .. "[33m"

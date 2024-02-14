@@ -112,7 +112,7 @@ function M.UT_FALSE(expr, info)
 end
 
 -----------------------------------------------------------------------------
--- Tests expression and registers a failure if not true.
+-- Tests expression and registers a failure if not true. TODO2 option to early exit because app is hosed - see c version.
 -- @param expr Boolean expression.
 -- @param info optional additional info.
 function M.UT_NOT_NIL(expr, info)

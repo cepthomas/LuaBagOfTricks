@@ -16,7 +16,6 @@ end
 
 -----------------------------------------------------------------------------
 function M.suite_stringex(pn)
-    pn.UT_INFO("Test all functions in stringex.lua")
 
     -- Test strtrim().
     local s = "  I have whitespace    "

@@ -9,7 +9,7 @@ local M = {}
 --- Execute a file and return the output.
 -- @param cmd Command to run.
 -- @return Output text.
-function M.execute_capture(cmd)
+function M.execute_and_capture(cmd)
   local f = io.popen(cmd, 'r')
   local s = f:read('*a')
   f:close()

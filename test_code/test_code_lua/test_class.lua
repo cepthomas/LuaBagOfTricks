@@ -55,7 +55,7 @@ end
 
 -----------------------------------------------------------------------------
 function M.suite_class(pn)
-    pn.UT_INFO("Test all functions in class.lua")
+    -- Test all functions in class.lua
 
     local fido = Dog('Fido')
     local felix = Cat('Felix', 'Tabby')

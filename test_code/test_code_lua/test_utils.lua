@@ -17,7 +17,6 @@ end
 
 -----------------------------------------------------------------------------
 function M.suite_utils(pn)
-    pn.UT_INFO("Test all functions in utils.lua")
 
     -- Test dump_table().
     tt = { aa="pt1", bb=90901, alist={"qwerty", 777, temb1={ jj="pt8", b=true, temb2={ num=1.517, dd="strdd" } }, intx=5432}}
