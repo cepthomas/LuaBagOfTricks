@@ -38,6 +38,22 @@ int luautils_DumpGlobals(lua_State* L);
 /// Check stack.
 void luautils_EvalStack(lua_State* l, int expected);
 
+/// Safe convert a string to double with bounds checking.
+/// @param[in] str to parse
+/// @param[out] val answer
+/// @param[in] min limit inclusive
+/// @param[in] max limit inclusive
+/// @return success
+bool luautils_ParseDouble(const char* str, double* val, double min, double max);
+
+/// Safe convert a string to int with bounds checking.
+/// @param[in] str to parse
+/// @param[out] val answer
+/// @param[in] min limit inclusive
+/// @param[in] max limit inclusive
+/// @return success
+bool luautils_ParseInt(const char* str, int* val, int min, int max);
+
 /// Helper macro to dump stack.
 #define DUMP_STACK(L, info)  luautils_DumpStack(L, __FILE__, __LINE__, info);
 

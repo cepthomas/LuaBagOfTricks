@@ -1,6 +1,8 @@
 
+#include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
+#include <errno.h>
 
 #include "luautils.h"
 
@@ -138,4 +140,58 @@ void luautils_EvalStack(lua_State* l, int expected)
     {
         printf("Expected %d stack but is %d\n", expected, num);
     }
+}
+
+//--------------------------------------------------------//
+bool luautils_ParseDouble(const char* str, double* val, double min, double max)
+{
+    bool valid = true;
+    char* p;
+
+    errno = 0;
+    *val = strtof(str, &p);
+    if (errno == ERANGE)
+    {
+        // Mag is too large.
+        valid = false;
+    }
+    else if (p == str)
+    {
+        // Bad string.
+        valid = false;
+    }
+    else if (*val < min || *val > max)
+    {
+        // Out of range.
+        valid = false;
+    }
+
+    return valid;
+}
+
+//--------------------------------------------------------//
+bool luautils_ParseInt(const char* str, int* val, int min, int max)
+{
+    bool valid = true;
+    char* p;
+
+    errno = 0;
+    *val = strtol(str, &p, 10);
+    if (errno == ERANGE)
+    {
+        // Mag is too large.
+        valid = false;
+    }
+    else if (p == str)
+    {
+        // Bad string.
+        valid = false;
+    }
+    else if (*val < min || *val > max)
+    {
+        // Out of range.
+        valid = false;
+    }
+
+    return valid;
 }
