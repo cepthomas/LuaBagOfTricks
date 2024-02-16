@@ -4,11 +4,10 @@ echo off
 :: Set the lua path.
 set LUA_PATH=;;C:\Dev\repos\Lua\LuaBagOfTricks\?.lua;C:\Dev\repos\Lua\LuaBagOfTricks\Test\?.lua;
 
-pushd ".."
+pushd "..\.."
 
 :: Run the unit tests.
-rem lua pnut_runner.lua  Test\test_stringex.lua  Test\test_utils.lua  Test\test_class.lua
-lua pnut_runner.lua  Test\test_stringex.lua
-rem lua pnut_runner.lua  Test\test_pnut.lua
+rem  test_stringex.lua  test_utils.lua  test_class.lua  test_pnut.lua
+lua pnut_runner.lua  test_code\test_code_lua\test_pnut.lua
 
 popd

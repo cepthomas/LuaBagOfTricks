@@ -102,7 +102,6 @@ end
 -- @param prefix a string or an array of strings
 function M.startswith(s, prefix)
     return s:find(prefix, 1, true) == 1
-
     -- assert_string(1, s)
     -- return test_affixes(s, prefix, raw_startswith)
 end

@@ -1,5 +1,6 @@
 --[[
 	Copyright (c) 2023 Scott Lembcke and Howling Moon Software
+	https://github.com/slembcke/debugger.lua/blob/master/README.md
 	
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
@@ -19,14 +20,18 @@
 	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 	SOFTWARE.
 	
-	TO-DO from original:
+	TODO3 from original:
 	* Print short function arguments as part of stack location.
 	* Properly handle being reentrant due to coroutines.
 ]]
 
 local dbg
 
--- Use ANSI color codes in the prompt by default.
+-- TODO2 l cmd gets noisy.
+-- TODO2 hot reload
+
+
+-- Use ANSI color codes in the prompt by default. TODO2 play with these.
 local COLOR_GRAY = ""
 local COLOR_RED = ""
 local COLOR_BLUE = ""
@@ -597,7 +602,7 @@ end
 
 -- Conditionally enable color support. https://stackoverflow.com/a/33206814
 function dbg.enable_color()
-	COLOR_GRAY = string.char(27) .. "[95m" --"[90m"
+	COLOR_GRAY = string.char(27) .. "[95m" --"[90m" TODO2 I changed
 	COLOR_RED = string.char(27) .. "[91m"
 	COLOR_BLUE = string.char(27) .. "[94m"
 	COLOR_YELLOW = string.char(27) .. "[33m"
@@ -613,7 +618,7 @@ end
 
 if stdin_isatty and not os.getenv("DBG_NOREADLINE") then
 	pcall(function()
-		local linenoise = require 'linenoise'
+		local linenoise = require 'linenoise' --TODO2 don't have.
 		
 		-- Load command history from ~/.lua_history
 		local hist_path = os.getenv('HOME') .. '/.lua_history'

@@ -15,7 +15,6 @@ local function usage()
     print("  -ch generate c and h files")
     print("  -cs generate c# file")
     print("  -d enable debugger if available")
-    print("  -t use debugger terminal color")
 end
 
 -- Supported flavors.
@@ -43,7 +42,6 @@ local syntax = nil
 local spec_fn = nil
 local out_path = nil
 local use_dbgr = false
-local use_term = false
 
 for i = 1, #arg do
     local a = arg[i]
@@ -51,7 +49,6 @@ for i = 1, #arg do
     if a:sub(1, 1) == '-' then
         opt = a:sub(2)
         if opt == "d" then use_dbgr = true
-        elseif opt == "t" then use_term = true
         else
             syntax = opt
             syntax_fn = syntaxes[syntax]
@@ -71,7 +68,7 @@ end
 if not spec_fn or not out_path then error("Missing output path") end
 
 -- OK so far. Configure error function.
-ut.config_error_handling(use_dbgr, use_term)
+ut.config_debug(use_dbgr)
 
 -- Get the specific flavor.
 local syntax_chunk, msg = loadfile(syntax_fn)

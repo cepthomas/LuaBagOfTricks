@@ -17,10 +17,10 @@ function M.execute_and_capture(cmd)
 end
 
 ---------------------------------------------------------------
---- If using debugger, bind lua error() function to it. Optional terminal.
+--- If using debugger, bind lua error() function to it.
 -- @param use_dbgr Use debugger.
 -- @param use_term Use terminal for debugger.
-function M.config_error_handling(use_dbgr, use_term)
+function M.config_debug(use_dbgr, use_term)
     local have_dbgr = false
     local og_error = error -- save original error function
 
@@ -34,19 +34,22 @@ function M.config_error_handling(use_dbgr, use_term)
     if dbg then 
         -- sub debug handler
         error = dbg.error
-    end
-
-    if dbg and use_term then
-        dbg.enable_color()
-    end
-
-    -- Not using debugger so make a global stub to keep breakpoints from yelling.
-    if not dbg then
+        if use_term then
+            dbg.enable_color()
+            dbg.auto_where = 2
+        end
+    else
+        -- Not using debugger so make a global stub to keep breakpoints from yelling.
         function dbg() end
+        dbg =
+        {
+            error = function(error, level) end,
+            assert = function(error, message) end,
+            call = function(f, ...) end
+        }
     end
-
-    -- dbg()
 end
+
 
 -----------------------------------------------------------------------------
 --- Diagnostic.
@@ -113,10 +116,15 @@ end
 ----------------------------------------------------------------------------
 -- function M.is_integer(v) return type(v) == "number" and math.ceil(v) == v end
 function M.is_integer(v) return M.to_integer(v) ~= nil end
+
 function M.is_number(v) return v ~= nil and type(v) == 'number' end
+
 function M.is_string(v) return v ~= nil and type(v) == 'string' end
+
 function M.is_boolean(v) return v ~= nil and type(v) == 'boolean' end
+
 function M.is_function(v) return v ~= nil and type(v) == 'function' end
+
 function M.is_table(v) return v ~= nil and type(v) == 'table' end
 
 
@@ -135,7 +143,7 @@ end
 --- Like tostring() without address info. Mainly for unit testing.
 -- @param v value to convert
 -- @return string
-function M.tostringcln(v)
+function M.tostring_cln(v)
     ret = "???"
     vtp = type(v)
     if vtp == "table" then ret = "table"

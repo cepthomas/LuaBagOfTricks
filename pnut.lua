@@ -147,7 +147,15 @@ end
 function M.UT_STR_EQUAL(val1, val2, info)
     local pass = true
     M.num_cases_run = M.num_cases_run + 1
-    if tostring(val1) ~= tostring(val2) then --TODO1 check for string type
+    if type(val1) ~= "string" then
+        local msg = string.format("[%s] is not a string", tostring(val1))
+        case_failed(msg, info)
+        pass = false
+    elseif type(val2) ~= "string" then
+        local msg = string.format("[%s] is not a string", tostring(val2))
+        case_failed(msg, info)
+        pass = false
+    elseif val1 ~= val2 then
         local msg = string.format("[%s] is not equal to [%s]", tostring(val1), tostring(val2))
         case_failed(msg, info)
         pass = false
