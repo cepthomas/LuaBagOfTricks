@@ -24,7 +24,7 @@ end
 -----------------------------------------------------------------------------
 -- Report writer.
 local function report_line(line)
-    print(line)
+    io.write(line, '\n')
     -- local rf = nil
     -- local report_fn = nil -- or from user
     -- local function report_line(line)
@@ -46,7 +46,6 @@ end
 for i = 1, #arg do
     -- load script
     local scrfn = arg[i]
-    -- print(">>>", scrfn)
     local mod = scrfn:gsub('%.lua', '')
 
     -- Load file in protected mode.

@@ -1,5 +1,6 @@
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
 #include <errno.h>
@@ -8,12 +9,17 @@
 
 #define BUFF_LEN 100
 
+// Where to send the output. Default is stdout.
+static FILE* _fout = stdout;
+void lautils_SetOutput(FILE* fout) { _fout = fout; }
+
+
 //--------------------------------------------------------//
 int luautils_DumpStack(lua_State* L, const char* info)
 {
     static char buff[BUFF_LEN];
 
-    printf("Dump stack:%s (L:%p)\n", info, L);
+    fprintf(_fout, "Dump stack:%s (L:%p)\n", info, L);
 
     for(int i = lua_gettop(L); i >= 1; i--)
     {
@@ -48,7 +54,7 @@ int luautils_DumpStack(lua_State* L, const char* info)
                 break;
         }
     
-        printf("   %s\n", buff);
+        fprintf(_fout, "   %s\n", buff);
     }
 
     return 0;
@@ -61,17 +67,17 @@ void luautils_LuaError(lua_State* L, int err, const char* format, ...)
 
     va_list args;
     va_start(args, format);
-    printf(format, args);
+    fprintf(_fout, format, args);
     va_end(args);
 
-    printf("   %s\n", luautils_LuaStatusToString(err));
+    fprintf(_fout, "   %s\n", luautils_LuaStatusToString(err));
 
     // Dump trace.
     luaL_traceback(L, L, NULL, 1);
     snprintf(buff, BUFF_LEN-1, "%s | %s | %s", lua_tostring(L, -1), lua_tostring(L, -2), lua_tostring(L, -3));
-    printf("   %s\n", buff);
+    fprintf(_fout, "   %s\n", buff);
 
-    lua_error(L); // never returns
+    luaL_error(L); // never returns
 }
 
 //--------------------------------------------------------//
@@ -95,7 +101,7 @@ const char* luautils_LuaStatusToString(int stat)
 //--------------------------------------------------------//
 int luautils_DumpTable(lua_State* L, const char* name)
 {
-    printf("%s\n", name);
+    fprintf(_fout, "%s\n", name);
 
     // Put a nil key on stack.
     lua_pushnil(L);
@@ -109,7 +115,7 @@ int luautils_DumpTable(lua_State* L, const char* name)
         // Get type of value(-1).
         const char* type = luaL_typename(L, -1);
 
-        printf("   %s=%s\n", name, type);
+        fprintf(_fout, "   %s=%s\n", name, type);
 
         // Remove value(-1), now key on top at(-1).
         lua_pop(L, 1);
@@ -138,7 +144,7 @@ void luautils_EvalStack(lua_State* l, int expected)
     int num = lua_gettop(l);
     if (num != expected)
     {
-        printf("Expected %d stack but is %d\n", expected, num);
+        fprintf(_fout, "Expected %d stack but is %d\n", expected, num);
     }
 }
 

@@ -26,9 +26,6 @@ function M.config_debug(use_dbgr, use_term)
 
     if use_dbgr then
         have_dbgr, dbg = pcall(require, "debugger")
-        if not have_dbgr then
-            print(dbg)
-        end
     end
 
     if dbg then 

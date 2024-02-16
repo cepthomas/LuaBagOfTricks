@@ -27,7 +27,7 @@ Two test projects demonstrate how to use it:
 - Test\test_code_ch
 
 ## validators
-Utilities for validation of lua data types. Optionally return T/F or fail fatally by calling `error()`.
+Utilities for validation of lua data types.
 
 ## C source_code
-Several functions to support the C side of lua applications. Take what is needed by simple cut-and-paste.
+Several functions to support the C side of lua applications.

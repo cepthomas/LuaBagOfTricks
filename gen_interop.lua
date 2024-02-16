@@ -64,7 +64,7 @@ for i = 1, #arg do
 
     if not valid_arg then error("Invalid command line arg: "..a) end
 end
--- print(spec_fn, out_path)
+
 if not spec_fn or not out_path then error("Missing output path") end
 
 -- OK so far. Configure error function.
@@ -79,7 +79,7 @@ local spec_chunk, msg = loadfile(spec_fn)
 if not spec_chunk then error("Invalid spec file: " .. msg) end
 
 local ok, spec = pcall(spec_chunk)
--- print(ut.dump_table_string(spec))
+
 if not ok then error("Syntax in spec file: " .. spec) end
 
 -- Generate using syntax and the spec.

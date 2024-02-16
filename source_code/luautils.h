@@ -10,6 +10,10 @@
 
 //---------------- Uilities --------------------------//
 
+/// Where to send the output.
+/// @param fout where to boss.
+void lautils_SetOutput(FILE* fout);
+
 /// Dump the lua stack contents.
 /// @param L Lua state.
 /// @param info Extra info.
@@ -53,14 +57,5 @@ bool luautils_ParseDouble(const char* str, double* val, double min, double max);
 /// @param[in] max limit inclusive
 /// @return success
 bool luautils_ParseInt(const char* str, int* val, int min, int max);
-
-/// Helper macro to dump stack.
-#define DUMP_STACK(L, info)  luautils_DumpStack(L, __FILE__, __LINE__, info);
-
-/// Helper macro to check then handle error.
-#define PROCESS_LUA_ERROR(L, err, fmt, ...)  if(err >= LUA_ERRRUN) { luautils_LuaError(L, __FILE__, __LINE__, err, fmt, ##__VA_ARGS__); }
-
-/// Helper macro to check/log stack size.
-#define EVAL_STACK(L, expected)  { int num = lua_gettop(L); if (num != expected) { LOG_ERROR("Expected %d stack but is %d", expected, num); } }
 
 #endif // LUAUTILS_H
