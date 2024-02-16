@@ -60,25 +60,25 @@ int luautils_DumpStack(lua_State* L, const char* info)
     return 0;
 }
 
-//--------------------------------------------------------//
-void luautils_LuaError(lua_State* L, int err, const char* format, ...)
-{
-    static char buff[BUFF_LEN];
+// //--------------------------------------------------------//
+// void luautils_LuaError(lua_State* L, int err, const char* format, ...)
+// {
+//     static char buff[BUFF_LEN];
 
-    va_list args;
-    va_start(args, format);
-    fprintf(_fout, format, args);
-    va_end(args);
+//     va_list args;
+//     va_start(args, format);
+//     fprintf(_fout, format, args);
+//     va_end(args);
 
-    fprintf(_fout, "   %s\n", luautils_LuaStatusToString(err));
+//     fprintf(_fout, "   %s\n", luautils_LuaStatusToString(err));
 
-    // Dump trace.
-    luaL_traceback(L, L, NULL, 1);
-    snprintf(buff, BUFF_LEN-1, "%s | %s | %s", lua_tostring(L, -1), lua_tostring(L, -2), lua_tostring(L, -3));
-    fprintf(_fout, "   %s\n", buff);
+//     // Dump trace.
+//     luaL_traceback(L, L, NULL, 1);
+//     snprintf(buff, BUFF_LEN-1, "%s | %s | %s", lua_tostring(L, -1), lua_tostring(L, -2), lua_tostring(L, -3));
+//     fprintf(_fout, "   %s\n", buff);
 
-    luaL_error(L); // never returns
-}
+//     luaL_error(L); // never returns
+// }
 
 //--------------------------------------------------------//
 const char* luautils_LuaStatusToString(int stat)
@@ -138,15 +138,15 @@ int luautils_DumpGlobals(lua_State* L)
     return 0;
 }
 
-//--------------------------------------------------------//
-void luautils_EvalStack(lua_State* l, int expected)
-{
-    int num = lua_gettop(l);
-    if (num != expected)
-    {
-        fprintf(_fout, "Expected %d stack but is %d\n", expected, num);
-    }
-}
+// //--------------------------------------------------------//
+// void luautils_EvalStack(lua_State* l, int expected)
+// {
+//     int num = lua_gettop(l);
+//     if (num != expected)
+//     {
+//         fprintf(_fout, "Expected %d stack but is %d\n", expected, num);
+//     }
+// }
 
 //--------------------------------------------------------//
 bool luautils_ParseDouble(const char* str, double* val, double min, double max)

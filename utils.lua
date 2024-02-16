@@ -36,7 +36,7 @@ function M.config_debug(use_dbgr, use_term)
             dbg.auto_where = 2
         end
     else
-        -- Not using debugger so make a global stub to keep breakpoints from yelling.
+        -- Not using debugger so make global stubs to keep breakpoints from yelling.
         function dbg() end
         dbg =
         {
@@ -47,24 +47,23 @@ function M.config_debug(use_dbgr, use_term)
     end
 end
 
-
 -----------------------------------------------------------------------------
 --- Diagnostic.
 -- @param tbl What to dump.
 -- @param name Of the tbl.
 -- @param indent Nesting.
--- @return string list
+-- @return list table of strings
 function M.dump_table(tbl, name, indent)
     local res = {}
     indent = indent or 0
 
     if type(tbl) == "table" then
         local sindent = string.rep("    ", indent)
-        table.insert(res, sindent .. name .. "(table):")
+        table.insert(res, sindent..name.."(table):")
 
         -- Do contents.
         indent = indent + 1
-        sindent = sindent .. "    "
+        sindent = sindent.."    "
         for k, v in pairs(tbl) do
             if type(v) == "table" then
                 trec = M.dump_table(v, k, indent) -- recursion!
@@ -72,7 +71,7 @@ function M.dump_table(tbl, name, indent)
                     table.insert(res, v)
                 end
             else
-                table.insert(res, sindent .. k .. ":" .. tostring(v) .. "(" .. type(v) .. ")")
+                table.insert(res, sindent..k..":"..tostring(v).."("..type(v)..")")
             end
         end
     else
@@ -86,7 +85,7 @@ end
 --- Diagnostic.
 -- @param tbl What to dump.
 -- @param name Of tbl.
--- @return string list
+-- @return string
 function M.dump_table_string(tbl, name)
     local res = M.dump_table(tbl, name, 0)
     return sx.strjoin('\n', res)
@@ -109,21 +108,24 @@ function M.get_caller_info(level)
     return ret
 end
 
-
 ----------------------------------------------------------------------------
 -- function M.is_integer(v) return type(v) == "number" and math.ceil(v) == v end
 function M.is_integer(v) return M.to_integer(v) ~= nil end
 
+----------------------------------------------------------------------------
 function M.is_number(v) return v ~= nil and type(v) == 'number' end
 
+----------------------------------------------------------------------------
 function M.is_string(v) return v ~= nil and type(v) == 'string' end
 
+----------------------------------------------------------------------------
 function M.is_boolean(v) return v ~= nil and type(v) == 'boolean' end
 
+----------------------------------------------------------------------------
 function M.is_function(v) return v ~= nil and type(v) == 'function' end
 
+----------------------------------------------------------------------------
 function M.is_table(v) return v ~= nil and type(v) == 'table' end
-
 
 -----------------------------------------------------------------------------
 --- Convert value to integer.

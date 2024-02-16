@@ -19,11 +19,11 @@ void lautils_SetOutput(FILE* fout);
 /// @param info Extra info.
 int luautils_DumpStack(lua_State *L, const char* info);
 
-/// Report a bad thing detected by this component.
-/// @param L Lua state.
-/// @param err Specific Lua error.
-/// @param format Standard string stuff.
-void luautils_LuaError(lua_State* L, int err, const char* format, ...);
+// /// Report a bad thing detected by this component.
+// /// @param L Lua state.
+// /// @param err Specific Lua error.
+// /// @param format Standard string stuff.
+// void luautils_LuaError(lua_State* L, int err, const char* format, ...);
 
 /// Make a readable string.
 /// @param status Specific Lua status.
@@ -39,8 +39,8 @@ int luautils_DumpTable(lua_State* L, const char* name);
 /// @param L Lua state.
 int luautils_DumpGlobals(lua_State* L);
 
-/// Check stack.
-void luautils_EvalStack(lua_State* l, int expected);
+// /// Check stack.
+// void luautils_EvalStack(lua_State* l, int expected);
 
 /// Safe convert a string to double with bounds checking.
 /// @param[in] str to parse

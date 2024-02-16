@@ -23,6 +23,93 @@ function M.suite_utils(pn)
     s = ut.dump_table_string(tt, 0, true)
     pn.UT_EQUAL(#s, 310)
 
+TODO1 all these:
+
+---------------------------------------------------------------
+--- Execute a file and return the output.
+-- @param cmd Command to run.
+-- @return Output text.
+function M.execute_and_capture(cmd)
+
+--- Diagnostic.
+-- @param tbl What to dump.
+-- @param name Of the tbl.
+-- @param indent Nesting.
+-- @return string list
+function M.dump_table(tbl, name, indent)
+
+--- Diagnostic.
+-- @param tbl What to dump.
+-- @param name Of tbl.
+-- @return string
+function M.dump_table_string(tbl, name)
+
+--- Gets the file and line of the caller.
+-- @param level How deep to look:
+--    0 is the getinfo() itself
+--    1 is the function that called getinfo() - get_caller_info()
+--    2 is the function that called get_caller_info() - usually the one of interest
+-- @return { filename, linenumber } or nil if invalid
+function M.get_caller_info(level)
+
+function M.is_integer(v) return M.to_integer(v) ~= nil end
+
+function M.is_number(v) return v ~= nil and type(v) == 'number' end
+
+function M.is_string(v) return v ~= nil and type(v) == 'string' end
+
+function M.is_boolean(v) return v ~= nil and type(v) == 'boolean' end
+
+function M.is_function(v) return v ~= nil and type(v) == 'function' end
+
+function M.is_table(v) return v ~= nil and type(v) == 'table' end
+
+
+--- Convert value to integer.
+-- @param v value to convert
+-- @return integer or nil if not convertible
+function M.to_integer(v)
+
+--- Like tostring() without address info. Mainly for unit testing.
+-- @param v value to convert
+-- @return string
+function M.tostring_cln(v)
+
+--- Remap a value to new coordinates.
+-- @param val
+-- @param start1
+-- @param stop1
+-- @param start2
+-- @param stop2
+-- @return
+function M.map(val, start1, stop1, start2, stop2)
+
+--- Bounds limits a value.
+-- @param val
+-- @param min
+-- @param max
+-- @return
+function M.constrain(val, min, max)
+
+--- Ensure integral multiple of resolution, GTE min, LTE max.
+-- @param val
+-- @param min
+-- @param max
+-- @param resolution
+-- @return
+function M.constrain(val, min, max, resolution)
+
+--- Snap to closest neighbor.
+-- @param val
+-- @param granularity">The neighbors property line.
+-- @param round">Round or truncate.
+-- @return
+function M.clamp(val, granularity, round)
+
+
+
+
+
 end
 
 -----------------------------------------------------------------------------
