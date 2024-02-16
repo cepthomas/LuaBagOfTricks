@@ -28,7 +28,7 @@
 local dbg
 
 -- TODO2 l cmd gets noisy.
--- TODO2 hot reload
+-- TODO2 hot reload.
 
 
 -- Use ANSI color codes in the prompt by default. TODO2 play with these.

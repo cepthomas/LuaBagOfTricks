@@ -11,7 +11,7 @@ int luautils_DumpStack(lua_State* L, const char* info)
 {
     static char buff[BUFF_LEN];
 
-    printf("Dump stack:%s (L:%p)\n", info, L); // TODO3 something better than printf?
+    printf("Dump stack:%s (L:%p)\n", info, L);
 
     for(int i = lua_gettop(L); i >= 1; i--)
     {
