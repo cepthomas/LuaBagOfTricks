@@ -10,20 +10,18 @@
 
 //---------------- Uilities --------------------------//
 
-/// Where to send the output.
-/// @param fout where to boss.
-void lautils_SetOutput(FILE* fout);
-
 /// Dump the lua stack contents.
 /// @param L Lua state.
+/// @param fout where to boss.
 /// @param info Extra info.
-int luautils_DumpStack(lua_State *L, const char* info);
+int luautils_DumpStack(lua_State *L, FILE* fout, const char* info);
 
 // /// Report a bad thing detected by this component.
 // /// @param L Lua state.
+// /// @param fout where to boss.
 // /// @param err Specific Lua error.
 // /// @param format Standard string stuff.
-// void luautils_LuaError(lua_State* L, int err, const char* format, ...);
+// void luautils_LuaError(lua_State* L, FILE* fout, int err, const char* format, ...);
 
 /// Make a readable string.
 /// @param status Specific Lua status.
@@ -32,15 +30,17 @@ const char* luautils_LuaStatusToString(int err);
 
 /// Dump the table at the top.
 /// @param L Lua state.
+/// @param fout where to boss.
 /// @param L name visual.
-int luautils_DumpTable(lua_State* L, const char* name);
+int luautils_DumpTable(lua_State* L, FILE* fout, const char* name);
 
 /// Dump the lua globals.
 /// @param L Lua state.
-int luautils_DumpGlobals(lua_State* L);
+/// @param fout where to boss.
+int luautils_DumpGlobals(lua_State* L, FILE* fout);
 
 // /// Check stack.
-// void luautils_EvalStack(lua_State* l, int expected);
+// void luautils_EvalStack(lua_State* l, FILE* fout, int expected);
 
 /// Safe convert a string to double with bounds checking.
 /// @param[in] str to parse

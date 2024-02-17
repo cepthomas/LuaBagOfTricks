@@ -47,3 +47,6 @@ luac.out
 # My adds.
 *.sublime-*
 /test_code/test_code_ch/build_test
+/test_code/test_code_ch/vs/Lbot.vcxproj.user
+/test_code/test_code_ch/mingw/build_test
+/test_code/test_code_ch/vs/x64

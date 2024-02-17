@@ -23,8 +23,8 @@ function M.suite_utils(pn)
     s = ut.dump_table_string(tt, 0, true)
     pn.UT_EQUAL(#s, 310)
 
+--[[
 TODO1 all these:
-
 ---------------------------------------------------------------
 --- Execute a file and return the output.
 -- @param cmd Command to run.
@@ -106,7 +106,7 @@ function M.constrain(val, min, max, resolution)
 -- @return
 function M.clamp(val, granularity, round)
 
-
+]]
 
 
 

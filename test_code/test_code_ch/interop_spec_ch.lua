@@ -11,6 +11,7 @@ M.config =
     add_refs = { "\"another.h\"" }, -- -> #include
 }
 
+-- Host calls Lua.
 M.lua_export_funcs =
 {
     {

@@ -9,17 +9,14 @@
 
 #define BUFF_LEN 100
 
-// Where to send the output. Default is stdout.
-static FILE* _fout = stdout;
-void lautils_SetOutput(FILE* fout) { _fout = fout; }
 
 
 //--------------------------------------------------------//
-int luautils_DumpStack(lua_State* L, const char* info)
+int luautils_DumpStack(lua_State* L, FILE* fout, const char* info)
 {
     static char buff[BUFF_LEN];
 
-    fprintf(_fout, "Dump stack:%s (L:%p)\n", info, L);
+    fprintf(fout, "Dump stack:%s (L:%p)\n", info, L);
 
     for(int i = lua_gettop(L); i >= 1; i--)
     {
@@ -54,28 +51,28 @@ int luautils_DumpStack(lua_State* L, const char* info)
                 break;
         }
     
-        fprintf(_fout, "   %s\n", buff);
+        fprintf(fout, "   %s\n", buff);
     }
 
     return 0;
 }
 
 // //--------------------------------------------------------//
-// void luautils_LuaError(lua_State* L, int err, const char* format, ...)
+// void luautils_LuaError(lua_State* L, FILE* fout, int err, const char* format, ...)
 // {
 //     static char buff[BUFF_LEN];
 
 //     va_list args;
 //     va_start(args, format);
-//     fprintf(_fout, format, args);
+//     fprintf(fout, format, args);
 //     va_end(args);
 
-//     fprintf(_fout, "   %s\n", luautils_LuaStatusToString(err));
+//     fprintf(fout, "   %s\n", luautils_LuaStatusToString(err));
 
 //     // Dump trace.
 //     luaL_traceback(L, L, NULL, 1);
 //     snprintf(buff, BUFF_LEN-1, "%s | %s | %s", lua_tostring(L, -1), lua_tostring(L, -2), lua_tostring(L, -3));
-//     fprintf(_fout, "   %s\n", buff);
+//     fprintf(fout, "   %s\n", buff);
 
 //     luaL_error(L); // never returns
 // }
@@ -99,9 +96,9 @@ const char* luautils_LuaStatusToString(int stat)
 }
 
 //--------------------------------------------------------//
-int luautils_DumpTable(lua_State* L, const char* name)
+int luautils_DumpTable(lua_State* L, FILE* fout, const char* name)
 {
-    fprintf(_fout, "%s\n", name);
+    fprintf(fout, "%s\n", name);
 
     // Put a nil key on stack.
     lua_pushnil(L);
@@ -115,7 +112,7 @@ int luautils_DumpTable(lua_State* L, const char* name)
         // Get type of value(-1).
         const char* type = luaL_typename(L, -1);
 
-        fprintf(_fout, "   %s=%s\n", name, type);
+        fprintf(fout, "   %s=%s\n", name, type);
 
         // Remove value(-1), now key on top at(-1).
         lua_pop(L, 1);
@@ -125,12 +122,12 @@ int luautils_DumpTable(lua_State* L, const char* name)
 }
 
 //--------------------------------------------------------//
-int luautils_DumpGlobals(lua_State* L)
+int luautils_DumpGlobals(lua_State* L, FILE* fout)
 {
     // Get global table.
     lua_pushglobaltable(L);
 
-    luautils_DumpTable(L, "GLOBALS");
+    luautils_DumpTable(L, fout, "GLOBALS");
 
     // Remove global table(-1).
     lua_pop(L,1);
@@ -139,12 +136,12 @@ int luautils_DumpGlobals(lua_State* L)
 }
 
 // //--------------------------------------------------------//
-// void luautils_EvalStack(lua_State* l, int expected)
+// void luautils_EvalStack(lua_State* l, FILE* fout, int expected)
 // {
 //     int num = lua_gettop(l);
 //     if (num != expected)
 //     {
-//         fprintf(_fout, "Expected %d stack but is %d\n", expected, num);
+//         fprintf(fout, "Expected %d stack but is %d\n", expected, num);
 //     }
 // }
 

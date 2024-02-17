@@ -6,6 +6,8 @@ local ut = require('utils')
 local M = {}
 
 
+-- All return nil if ok or an error string if not.
+
 
 -----------------------------------------------------------------------------
 function M.val_number(v, min, max, name)
