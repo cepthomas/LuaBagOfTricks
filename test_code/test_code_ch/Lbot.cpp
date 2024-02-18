@@ -111,7 +111,7 @@ void FakeApp()
 
     // Load the script file. Pushes the compiled chunk as a Lua function on top of the stack
     // - or pushes an error message.
-    stat = luaL_loadfile(_l, "C:\\Dev\\repos\\Lua\\LuaBagOfTricks\\test_code\\test_code_ch\\vs\\script7.lua");
+    stat = luaL_loadfile(_l, "C:\\Dev\\repos\\Lua\\LuaBagOfTricks\\test_code\\test_code_ch\\script7.lua");
     _EvalStatus(stat, "load script file failed"); // probably handle manually
 
     // Run the script to init everything.
@@ -127,13 +127,13 @@ void FakeApp()
         // Call lua functions from host. These call lua_pcall() and luaex_docall() which calls lua_pcall()
 
         stat = luainterop_MyLuaFunc(_l, "booga booga", i, 909, &res);
-        _EvalStatus(stat, "aaaaa");
+        _EvalStatus(stat, "lua function failed");
 
         stat = luainterop_MyLuaFunc2(_l, true, &d);
-        _EvalStatus(stat, "bbbbb");
+        _EvalStatus(stat, "lua function failed");
 
         stat = luainterop_NoArgsFunc(_l, &d);
-        _EvalStatus(stat, "ccccc");
+        _EvalStatus(stat, "lua function failed");
     }
 
     // Fini!
@@ -204,25 +204,16 @@ void _EvalStatus(int stat, const char* format, ...)
             default:                        snprintf(st_buff, sizeof(st_buff) - 1, "ERR_%d", stat); sstat = st_buff; break;
         }
 
-        const char* errmsg = "none";
+        const char* errmsg = "no errmsg";
 
         if (stat <= LUA_ERRFILE) // internal lua error - get error message on stack if provided.
         {
             if (lua_gettop(_l) > 0)
             {
                  errmsg = lua_tostring(_l, -1);
-                // luaL_error(l, "Status:%s info:%s errmsg:%s", sstat, buff, errmsg);
-                //luaL_error(l, "Status:%s info:%s errmsg:%s", sstat, buff, lua_tostring(l, -1));
-            }
-            else
-            {
-                //luaL_error(l, "Status:%s info:%s", sstat, buff);
             }
         }
-        else // cbot or nebulua error
-        {
-            //luaL_error(l, "Status:%s info:%s", sstat, buff);
-        }
+        // else cbot or nebulua error
 
         char buff2[100];
         snprintf(buff2, sizeof(buff2) - 1, "Status:%s info:%s", sstat, info);
@@ -233,32 +224,32 @@ void _EvalStatus(int stat, const char* format, ...)
 }
 
 
-static int Good(int i)
-{
-    printf("Good(%d)", i);
-    return 0;
-}
-
-static int Bad(int i)
-{
-    luaL_error(_l, "Bad(%d)", i);
-    return 0;
-}
-
-static int FuncSub3()
-{
-    return ++_host_cnt;
-}
-
-static int FuncSub2()
-{
-    return FuncSub3();
-}
-
-static int FuncSub()
-{
-    return FuncSub2();
-}
+//static int Good(int i)
+//{
+//    printf("Good(%d)", i);
+//    return 0;
+//}
+//
+//static int Bad(int i)
+//{
+//    //luaL_error(_l, "Bad(%d)", i);
+//    return 0;
+//}
+//
+//static int FuncSub3()
+//{
+//    return ++_host_cnt;
+//}
+//
+//static int FuncSub2()
+//{
+//    return FuncSub3();
+//}
+//
+//static int FuncSub()
+//{
+//    return FuncSub2();
+//}
 
 /////////////////////////////////////////////////////////////////////////////
 UT_SUITE(ERROR_MAIN, "Test error stuff.")

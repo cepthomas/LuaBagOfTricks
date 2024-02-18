@@ -24,39 +24,39 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\another.h">
+    <ClInclude Include="another.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\luainterop.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\C\c_bag_of_tricks\pnut\pnut.h">
+    <ClInclude Include="..\..\..\..\C\c_bag_of_tricks\pnut\pnut.h">
       <Filter>cbot</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\source_code\luaex.h">
+    <ClInclude Include="..\..\source_code\luaex.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\source_code\luautils.h">
+    <ClInclude Include="..\..\source_code\luautils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\luainterop.c">
+    <ClCompile Include="luainterop.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\C\c_bag_of_tricks\pnut\pnut.cpp">
+    <ClCompile Include="..\..\..\..\C\c_bag_of_tricks\pnut\pnut.cpp">
       <Filter>cbot</Filter>
     </ClCompile>
     <ClCompile Include="Lbot.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\source_code\luaex.c">
+    <ClCompile Include="..\..\source_code\luaex.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\source_code\luautils.c">
+    <ClCompile Include="..\..\source_code\luautils.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\test_luautils.cpp">
+    <ClCompile Include="test_luautils.cpp">
       <Filter>test</Filter>
     </ClCompile>
   </ItemGroup>

@@ -29,12 +29,7 @@ n = gen.func_with_no_args()
 function my_lua_func(arg_one, arg_two, arg_three)
     -- my_lua_func, S arg_one, I arg_two, I arg_three, ret I
     
-    lua_func1()
-
-    if arg_two == 5 then
-        error("got triggered!")
-    end
-
+    user_lua_func1()
 
     return 999
 end
@@ -57,23 +52,23 @@ end
 ----------------------- User lua functions -------------------------
 
 -----------------------------------------------------------------------------
-function lua_func3()
+function user_lua_func3()
     script_cnt = script_cnt + 1
 
-    if arg_two == 5 then
-        error("lua_func3() got triggered! "..)
+    if script_cnt == 5 then
+        error("user_lua_func3() raises error()")
     end
 
     return script_cnt
 end
 
 -----------------------------------------------------------------------------
-function lua_func2()
-    return lua_func3()
+function user_lua_func2()
+    return user_lua_func3()
 end
 
 -----------------------------------------------------------------------------
-function lua_func1()
-    return lua_func2()
+function user_lua_func1()
+    return user_lua_func2()
 end
 

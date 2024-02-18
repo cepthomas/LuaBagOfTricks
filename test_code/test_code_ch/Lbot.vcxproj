@@ -19,18 +19,18 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\..\C\c_bag_of_tricks\pnut\pnut.h" />
-    <ClInclude Include="..\..\..\source_code\luaex.h" />
-    <ClInclude Include="..\..\..\source_code\luautils.h" />
-    <ClInclude Include="..\another.h" />
-    <ClInclude Include="..\luainterop.h" />
+    <ClInclude Include="..\..\..\..\C\c_bag_of_tricks\pnut\pnut.h" />
+    <ClInclude Include="..\..\source_code\luaex.h" />
+    <ClInclude Include="..\..\source_code\luautils.h" />
+    <ClInclude Include="another.h" />
+    <ClInclude Include="luainterop.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\..\C\c_bag_of_tricks\pnut\pnut.cpp" />
-    <ClCompile Include="..\..\..\source_code\luaex.c" />
-    <ClCompile Include="..\..\..\source_code\luautils.c" />
-    <ClCompile Include="..\luainterop.c" />
-    <ClCompile Include="..\test_luautils.cpp" />
+    <ClCompile Include="..\..\..\..\C\c_bag_of_tricks\pnut\pnut.cpp" />
+    <ClCompile Include="..\..\source_code\luaex.c" />
+    <ClCompile Include="..\..\source_code\luautils.c" />
+    <ClCompile Include="luainterop.c" />
+    <ClCompile Include="test_luautils.cpp" />
     <ClCompile Include="Lbot.cpp" />
   </ItemGroup>
   <ItemGroup>

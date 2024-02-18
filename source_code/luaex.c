@@ -13,7 +13,7 @@
 
 
 //--------------------------------------------------------//
-// Capture error stack trace Message handler used to run all chunks.
+// Capture error stack.
 static int _handler(lua_State* l)
 {
     const char* msg = lua_tostring(l, 1);
