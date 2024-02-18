@@ -102,12 +102,13 @@ void FakeApp()
     // Work it.  while (_app_running)
     for (int i = 0; i < 10; i++)
     {
-        int res;
-        double d;
+        int ires = 0;
+        double dres = 0;
 
         // Call lua functions from host. These call lua_pcall() and luaex_docall() which calls lua_pcall()
 
-        stat = luainterop_MyLuaFunc(_l, "booga booga", i, 909, &res);
+        stat = luainterop_MyLuaFunc(_l, "booga booga", i, 909, &ires);
+        printf(">>>%d\n", ires);
         _EvalStatus(stat, "my_lua_func()");
 //ERROR INTEROP_BAD_FUNC_NAME my_lua_func
 
@@ -119,10 +120,10 @@ void FakeApp()
 //...os\Lua\LuaBagOfTricks\test_code\test_code_ch\script7.lua:59 : in function 'user_lua_func3'        (...tail calls...)
 //...os\Lua\LuaBagOfTricks\test_code\test_code_ch\script7.lua:32 : in function 'my_lua_func'
 
-        stat = luainterop_MyLuaFunc2(_l, true, &d);
+        stat = luainterop_MyLuaFunc2(_l, true, &dres);
         _EvalStatus(stat, "my_lua_func2()");
 
-        stat = luainterop_NoArgsFunc(_l, &d);
+        stat = luainterop_NoArgsFunc(_l, &dres);
         _EvalStatus(stat, "no_args_func()");
     }
 

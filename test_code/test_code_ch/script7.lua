@@ -24,7 +24,7 @@ n = gen.func_with_no_args()
 -- gen.func_with_no_args, ret N
 
 
---------------------- Called from C Host -----------------------------------
+--------------------- Lua called from C Host -----------------------------------
 
 -----------------------------------------------------------------------------
 function my_lua_func(arg_one, arg_two, arg_three)
@@ -32,7 +32,10 @@ function my_lua_func(arg_one, arg_two, arg_three)
     
     user_lua_func1()
 
-    return 999
+    b = my_lua_func3(101.1)
+    if b then return 200 + script_cnt
+    else return 100 + script_cnt
+    end
 end
 
 
@@ -50,7 +53,7 @@ function no_args_func()
     return 22.22
 end
 
------------------------ User lua functions -------------------------
+----------------------- Internal user lua functions -------------------------
 
 -----------------------------------------------------------------------------
 function user_lua_func3()

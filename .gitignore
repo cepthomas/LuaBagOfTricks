@@ -49,3 +49,5 @@ luac.out
 build_test/
 *.vcxproj.user
 .x64/
+/_stuff
+/test_code/test_code_ch/x64
