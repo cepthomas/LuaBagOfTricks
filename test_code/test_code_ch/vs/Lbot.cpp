@@ -21,9 +21,7 @@ extern "C"
 
 #include "luautils.h"
 #include "luainterop.h"
-#include "luainteropwork.h"
 
-//#include "nebcommon.h"
 //#include "logger.h"
 }
 
@@ -31,9 +29,9 @@ extern "C"
 static lua_State* _l;
 
 // Logs and calls luaL_error() which doesn't return.
-static void _EvalStatus(lua_State* l, int stat, const char* format, ...);
+static void _EvalStatus(int stat, const char* format, ...);
 
-void DoError();
+void FakeApp();
 
 static int _host_cnt = 0;
 
@@ -64,7 +62,7 @@ int main()
     // To automatically close the console when debugging stops,
     // enable Tools->Options->Debugging->Automatically close the console when debugging stops.
 
-    DoError();
+    FakeApp();
 
     /*
     TestManager& tm = TestManager::Instance();
@@ -89,7 +87,7 @@ int main()
 }
 
 
-void DoError()
+void FakeApp()
 {
     int stat;
 
@@ -106,39 +104,36 @@ void DoError()
     // Pop the table off the stack as it interferes with calling the module functions.
     lua_pop(_l, 1);
 
-    //LUA_OK(0) : no errors.
-    //LUA_ERRRUN : a runtime error.
-    //LUA_ERRMEM : memory allocation error.For such errors, Lua does not call the message handler.
-    //LUA_ERRERR : error while running the message handler.
-    //LUA_ERRSYNTAX : syntax error during precompilation.
-    //LUA_YIELD : the thread(coroutine) yields.
-    //LUA_ERRFILE : a file - related error; e.g., it cannot open or read the file.
+
+    stat = 90;// +i;
+     _EvalStatus(stat, "arbitrary failure status: %d", stat);
 
 
     // Load the script file. Pushes the compiled chunk as a Lua function on top of the stack
     // - or pushes an error message.
-    stat = luaL_loadfile(_l, "C:\\Dev\\repos\\Lua\\LuaBagOfTricks\\test_code\\test_code_ch\\script7.lua");
-    _EvalStatus(_l, stat, "luaL_loadfile() failed"); // probably handle manually
+    stat = luaL_loadfile(_l, "C:\\Dev\\repos\\Lua\\LuaBagOfTricks\\test_code\\test_code_ch\\vs\\script7.lua");
+    _EvalStatus(stat, "load script file failed"); // probably handle manually
 
     // Run the script to init everything.
     stat = lua_pcall(_l, 0, LUA_MULTRET, 0);
-    _EvalStatus(_l, stat, "lua_pcall() failed");
+    _EvalStatus(stat, "execute script failed");
 
-    printf("100\n");
-
-    // Work it.
-    // while (_app_running)
+    // Work it.  while (_app_running)
     for (int i = 0; i < 10; i++)
     {
+        int res;
+        double d;
+
         // Call lua functions from host. These call lua_pcall() and luaex_docall() which calls lua_pcall()
-        int res = luainterop_MyLuaFunc(_l, "booga booga", i, 909);
 
-        double d = luainterop_MyLuaFunc2(_l, true);
+        stat = luainterop_MyLuaFunc(_l, "booga booga", i, 909, &res);
+        _EvalStatus(stat, "aaaaa");
 
-        d = luainterop_NoArgsFunc(_l);
+        stat = luainterop_MyLuaFunc2(_l, true, &d);
+        _EvalStatus(stat, "bbbbb");
 
-        // stat = 90 + i;
-        // _EvalStatus(_l, stat, "failed: %d", stat);
+        stat = luainterop_NoArgsFunc(_l, &d);
+        _EvalStatus(stat, "ccccc");
     }
 
     // Fini!
@@ -146,34 +141,53 @@ void DoError()
 }
 
 
-//--------------------------------------------------------//
-void _EvalStatus(lua_State* l, int stat, const char* format, ...)
+
+//---------------- Call host functions from Lua - work functions -------------//
+
+bool luainteropwork_MyLuaFunc3(double arg_one)
 {
-    static char buff[100];
+    return arg_one > 100.0;
+}
+
+double luainteropwork_FuncWithNoArgs()
+{
+    return 123.4;
+}
+
+
+//--------------------------------------------------------//
+void _EvalStatus(int stat, const char* format, ...)
+{
+    static char info[100];
     // bool has_error = false;
 
     if (stat >= LUA_ERRRUN)
     {
         // has_error = true;
-
         va_list args;
         va_start(args, format);
-        vsnprintf(buff, sizeof(buff) - 1, format, args);
+        vsnprintf(info, sizeof(info) - 1, format, args);
         va_end(args);
 
+
         const char* sstat = NULL;
-        char err_buff[16];
+        char st_buff[32];
         switch (stat)
         {
-            // generic
-        case 0:                         sstat = "NO_ERR"; break;
+            // generic LUA_OK
+            case 0:                         sstat = "NO_ERR"; break;
             // lua
-        case LUA_YIELD:                 sstat = "LUA_YIELD"; break;
-        case LUA_ERRRUN:                sstat = "LUA_ERRRUN"; break;
-        case LUA_ERRSYNTAX:             sstat = "LUA_ERRSYNTAX"; break; // syntax error during pre-compilation
-        case LUA_ERRMEM:                sstat = "LUA_ERRMEM"; break; // memory allocation error
-        case LUA_ERRERR:                sstat = "LUA_ERRERR"; break; // error while running the error handler function
-        case LUA_ERRFILE:               sstat = "LUA_ERRFILE"; break; // couldn't open the given file
+            case LUA_YIELD:                 sstat = "LUA_YIELD"; break; // the thread(coroutine) yields.
+            case LUA_ERRRUN:                sstat = "LUA_ERRRUN"; break; // a runtime error.
+            case LUA_ERRSYNTAX:             sstat = "LUA_ERRSYNTAX"; break; // syntax error during pre-compilation
+            case LUA_ERRMEM:                sstat = "LUA_ERRMEM"; break; // memory allocation error. For such errors, Lua does not call the message handler.
+            case LUA_ERRERR:                sstat = "LUA_ERRERR"; break; // error while running the error handler function
+            case LUA_ERRFILE:               sstat = "LUA_ERRFILE"; break; // a file - related error; e.g., it cannot open or read the file.
+            // lbot
+            case INTEROP_BAD_FUNC_NAME:     sstat = "INTEROP_BAD_FUNC_NAME"; break; // function not in loaded script
+            case INTEROP_BAD_RET_TYPE:      sstat = "INTEROP_BAD_RET_TYPE"; break; // script doesn't recognize function arg type
+
+
             // // cbot
             // case CBOT_ERR_INVALID_ARG:      sstat = "CBOT_ERR_INVALID_ARG"; break;
             // case CBOT_ERR_ARG_NULL:         sstat = "CBOT_ERR_ARG_NULL"; break;
@@ -187,30 +201,34 @@ void _EvalStatus(lua_State* l, int stat, const char* format, ...)
             // case NEB_ERR_SYNTAX:            sstat = "NEB_ERR_SYNTAX"; break;
             // case NEB_ERR_MIDI:              sstat = "NEB_ERR_MIDI"; break;
             // default
-        default:                        snprintf(err_buff, sizeof(err_buff) - 1, "ERR_%d", stat); break;
+            default:                        snprintf(st_buff, sizeof(st_buff) - 1, "ERR_%d", stat); sstat = st_buff; break;
         }
 
-        sstat = (sstat == NULL) ? err_buff : sstat;
+        const char* errmsg = "none";
 
         if (stat <= LUA_ERRFILE) // internal lua error - get error message on stack if provided.
         {
-            if (lua_gettop(l) > 0)
+            if (lua_gettop(_l) > 0)
             {
-                const char* errmsg = lua_tostring(l, -1);
-                luaL_error(l, "Status:%s info:%s errmsg:%s", sstat, buff, errmsg);
+                 errmsg = lua_tostring(_l, -1);
+                // luaL_error(l, "Status:%s info:%s errmsg:%s", sstat, buff, errmsg);
                 //luaL_error(l, "Status:%s info:%s errmsg:%s", sstat, buff, lua_tostring(l, -1));
             }
             else
             {
-                luaL_error(l, "Status:%s info:%s", sstat, buff);
+                //luaL_error(l, "Status:%s info:%s", sstat, buff);
             }
         }
         else // cbot or nebulua error
         {
-            luaL_error(l, "Status:%s info:%s", sstat, buff);
+            //luaL_error(l, "Status:%s info:%s", sstat, buff);
         }
 
-        //  maybe? const char* strerrorname_np(int errnum), const char* strerrordesc_np(int errnum);
+        char buff2[100];
+        snprintf(buff2, sizeof(buff2) - 1, "Status:%s info:%s", sstat, info);
+
+        printf("ERROR:\n%s\n%s\n", buff2, errmsg);
+
     }
 }
 

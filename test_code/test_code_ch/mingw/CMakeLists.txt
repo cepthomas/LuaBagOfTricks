@@ -19,7 +19,6 @@ include_directories(
 add_executable(interop_gen_c
     main.c
     ../luainterop.c
-    ../luainteropwork.c
     ../../../source_code/luaex.c
     ../../../source_code/luautils.c
     )

@@ -28,7 +28,6 @@ local tmpl_interop_c =
 #include "lauxlib.h"
 
 #include "luainterop.h"
-#include "luainteropwork.h"
 #include "luaex.h"
 
 >if config.add_refs ~= nil then
@@ -55,35 +54,41 @@ local tmpl_interop_c =
 >sargs = sx.strjoin(", ", arg_specs)
 //--------------------------------------------------------//
 >if #sargs > 0 then
-$(c_ret_type) luainterop_$(func.host_func_name)(lua_State* l, $(sargs))
+int luainterop_$(func.host_func_name)(lua_State* l, $(sargs), $(c_ret_type)* ret)
 >else
-$(c_ret_type) luainterop_$(func.host_func_name)(lua_State* l)
+int luainterop_$(func.host_func_name)(lua_State* l, $(c_ret_type)* ret)
 >end -- #sargs
 {
+    int stat = LUA_OK;
     int num_args = 0;
     int num_ret = 1;
 
     // Get function.
     int ltype = lua_getglobal(l, "$(func.lua_func_name)");
-    if (ltype != LUA_TFUNCTION) { luaL_error(l, "Bad lua function: $(func.lua_func_name)"); };
+    if (ltype != LUA_TFUNCTION) { stat = INTEROP_BAD_FUNC_NAME; }
 
-    // Push arguments.
+    if (stat == LUA_OK)
+    {
+        // Push arguments. No error checking required.
 >for _, arg in ipairs(func.args or {}) do
 >local lua_arg_type = lua_types[arg.type]
-    lua_push$(lua_arg_type)(l, $(arg.name));
-    num_args++;
+        lua_push$(lua_arg_type)(l, $(arg.name));
+        num_args++;
 >end -- func.args
 
-    // Do the actual call.
-    int lstat = luaex_docall(l, num_args, num_ret);
-    if (lstat >= LUA_ERRRUN) { luaL_error(l, "luaex_docall() failed: %d", lstat); }
+        // Do the actual call. If script fails, luaex_docall adds the script stack to the error object.
+        stat = luaex_docall(l, num_args, num_ret);
+    }
 
-    // Get the results from the stack.
-    $(c_ret_type) ret;
-    if (lua_to$(lua_ret_type)(l, -1)) { ret = lua_to$(lua_ret_type)(l, -1); }
-    else { luaL_error(l, "Return is not a $(c_ret_type)"); }
-    lua_pop(l, num_ret); // Clean up results.
-    return ret;
+    if (stat == LUA_OK)
+    {
+        // Get the results from the stack.
+        if (lua_to$(lua_ret_type)(l, -1)) { *ret = lua_to$(lua_ret_type)(l, -1); }
+        else { stat = INTEROP_BAD_RET_TYPE; }
+        lua_pop(l, num_ret); // Clean up results.
+    }
+
+    return stat;
 }
 
 >end -- lua_funcs
@@ -113,7 +118,7 @@ static int luainterop_$(func.host_func_name)(lua_State* l)
 >end -- func.args
 
     // Do the work. One result.
->local arg_specs = { "l" }
+>local arg_specs = { }
 >for _, arg in ipairs(func.args or {}) do
 >table.insert(arg_specs, arg.name)
 >end -- func.args
@@ -178,6 +183,9 @@ local tmpl_interop_h =
 #include "lualib.h"
 #include "lauxlib.h"
 
+#define INTEROP_BAD_FUNC_NAME 10
+#define INTEROP_BAD_RET_TYPE  11
+
 //---------------- Call lua functions from host -------------//
 
 >for _, func in ipairs(lua_funcs) do
@@ -188,29 +196,47 @@ local tmpl_interop_h =
 >for _, arg in ipairs(func.args or {}) do
 /// @param[in] $(arg.name) $(arg.description or "")
 >end -- func.args
-/// @return $(c_ret_type) $(func.ret.description or "")
+/// @param[out] $(c_ret_type)* $(func.ret.description or "")
+/// @return status
 >local arg_specs = {}
 >for _, arg in ipairs(func.args or {}) do
 >table.insert(arg_specs, c_types[arg.type] .. " " .. arg.name)
 >end -- func.args
 >sargs = sx.strjoin(", ", arg_specs)
 >if #sargs > 0 then
-$(c_ret_type) luainterop_$(func.host_func_name)(lua_State* l, $(sargs));
+int luainterop_$(func.host_func_name)(lua_State* l, $(sargs), $(c_ret_type)* ret);
 >else
-$(c_ret_type) luainterop_$(func.host_func_name)(lua_State* l);
+int luainterop_$(func.host_func_name)(lua_State* l, $(c_ret_type)* ret);
 >end -- #sargs
 
 >end -- lua_funcs
 
-///// Infrastructure.
+//---------------- Work functions for lua call host -------------//
+>for _, func in ipairs(host_funcs) do
+
+/// $(func.description or "")
+>for _, arg in ipairs(func.args or {}) do
+/// @param[in] $(arg.name) $(arg.description or "")
+>end -- func.args
+/// @return $(func.ret.description)
+>local arg_specs = { }
+>for _, arg in ipairs(func.args or {}) do
+>table.insert(arg_specs, c_types[arg.type] .. " " .. arg.name)
+>end -- func.args
+>sargs = sx.strjoin(", ", arg_specs)
+$(c_types[func.ret.type]) luainteropwork_$(func.host_func_name)($(sargs));
+>end -- host_funcs
+
+//---------------- Infrastructure ----------------------//
+
 void luainterop_Load(lua_State* l);
 
 #endif // LUAINTEROP_H
 ]]
 
 ----------------------------------------------------------------------------
-local tmpl_interopwork_h =
-[[
+--local tmpl_interopwork_h =
+--[[
 #ifndef LUAINTEROPWORK_H
 #define LUAINTEROPWORK_H
 
@@ -279,13 +305,13 @@ else -- failed, look at intermediary code
     ret.dcode = dcode
 end
 
--- h interopwork part
-rendered, err, dcode = tmpl.substitute(tmpl_interopwork_h, tmpl_env)
-if not err then -- ok
-    ret["luainteropwork.h"] = rendered
-else -- failed, look at intermediary code
-    ret.err = err
-    ret.dcode = dcode
-end
+-- -- h interopwork part
+-- rendered, err, dcode = tmpl.substitute(tmpl_interopwork_h, tmpl_env)
+-- if not err then -- ok
+--     ret["luainteropwork.h"] = rendered
+-- else -- failed, look at intermediary code
+--     ret.err = err
+--     ret.dcode = dcode
+-- end
 
 return ret

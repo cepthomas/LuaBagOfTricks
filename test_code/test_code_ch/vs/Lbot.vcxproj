@@ -24,14 +24,12 @@
     <ClInclude Include="..\..\..\source_code\luautils.h" />
     <ClInclude Include="..\another.h" />
     <ClInclude Include="..\luainterop.h" />
-    <ClInclude Include="..\luainteropwork.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\..\C\c_bag_of_tricks\pnut\pnut.cpp" />
     <ClCompile Include="..\..\..\source_code\luaex.c" />
     <ClCompile Include="..\..\..\source_code\luautils.c" />
     <ClCompile Include="..\luainterop.c" />
-    <ClCompile Include="..\luainteropwork.c" />
     <ClCompile Include="..\test_luautils.cpp" />
     <ClCompile Include="Lbot.cpp" />
   </ItemGroup>

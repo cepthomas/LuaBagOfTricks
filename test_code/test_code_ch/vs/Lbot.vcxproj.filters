@@ -30,9 +30,6 @@
     <ClInclude Include="..\luainterop.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\luainteropwork.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\..\..\C\c_bag_of_tricks\pnut\pnut.h">
       <Filter>cbot</Filter>
     </ClInclude>
@@ -45,9 +42,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\luainterop.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\luainteropwork.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\..\C\c_bag_of_tricks\pnut\pnut.cpp">
