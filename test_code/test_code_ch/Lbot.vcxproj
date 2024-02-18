@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\C\c_bag_of_tricks\pnut\pnut.h" />
+    <ClInclude Include="..\..\..\..\C\c_bag_of_tricks\source_code\logger.h" />
     <ClInclude Include="..\..\source_code\luaex.h" />
     <ClInclude Include="..\..\source_code\luautils.h" />
     <ClInclude Include="another.h" />
@@ -27,6 +28,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\C\c_bag_of_tricks\pnut\pnut.cpp" />
+    <ClCompile Include="..\..\..\..\C\c_bag_of_tricks\source_code\private\logger.c" />
     <ClCompile Include="..\..\source_code\luaex.c" />
     <ClCompile Include="..\..\source_code\luautils.c" />
     <ClCompile Include="luainterop.c" />

@@ -6,30 +6,18 @@
 extern "C"
 {
 #include <windows.h>
-// #include <stdlib.h>
-// #include <stdio.h>
-// #include <stdarg.h>
-// #include <stdbool.h>
-// #include <stdint.h>
-// #include <string.h>
-// #include <float.h>
-// #include <time.h>
-
 #include "lua.h"
 #include "lualib.h"
 #include "lauxlib.h"
-
 #include "luautils.h"
 #include "luainterop.h"
-
-//#include "logger.h"
+#include "logger.h"
 }
 
 // The main Lua thread.
 static lua_State* _l;
 
-// Logs and calls luaL_error() which doesn't return.
-static void _EvalStatus(int stat, const char* format, ...);
+static bool _EvalStatus(int stat, const char* format, ...);
 
 void FakeApp();
 
@@ -37,63 +25,49 @@ static int _host_cnt = 0;
 
 static bool _app_running = false;
 
+// Point these where you like.
+static FILE* _log_out = stdout;
+static FILE* _error_out = stdout;
 
-// TODOT lua-C printf => fprintf(FILE*) -- default is stdout, change with lautils_SetOutput(FILE* fout); user supplies FILE* fout
-
-// TODOT luaL_error(lua_State *L, const char *fmt, ...);  Raises an error. The error message format is given by fmt plus any
-// extra arguments, following the same rules of lua_pushfstring. It also adds at the beginning of the message the file name
-// and the line number where the error occurred, if this information is available. This function never returns, but it is
-// an idiom to use it in C functions as return luaL_error(args).
-// => in luainterop luainteropwork  interop_ch.lua  exec.c(_EvalStatus)
-
-
-// Error needs its own stream(s), log and/or print/dump context, needs caller info by level
-
-// - => collected/handled by:
-// - lua-C lua_pcall (lua_State *L, int nargs, int nresults, int msgh);
-// Calls a function (or a callable object) in protected mode.
-//     => only exec.c - probably? use luaex_docall()
-// ! lua-C app luaex_docall(lua_State* l, int narg, int nres)
-//     => calls lua_pcall()
-//     => has _handler which calls luaL_traceback(l, l, msg, 1);
 
 int main()
 {
-    // To automatically close the console when debugging stops,
-    // enable Tools->Options->Debugging->Automatically close the console when debugging stops.
+    // Init system before running tests.
+    _log_out = fopen("log_out.txt", "w");
+    logger_Init(_log_out); // stdout
 
     FakeApp();
 
-    /*
-    TestManager& tm = TestManager::Instance();
-
+    //or:
     // Run the requested tests.
-    std::vector<std::string> whichSuites;
+    //TestManager& tm = TestManager::Instance();
+    //std::vector<std::string> whichSuites;
+    //whichSuites.emplace_back("LUAUTILS");
+    //std::ofstream s_ut("test_out.txt", std::ofstream::out);
+    //tm.RunSuites(whichSuites, 'r', &s_ut);
+    //s_ut.close();
 
-    whichSuites.emplace_back("LUAUTILS");
+    if (_log_out != stdout)
+    {
+        fclose(_log_out);
+    }
 
-    //// Init system before running tests.
-    //FILE* fp_log = fopen("log_out.txt", "w");
-    //logger_Init(fp_log); // stdout
-
-    std::ofstream s_ut("test_out.txt", std::ofstream::out);
-    tm.RunSuites(whichSuites, 'r', &s_ut);
-
-    //fclose(fp_log);
-    s_ut.close();
-    */
+    if (_error_out != stdout)
+    {
+        fclose(_error_out);
+    }
 
     return 0;
 }
 
-
+// Roughly how to organize an app.
 void FakeApp()
 {
     int stat;
 
-    ///// Init internal stuff. /////
+    // Init internal stuff.
     _l = luaL_newstate();
-    // luautils_EvalStack(_l, 0);
+     luautils_EvalStack(_l, stdout, 0);
 
     // Load std libraries.
     luaL_openlibs(_l);
@@ -104,19 +78,26 @@ void FakeApp()
     // Pop the table off the stack as it interferes with calling the module functions.
     lua_pop(_l, 1);
 
-
-    stat = 90;// +i;
-     _EvalStatus(stat, "arbitrary failure status: %d", stat);
-
-
     // Load the script file. Pushes the compiled chunk as a Lua function on top of the stack
     // - or pushes an error message.
+
+    stat = luaL_loadfile(_l, "bad_script_file_name.lua");
+    _EvalStatus(stat, "load script file failed"); // probably handle manually
+//ERROR LUA_ERRFILE load script file failed
+//cannot open bad_script_file_name.lua : No such file or directory
+
     stat = luaL_loadfile(_l, "C:\\Dev\\repos\\Lua\\LuaBagOfTricks\\test_code\\test_code_ch\\script7.lua");
     _EvalStatus(stat, "load script file failed"); // probably handle manually
+//ERROR LUA_ERRSYNTAX load script file failed
+//...os\Lua\LuaBagOfTricks\test_code\test_code_ch\script7.lua:64 : unexpected symbol near ')'
 
     // Run the script to init everything.
     stat = lua_pcall(_l, 0, LUA_MULTRET, 0);
     _EvalStatus(stat, "execute script failed");
+//ERROR LUA_ERRRUN execute script failed
+//attempt to call a string value
+
+    //luautils_DumpGlobals(_l, stdout);
 
     // Work it.  while (_app_running)
     for (int i = 0; i < 10; i++)
@@ -127,19 +108,27 @@ void FakeApp()
         // Call lua functions from host. These call lua_pcall() and luaex_docall() which calls lua_pcall()
 
         stat = luainterop_MyLuaFunc(_l, "booga booga", i, 909, &res);
-        _EvalStatus(stat, "lua function failed");
+        _EvalStatus(stat, "my_lua_func()");
+//ERROR INTEROP_BAD_FUNC_NAME my_lua_func
+
+//lua script calls error() yields
+//ERROR LUA_ERRRUN my_lua_func
+//...os\Lua\LuaBagOfTricks\test_code\test_code_ch\script7.lua:59 : user_lua_func3() raises error()
+//stack traceback :
+//[C] : in function 'error'
+//...os\Lua\LuaBagOfTricks\test_code\test_code_ch\script7.lua:59 : in function 'user_lua_func3'        (...tail calls...)
+//...os\Lua\LuaBagOfTricks\test_code\test_code_ch\script7.lua:32 : in function 'my_lua_func'
 
         stat = luainterop_MyLuaFunc2(_l, true, &d);
-        _EvalStatus(stat, "lua function failed");
+        _EvalStatus(stat, "my_lua_func2()");
 
         stat = luainterop_NoArgsFunc(_l, &d);
-        _EvalStatus(stat, "lua function failed");
+        _EvalStatus(stat, "no_args_func()");
     }
 
     // Fini!
     lua_close(_l);
 }
-
 
 
 //---------------- Call host functions from Lua - work functions -------------//
@@ -156,22 +145,27 @@ double luainteropwork_FuncWithNoArgs()
 
 
 //--------------------------------------------------------//
-void _EvalStatus(int stat, const char* format, ...)
+bool _EvalStatus(int stat, const char* format, ...)
 {
-    static char info[100];
-    // bool has_error = false;
+    //     luaL_traceback(L, L, NULL, 1);
+    //     snprintf(buff, BUFF_LEN-1, "%s | %s | %s", lua_tostring(L, -1), lua_tostring(L, -2), lua_tostring(L, -3));
+    //     fprintf(fout, "   %s\n", buff);
+
+    bool has_error = false;
 
     if (stat >= LUA_ERRRUN)
     {
-        // has_error = true;
+        has_error = true;
+
+        // Format info string.
+        char info[100];
         va_list args;
         va_start(args, format);
         vsnprintf(info, sizeof(info) - 1, format, args);
         va_end(args);
 
-
+        // Readable error string.
         const char* sstat = NULL;
-        char st_buff[32];
         switch (stat)
         {
             // generic LUA_OK
@@ -186,41 +180,30 @@ void _EvalStatus(int stat, const char* format, ...)
             // lbot
             case INTEROP_BAD_FUNC_NAME:     sstat = "INTEROP_BAD_FUNC_NAME"; break; // function not in loaded script
             case INTEROP_BAD_RET_TYPE:      sstat = "INTEROP_BAD_RET_TYPE"; break; // script doesn't recognize function arg type
-
-
-            // // cbot
-            // case CBOT_ERR_INVALID_ARG:      sstat = "CBOT_ERR_INVALID_ARG"; break;
-            // case CBOT_ERR_ARG_NULL:         sstat = "CBOT_ERR_ARG_NULL"; break;
-            // case CBOT_ERR_NO_DATA:          sstat = "CBOT_ERR_NO_DATA"; break;
-            // case CBOT_ERR_INVALID_INDEX:    sstat = "CBOT_ERR_INVALID_INDX"; break;
-            // // app
-            // case NEB_ERR_INTERNAL:          sstat = "NEB_ERR_INTERNAL"; break;
-            // case NEB_ERR_BAD_CLI_ARG:       sstat = "NEB_ERR_BAD_CLI_ARG"; break;
-            // case NEB_ERR_BAD_LUA_ARG:       sstat = "NEB_ERR_BAD_LUA_ARG"; break;
-            // case NEB_ERR_BAD_MIDI_CFG:      sstat = "NEB_ERR_BAD_MIDI_CFG"; break;
-            // case NEB_ERR_SYNTAX:            sstat = "NEB_ERR_SYNTAX"; break;
-            // case NEB_ERR_MIDI:              sstat = "NEB_ERR_MIDI"; break;
-            // default
-            default:                        snprintf(st_buff, sizeof(st_buff) - 1, "ERR_%d", stat); sstat = st_buff; break;
+            // app specific
+            // ...
+            default:                        sstat = "UNKNOWN_ERROR"; break;
         }
 
-        const char* errmsg = "no errmsg";
-
-        if (stat <= LUA_ERRFILE) // internal lua error - get error message on stack if provided.
+        // Additional error message.
+        const char* errmsg = NULL;
+        if (stat <= LUA_ERRFILE && lua_gettop(_l) > 0) // internal lua error - get error message on stack if provided.
         {
-            if (lua_gettop(_l) > 0)
-            {
-                 errmsg = lua_tostring(_l, -1);
-            }
+            errmsg = lua_tostring(_l, -1);
         }
         // else cbot or nebulua error
 
-        char buff2[100];
-        snprintf(buff2, sizeof(buff2) - 1, "Status:%s info:%s", sstat, info);
+        //char buff2[100];
+        //snprintf(buff2, sizeof(buff2) - 1, "Status:%s info:%s", sstat, info);
 
-        printf("ERROR:\n%s\n%s\n", buff2, errmsg);
-
+        fprintf(_error_out, "ERROR %s %s\n", sstat, info);
+        if (errmsg != NULL)
+        {
+            fprintf(_error_out, "%s\n", errmsg);
+        }
     }
+
+    return has_error;
 }
 
 

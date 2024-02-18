@@ -27,9 +27,6 @@
     <ClInclude Include="another.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\luainterop.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\..\C\c_bag_of_tricks\pnut\pnut.h">
       <Filter>cbot</Filter>
     </ClInclude>
@@ -37,6 +34,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\source_code\luautils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="luainterop.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\C\c_bag_of_tricks\source_code\logger.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -58,6 +61,9 @@
     </ClCompile>
     <ClCompile Include="test_luautils.cpp">
       <Filter>test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\C\c_bag_of_tricks\source_code\private\logger.c">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

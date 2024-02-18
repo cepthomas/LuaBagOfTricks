@@ -39,8 +39,8 @@ int luautils_DumpTable(lua_State* L, FILE* fout, const char* name);
 /// @param fout where to boss.
 int luautils_DumpGlobals(lua_State* L, FILE* fout);
 
-// /// Check stack.
-// void luautils_EvalStack(lua_State* l, FILE* fout, int expected);
+ /// Check stack.
+ void luautils_EvalStack(lua_State* l, FILE* fout, int expected);
 
 /// Safe convert a string to double with bounds checking.
 /// @param[in] str to parse
