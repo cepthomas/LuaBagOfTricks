@@ -12,47 +12,76 @@
 #include <float.h>
 
 #include "lua.h"
-#include "lualib.h"
-#include "lauxlib.h"
 
 #define INTEROP_BAD_FUNC_NAME 10
 #define INTEROP_BAD_RET_TYPE  11
 
 //---------------- Call lua functions from host -------------//
 
-/// Lua export function: Tell me something good.
+/// Lua export function: Simple caalculations.
 /// @param[in] l Internal lua state.
-/// @param[in] arg_one some strings
-/// @param[in] arg_two a nice integer
-/// @param[in] arg_three 
-/// @param[out] int* a returned thing
+/// @param[in] op_one Operand 1
+/// @param[in] oper Operator: + - * /
+/// @param[in] op_two Operand 2
+/// @param[out] double* The answer
 /// @return status
-int luainterop_MyLuaFunc(lua_State* l, const char* arg_one, int arg_two, int arg_three, int* ret);
+int luainterop_Calculator(lua_State* l, double op_one, const char* oper, double op_two, double* ret);
 
-/// Lua export function: wooga wooga
+/// Lua export function: String to integer
 /// @param[in] l Internal lua state.
-/// @param[in] arg_one aaa bbb ccc
-/// @param[out] double* a returned number
+/// @param[in] day The day name
+/// @param[out] int* The answer
 /// @return status
-int luainterop_MyLuaFunc2(lua_State* l, bool arg_one, double* ret);
+int luainterop_DayOfWeek(lua_State* l, const char* day, int* ret);
 
-/// Lua export function: function with no args
+/// Lua export function: Function with no args
 /// @param[in] l Internal lua state.
-/// @param[out] double* a returned number
+/// @param[out] const char** Day name
 /// @return status
-int luainterop_NoArgsFunc(lua_State* l, double* ret);
+int luainterop_FirstDay(lua_State* l, const char** ret);
+
+/// Lua export function: Function not implemented in script
+/// @param[in] l Internal lua state.
+/// @param[out] bool* Required dummy return value
+/// @return status
+int luainterop_InvalidFunc(lua_State* l, bool* ret);
+
+/// Lua export function: Function argument type incorrect
+/// @param[in] l Internal lua state.
+/// @param[in] arg1 The arg
+/// @param[out] bool* Required dummy return value
+/// @return status
+int luainterop_InvalidArgType(lua_State* l, const char* arg1, bool* ret);
+
+/// Lua export function: Function return type incorrect
+/// @param[in] l Internal lua state.
+/// @param[out] int* Required dummy return value
+/// @return status
+int luainterop_InvalidRetType(lua_State* l, int* ret);
+
+/// Lua export function: Function that calls error()
+/// @param[in] l Internal lua state.
+/// @param[out] bool* Required dummy return value
+/// @return status
+int luainterop_ErrorFunc(lua_State* l, bool* ret);
 
 
 //---------------- Work functions for lua call host -------------//
 
-/// fooga
-/// @param[in] arg_one kakakakaka
-/// @return required return value
-bool luainteropwork_MyLuaFunc3(double arg_one);
+/// Record something for me
+/// @param[in] level Log level
+/// @param[in] msg What to log
+/// @return Required dummy return value
+bool luainteropwork_Log(int level, const char* msg);
 
-/// Func with no args
+/// How hot
+/// @param[in] temp Temperature
+/// @return String environment
+const char* luainteropwork_GetEnvironment(double temp);
+
+/// Milliseconds
 /// @return a returned thing
-double luainteropwork_FuncWithNoArgs();
+int luainteropwork_GetTimestamp();
 
 //---------------- Infrastructure ----------------------//
 

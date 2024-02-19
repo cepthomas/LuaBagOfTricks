@@ -605,7 +605,7 @@
 @@ lua_pointer2str converts a pointer to a readable string in a
 ** non-specified way.
 */
-#define lua_pointer2str(buff,sz,p)	l_sprintf(buff,sz,"%p",p)
+#define lua_pointer2str(buff,sz,p)	l_sprintf(_buff,sz,"%p",p)
 
 
 /*

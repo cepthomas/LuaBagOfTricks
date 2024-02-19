@@ -15,7 +15,6 @@
 #include "luainterop.h"
 #include "luaex.h"
 
-#include "another.h"
 
 #if defined(_MSC_VER)
 // Ignore some generated code warnings
@@ -26,24 +25,56 @@
 //---------------- Call lua functions from host -------------//
 
 //--------------------------------------------------------//
-int luainterop_MyLuaFunc(lua_State* l, const char* arg_one, int arg_two, int arg_three, int* ret)
+int luainterop_Calculator(lua_State* l, double op_one, const char* oper, double op_two, double* ret)
 {
     int stat = LUA_OK;
     int num_args = 0;
     int num_ret = 1;
 
     // Get function.
-    int ltype = lua_getglobal(l, "my_lua_func");
+    int ltype = lua_getglobal(l, "calculator");
     if (ltype != LUA_TFUNCTION) { stat = INTEROP_BAD_FUNC_NAME; }
 
     if (stat == LUA_OK)
     {
         // Push arguments. No error checking required.
-        lua_pushstring(l, arg_one);
+        lua_pushnumber(l, op_one);
         num_args++;
-        lua_pushinteger(l, arg_two);
+        lua_pushstring(l, oper);
         num_args++;
-        lua_pushinteger(l, arg_three);
+        lua_pushnumber(l, op_two);
+        num_args++;
+
+        // Do the actual call. If script fails, luaex_docall adds the script stack to the error object.
+        stat = luaex_docall(l, num_args, num_ret);
+    }
+
+    if (stat == LUA_OK)
+    {
+        // Get the results from the stack.
+        if (lua_tonumber(l, -1)) { *ret = lua_tonumber(l, -1); }
+        else { stat = INTEROP_BAD_RET_TYPE; }
+        lua_pop(l, num_ret); // Clean up results.
+    }
+
+    return stat;
+}
+
+//--------------------------------------------------------//
+int luainterop_DayOfWeek(lua_State* l, const char* day, int* ret)
+{
+    int stat = LUA_OK;
+    int num_args = 0;
+    int num_ret = 1;
+
+    // Get function.
+    int ltype = lua_getglobal(l, "day_of_week");
+    if (ltype != LUA_TFUNCTION) { stat = INTEROP_BAD_FUNC_NAME; }
+
+    if (stat == LUA_OK)
+    {
+        // Push arguments. No error checking required.
+        lua_pushstring(l, day);
         num_args++;
 
         // Do the actual call. If script fails, luaex_docall adds the script stack to the error object.
@@ -62,20 +93,80 @@ int luainterop_MyLuaFunc(lua_State* l, const char* arg_one, int arg_two, int arg
 }
 
 //--------------------------------------------------------//
-int luainterop_MyLuaFunc2(lua_State* l, bool arg_one, double* ret)
+int luainterop_FirstDay(lua_State* l, const char** ret)
 {
     int stat = LUA_OK;
     int num_args = 0;
     int num_ret = 1;
 
     // Get function.
-    int ltype = lua_getglobal(l, "my_lua_func2");
+    int ltype = lua_getglobal(l, "first_day");
     if (ltype != LUA_TFUNCTION) { stat = INTEROP_BAD_FUNC_NAME; }
 
     if (stat == LUA_OK)
     {
         // Push arguments. No error checking required.
-        lua_pushboolean(l, arg_one);
+
+        // Do the actual call. If script fails, luaex_docall adds the script stack to the error object.
+        stat = luaex_docall(l, num_args, num_ret);
+    }
+
+    if (stat == LUA_OK)
+    {
+        // Get the results from the stack.
+        if (lua_tostring(l, -1)) { *ret = lua_tostring(l, -1); }
+        else { stat = INTEROP_BAD_RET_TYPE; }
+        lua_pop(l, num_ret); // Clean up results.
+    }
+
+    return stat;
+}
+
+//--------------------------------------------------------//
+int luainterop_InvalidFunc(lua_State* l, bool* ret)
+{
+    int stat = LUA_OK;
+    int num_args = 0;
+    int num_ret = 1;
+
+    // Get function.
+    int ltype = lua_getglobal(l, "invalid_func");
+    if (ltype != LUA_TFUNCTION) { stat = INTEROP_BAD_FUNC_NAME; }
+
+    if (stat == LUA_OK)
+    {
+        // Push arguments. No error checking required.
+
+        // Do the actual call. If script fails, luaex_docall adds the script stack to the error object.
+        stat = luaex_docall(l, num_args, num_ret);
+    }
+
+    if (stat == LUA_OK)
+    {
+        // Get the results from the stack.
+        if (lua_toboolean(l, -1)) { *ret = lua_toboolean(l, -1); }
+        else { stat = INTEROP_BAD_RET_TYPE; }
+        lua_pop(l, num_ret); // Clean up results.
+    }
+
+    return stat;
+}
+
+//--------------------------------------------------------//
+int luainterop_InvalidArgType(lua_State* l, const char* arg1, bool* ret)
+{
+    int stat = LUA_OK;
+    int num_args = 0;
+    int num_ret = 1;
+
+    // Get function.
+    int ltype = lua_getglobal(l, "invalid_arg_type");
+    if (ltype != LUA_TFUNCTION) { stat = INTEROP_BAD_FUNC_NAME; }
+
+    if (stat == LUA_OK)
+    {
+        // Push arguments. No error checking required.
+        lua_pushstring(l, arg1);
         num_args++;
 
         // Do the actual call. If script fails, luaex_docall adds the script stack to the error object.
@@ -85,7 +176,7 @@ int luainterop_MyLuaFunc2(lua_State* l, bool arg_one, double* ret)
     if (stat == LUA_OK)
     {
         // Get the results from the stack.
-        if (lua_tonumber(l, -1)) { *ret = lua_tonumber(l, -1); }
+        if (lua_toboolean(l, -1)) { *ret = lua_toboolean(l, -1); }
         else { stat = INTEROP_BAD_RET_TYPE; }
         lua_pop(l, num_ret); // Clean up results.
     }
@@ -94,14 +185,14 @@ int luainterop_MyLuaFunc2(lua_State* l, bool arg_one, double* ret)
 }
 
 //--------------------------------------------------------//
-int luainterop_NoArgsFunc(lua_State* l, double* ret)
+int luainterop_InvalidRetType(lua_State* l, int* ret)
 {
     int stat = LUA_OK;
     int num_args = 0;
     int num_ret = 1;
 
     // Get function.
-    int ltype = lua_getglobal(l, "no_args_func");
+    int ltype = lua_getglobal(l, "invalid_ret_type");
     if (ltype != LUA_TFUNCTION) { stat = INTEROP_BAD_FUNC_NAME; }
 
     if (stat == LUA_OK)
@@ -115,7 +206,37 @@ int luainterop_NoArgsFunc(lua_State* l, double* ret)
     if (stat == LUA_OK)
     {
         // Get the results from the stack.
-        if (lua_tonumber(l, -1)) { *ret = lua_tonumber(l, -1); }
+        if (lua_tointeger(l, -1)) { *ret = lua_tointeger(l, -1); }
+        else { stat = INTEROP_BAD_RET_TYPE; }
+        lua_pop(l, num_ret); // Clean up results.
+    }
+
+    return stat;
+}
+
+//--------------------------------------------------------//
+int luainterop_ErrorFunc(lua_State* l, bool* ret)
+{
+    int stat = LUA_OK;
+    int num_args = 0;
+    int num_ret = 1;
+
+    // Get function.
+    int ltype = lua_getglobal(l, "error_func");
+    if (ltype != LUA_TFUNCTION) { stat = INTEROP_BAD_FUNC_NAME; }
+
+    if (stat == LUA_OK)
+    {
+        // Push arguments. No error checking required.
+
+        // Do the actual call. If script fails, luaex_docall adds the script stack to the error object.
+        stat = luaex_docall(l, num_args, num_ret);
+    }
+
+    if (stat == LUA_OK)
+    {
+        // Get the results from the stack.
+        if (lua_toboolean(l, -1)) { *ret = lua_toboolean(l, -1); }
         else { stat = INTEROP_BAD_RET_TYPE; }
         lua_pop(l, num_ret); // Clean up results.
     }
@@ -127,36 +248,59 @@ int luainterop_NoArgsFunc(lua_State* l, double* ret)
 //---------------- Call host functions from Lua -------------//
 
 //--------------------------------------------------------//
-// Host export function: fooga
+// Host export function: Record something for me
 // @param[in] l Internal lua state.
 // @return Number of lua return values.
-// Lua arg: arg_one kakakakaka
-// Lua return: bool required return value
-static int luainterop_MyLuaFunc3(lua_State* l)
+// Lua arg: level Log level
+// Lua arg: msg What to log
+// Lua return: bool Required dummy return value
+static int luainterop_Log(lua_State* l)
 {
     // Get arguments
-    double arg_one;
-    if (lua_isnumber(l, 1)) { arg_one = lua_tonumber(l, 1); }
-    else { luaL_error(l, "Bad arg type for arg_one"); }
+    int level;
+    if (lua_isinteger(l, 1)) { level = lua_tointeger(l, 1); }
+    else { luaL_error(l, "Bad arg type for level"); }
+    const char* msg;
+    if (lua_isstring(l, 2)) { msg = lua_tostring(l, 2); }
+    else { luaL_error(l, "Bad arg type for msg"); }
 
     // Do the work. One result.
-    bool ret = luainteropwork_MyLuaFunc3(arg_one);
+    bool ret = luainteropwork_Log(level, msg);
     lua_pushboolean(l, ret);
     return 1;
 }
 
 //--------------------------------------------------------//
-// Host export function: Func with no args
+// Host export function: How hot
 // @param[in] l Internal lua state.
 // @return Number of lua return values.
-// Lua return: double a returned thing
-static int luainterop_FuncWithNoArgs(lua_State* l)
+// Lua arg: temp Temperature
+// Lua return: const char* String environment
+static int luainterop_GetEnvironment(lua_State* l)
+{
+    // Get arguments
+    double temp;
+    if (lua_isnumber(l, 1)) { temp = lua_tonumber(l, 1); }
+    else { luaL_error(l, "Bad arg type for temp"); }
+
+    // Do the work. One result.
+    const char* ret = luainteropwork_GetEnvironment(temp);
+    lua_pushstring(l, ret);
+    return 1;
+}
+
+//--------------------------------------------------------//
+// Host export function: Milliseconds
+// @param[in] l Internal lua state.
+// @return Number of lua return values.
+// Lua return: int a returned thing
+static int luainterop_GetTimestamp(lua_State* l)
 {
     // Get arguments
 
     // Do the work. One result.
-    double ret = luainteropwork_FuncWithNoArgs();
-    lua_pushnumber(l, ret);
+    int ret = luainteropwork_GetTimestamp();
+    lua_pushinteger(l, ret);
     return 1;
 }
 
@@ -165,8 +309,9 @@ static int luainterop_FuncWithNoArgs(lua_State* l)
 
 static const luaL_Reg function_map[] =
 {
-    { "my_lua_func3", luainterop_MyLuaFunc3 },
-    { "func_with_no_args", luainterop_FuncWithNoArgs },
+    { "log", luainterop_Log },
+    { "get_environment", luainterop_GetEnvironment },
+    { "get_timestamp", luainterop_GetTimestamp },
     { NULL, NULL }
 };
 

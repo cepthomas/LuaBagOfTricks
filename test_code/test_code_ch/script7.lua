@@ -1,67 +1,98 @@
+-- Test script.
 
--- Script for plaaying with log-print-error ideas.
-
-
--- TODOT lua-L print => io.write() -- default is stdout, change with io.output()
--- TODOT error(message [, level])  Raises an error (see §2.3) with message as the error object. This function never returns.
+-- TODO1?? lua-L print => io.write() -- default is stdout, change with io.output()
+-- TODO1?? error(message [, level])  Raises an error (see §2.3) with message as the error object. This function never returns.
 -- ... these trickle up to the caller via luaex_docall/lua_pcall return
 
 
+local gen = require("gen_lib") -- lua-C api
 
-local gen = require("gen_lib") -- lua api
+local script_cnt = 0
 
-script_cnt = 0
+local days = { "Hamday", "Eggday", "Moonday", "Boogaday" }
 
-print("=============== go go go =======================")
-
---bad_statement
-
---------------------- Lua calls host -----------------------------------
-b = gen.my_lua_func3(12.345)
--- gen.my_lua_func3, N arg_one, ret B
-
-n = gen.func_with_no_args()
--- gen.func_with_no_args, ret N
+-- print("=============== go go go =======================")
 
 
---------------------- Lua called from C Host -----------------------------------
+--------------------- Lua calls C host -----------------------------------
+
+ts = gen.get_timestamp()
+
+senv = gen.get_environment(27.34)
+
+b = gen.log(1, string.format("I know this: ts:%d env:%s", ts, senv))
+
+--------------------- C host calls Lua -----------------------------------
 
 -----------------------------------------------------------------------------
-function my_lua_func(arg_one, arg_two, arg_three)
-    -- my_lua_func, S arg_one, I arg_two, I arg_three, ret I
-    
-    user_lua_func1()
-
-    b = my_lua_func3(101.1)
-    if b then return 200 + script_cnt
-    else return 100 + script_cnt
+function calculator(op_one, oper, op_two)
+    if oper == "+" then
+        return op_one + op_two
+    elseif oper == "-" then
+        return op_one - op_two
+    elseif oper == "*" then
+        return op_one * op_two
+    elseif oper == "/" then
+        return op_one / op_two
+    else
+        error("Invalid operator "..oper)
     end
 end
 
-
 -----------------------------------------------------------------------------
-function my_lua_func2(arg_one)
-    -- my_lua_func2, B arg_one, ret N
-
-    return 88.88
+function day_of_week(day)
+    for i, v in ipairs(days) do
+        if v == day then
+            return i
+        end
+    end
+    return 0
 end
 
 -----------------------------------------------------------------------------
-function no_args_func()
-    -- no_args_func, ret N
-
-    return 22.22
+function first_day()
+    return days[1]
 end
+
+-----------------------------------------------------------------------------
+function invalid_func_not()
+    return 1.23
+end
+
+-----------------------------------------------------------------------------
+function invalid_arg_type(arg1)
+    -- Spec says arg1 is a string, script thinks it is an int.
+    print('scr:', arg1)
+    print('scr:', arg1 + 5)
+    return arg1 + 5
+end
+
+-----------------------------------------------------------------------------
+function invalid_ret_type()
+    -- Spec says ret is an int, script thinks it is a string.
+    return 'xyz'
+end
+
+-----------------------------------------------------------------------------
+function error_func()
+    -- gen.call_invalid_func()
+    -- ERROR LUA_ERRRUN 102 execute script failed
+    -- ...os\Lua\LuaBagOfTricks\test_code\test_code_ch\script7.lua:26: attempt to call a nil value (field 'call_invalid_func')
+
+    return user_lua_func1()
+end
+
 
 ----------------------- Internal user lua functions -------------------------
 
 -----------------------------------------------------------------------------
 function user_lua_func3()
-    script_cnt = script_cnt + 1
+    error("user_lua_func3() raises error()")
 
-    if script_cnt == 5 then
-        error("user_lua_func3() raises error()")
-    end
+    script_cnt = script_cnt + 1
+    -- if script_cnt == 5 then
+    --     error("user_lua_func3() raises error()")
+    -- end
 
     return script_cnt
 end

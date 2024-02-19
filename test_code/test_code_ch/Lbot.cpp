@@ -16,18 +16,19 @@ extern "C"
 
 // The main Lua thread.
 static lua_State* _l;
-
-static bool _EvalStatus(int stat, const char* format, ...);
-
-void FakeApp();
-
+static int _timestamp = 1000;
 static int _host_cnt = 0;
-
 static bool _app_running = false;
+static char _buff[100];
+static char _last_log[100];
 
 // Point these where you like.
 static FILE* _log_out = stdout;
 static FILE* _error_out = stdout;
+
+static bool _EvalStatus(int stat, int line, const char* format, ...);
+
+static void FakeApp();
 
 
 int main()
@@ -64,6 +65,11 @@ int main()
 void FakeApp()
 {
     int stat;
+    bool ok = false;
+    int iret = 0;
+    double dret = 0;
+    bool bret = false;
+    const char* sret = NULL;
 
     // Init internal stuff.
     _l = luaL_newstate();
@@ -80,52 +86,74 @@ void FakeApp()
 
     // Load the script file. Pushes the compiled chunk as a Lua function on top of the stack
     // - or pushes an error message.
+    const char* fn = "";
 
-    stat = luaL_loadfile(_l, "bad_script_file_name.lua");
-    _EvalStatus(stat, "load script file failed"); // probably handle manually
-//ERROR LUA_ERRFILE load script file failed
-//cannot open bad_script_file_name.lua : No such file or directory
+    // Try to load non-existent file.
+    fn = "bad_script_file_name.lua";
+    stat = luaL_loadfile(_l, fn);
+    ok = _EvalStatus(stat, __LINE__, "load script file failed");
+    //ERROR LUA_ERRFILE load script file failed
+    //cannot open bad_script_file_name.lua : No such file or directory
 
-    stat = luaL_loadfile(_l, "C:\\Dev\\repos\\Lua\\LuaBagOfTricks\\test_code\\test_code_ch\\script7.lua");
-    _EvalStatus(stat, "load script file failed"); // probably handle manually
-//ERROR LUA_ERRSYNTAX load script file failed
-//...os\Lua\LuaBagOfTricks\test_code\test_code_ch\script7.lua:64 : unexpected symbol near ')'
+    fn = "C:\\Dev\\repos\\Lua\\LuaBagOfTricks\\test_code\\test_code_ch\\script6.lua";
+    stat = luaL_loadfile(_l, fn);
+    ok = _EvalStatus(stat, __LINE__, "load script file failed");
+    //ERROR LUA_ERRSYNTAX 92 load script file failed
+    //    ...os\Lua\LuaBagOfTricks\test_code\test_code_ch\script6.lua:7 : syntax error near 'ts'
 
-    // Run the script to init everything.
+    fn = "C:\\Dev\\repos\\Lua\\LuaBagOfTricks\\test_code\\test_code_ch\\script7.lua";
+    stat = luaL_loadfile(_l, fn);
+    ok = _EvalStatus(stat, __LINE__, "load script file failed");
+    // Should be ok.
+
+    // If stat is ok, run the script to init everything.
     stat = lua_pcall(_l, 0, LUA_MULTRET, 0);
-    _EvalStatus(stat, "execute script failed");
-//ERROR LUA_ERRRUN execute script failed
-//attempt to call a string value
+    ok = _EvalStatus(stat, __LINE__, "execute script failed: %s", fn);
+    // Should be ok.
+    // or:
+    //ERROR LUA_ERRRUN execute script failed
+    //attempt to call a string value
+
+    // This should be set by the script execution.
+    printf(">>>%s\n", _last_log);
 
     //luautils_DumpGlobals(_l, stdout);
 
-    // Work it.  while (_app_running)
-    for (int i = 0; i < 10; i++)
-    {
-        int ires = 0;
-        double dres = 0;
+    // Call to the script.
+    stat = luainterop_Calculator(_l, 12.96, "*", 3.15, &dret);
+    ok = _EvalStatus(stat, __LINE__, "calculator()");
 
-        // Call lua functions from host. These call lua_pcall() and luaex_docall() which calls lua_pcall()
+    stat = luainterop_DayOfWeek(_l, "Moonday", &iret);
+    ok = _EvalStatus(stat, __LINE__, "day_of_week()");
 
-        stat = luainterop_MyLuaFunc(_l, "booga booga", i, 909, &ires);
-        printf(">>>%d\n", ires);
-        _EvalStatus(stat, "my_lua_func()");
-//ERROR INTEROP_BAD_FUNC_NAME my_lua_func
+    stat = luainterop_FirstDay(_l, &sret);
+    ok = _EvalStatus(stat, __LINE__, "first_day()");
 
-//lua script calls error() yields
-//ERROR LUA_ERRRUN my_lua_func
-//...os\Lua\LuaBagOfTricks\test_code\test_code_ch\script7.lua:59 : user_lua_func3() raises error()
-//stack traceback :
-//[C] : in function 'error'
-//...os\Lua\LuaBagOfTricks\test_code\test_code_ch\script7.lua:59 : in function 'user_lua_func3'        (...tail calls...)
-//...os\Lua\LuaBagOfTricks\test_code\test_code_ch\script7.lua:32 : in function 'my_lua_func'
+    stat = luainterop_InvalidFunc(_l, &bret);
+    ok = _EvalStatus(stat, __LINE__, "invalid_func()");
+    //ERROR INTEROP_BAD_FUNC_NAME 128 invalid function
 
-        stat = luainterop_MyLuaFunc2(_l, true, &dres);
-        _EvalStatus(stat, "my_lua_func2()");
+    stat = luainterop_InvalidArgType(_l, "abc", &bret);
+    ok = _EvalStatus(stat, __LINE__, "invalid_arg()");
+    //ERROR LUA_ERRRUN 131 invalid arg
+    //    ...os\Lua\LuaBagOfTricks\test_code\test_code_ch\script7.lua:68 : attempt to add a 'string' with a 'number'
+    //    stack traceback :
+    //[C] : in metamethod 'add'
+    //    ...os\Lua\LuaBagOfTricks\test_code\test_code_ch\script7.lua:68 : in function 'invalid_arg_type'
 
-        stat = luainterop_NoArgsFunc(_l, &dres);
-        _EvalStatus(stat, "no_args_func()");
-    }
+    stat = luainterop_InvalidRetType(_l, &iret);
+    ok = _EvalStatus(stat, __LINE__, "invalid_ret_type()");
+    //ERROR INTEROP_BAD_RET_TYPE 140 invalid ret type
+
+    // Force error. This is fatal.
+    stat = luainterop_ErrorFunc(_l, &bret);
+    ok = _EvalStatus(stat, __LINE__, "error_func()");
+    //ERROR LUA_ERRRUN 144 force error
+    //    ...os\Lua\LuaBagOfTricks\test_code\test_code_ch\script7.lua:121 : user_lua_func3() raises error()
+    //    stack traceback :
+    //[C] : in function 'error'
+    //    ...os\Lua\LuaBagOfTricks\test_code\test_code_ch\script7.lua:121 : in function 'user_lua_func3'
+    //    (...tail calls...)
 
     // Fini!
     lua_close(_l);
@@ -134,20 +162,29 @@ void FakeApp()
 
 //---------------- Call host functions from Lua - work functions -------------//
 
-bool luainteropwork_MyLuaFunc3(double arg_one)
+int luainteropwork_GetTimestamp()
 {
-    return arg_one > 100.0;
+    _timestamp += 100;
+    return _timestamp;
 }
 
-double luainteropwork_FuncWithNoArgs()
+bool luainteropwork_Log(int level, const char* msg)
 {
-    return 123.4;
+    snprintf(_last_log, sizeof(_last_log), "Log LVL%d %s", level, msg);
+    return true;
+}
+
+const char* luainteropwork_GetEnvironment(double temp)
+{
+    snprintf(_buff, sizeof(_buff), "Temperature is %.1f degrees", temp);
+    return _buff;
 }
 
 
 //--------------------------------------------------------//
-bool _EvalStatus(int stat, const char* format, ...)
+bool _EvalStatus(int stat, int line, const char* format, ...)
 {
+    // TODO1 useful?
     //     luaL_traceback(L, L, NULL, 1);
     //     snprintf(buff, BUFF_LEN-1, "%s | %s | %s", lua_tostring(L, -1), lua_tostring(L, -2), lua_tostring(L, -3));
     //     fprintf(fout, "   %s\n", buff);
@@ -197,7 +234,7 @@ bool _EvalStatus(int stat, const char* format, ...)
         //char buff2[100];
         //snprintf(buff2, sizeof(buff2) - 1, "Status:%s info:%s", sstat, info);
 
-        fprintf(_error_out, "ERROR %s %s\n", sstat, info);
+        fprintf(_error_out, "ERROR %s %d %s\n", sstat, line, info);
         if (errmsg != NULL)
         {
             fprintf(_error_out, "%s\n", errmsg);
@@ -207,33 +244,6 @@ bool _EvalStatus(int stat, const char* format, ...)
     return has_error;
 }
 
-
-//static int Good(int i)
-//{
-//    printf("Good(%d)", i);
-//    return 0;
-//}
-//
-//static int Bad(int i)
-//{
-//    //luaL_error(_l, "Bad(%d)", i);
-//    return 0;
-//}
-//
-//static int FuncSub3()
-//{
-//    return ++_host_cnt;
-//}
-//
-//static int FuncSub2()
-//{
-//    return FuncSub3();
-//}
-//
-//static int FuncSub()
-//{
-//    return FuncSub2();
-//}
 
 /////////////////////////////////////////////////////////////////////////////
 UT_SUITE(ERROR_MAIN, "Test error stuff.")

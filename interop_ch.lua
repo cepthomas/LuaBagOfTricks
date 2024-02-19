@@ -180,8 +180,6 @@ local tmpl_interop_h =
 #include <float.h>
 
 #include "lua.h"
-#include "lualib.h"
-#include "lauxlib.h"
 
 #define INTEROP_BAD_FUNC_NAME 10
 #define INTEROP_BAD_RET_TYPE  11
