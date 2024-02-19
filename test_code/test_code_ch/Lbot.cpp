@@ -3,259 +3,78 @@
 #include <fstream>
 #include "pnut.h"
 
-extern "C"
-{
-#include <windows.h>
-#include "lua.h"
-#include "lualib.h"
-#include "lauxlib.h"
-#include "luautils.h"
-#include "luainterop.h"
-#include "logger.h"
-}
-
-// The main Lua thread.
-static lua_State* _l;
-static int _timestamp = 1000;
-static int _host_cnt = 0;
-static bool _app_running = false;
-static char _buff[100];
-static char _last_log[100];
-
-// Point these where you like.
-static FILE* _log_out = stdout;
-static FILE* _error_out = stdout;
-
-static bool _EvalStatus(int stat, int line, const char* format, ...);
-
-static void FakeApp();
-
-
 int main()
 {
-    // Init system before running tests.
-    _log_out = fopen("log_out.txt", "w");
-    logger_Init(_log_out); // stdout
-
-    FakeApp();
-
-    //or:
     // Run the requested tests.
-    //TestManager& tm = TestManager::Instance();
-    //std::vector<std::string> whichSuites;
-    //whichSuites.emplace_back("LUAUTILS");
-    //std::ofstream s_ut("test_out.txt", std::ofstream::out);
-    //tm.RunSuites(whichSuites, 'r', &s_ut);
-    //s_ut.close();
-
-    if (_log_out != stdout)
-    {
-        fclose(_log_out);
-    }
-
-    if (_error_out != stdout)
-    {
-        fclose(_error_out);
-    }
+    TestManager& tm = TestManager::Instance();
+    std::vector<std::string> whichSuites;
+    whichSuites.emplace_back("INTEROP");
+    whichSuites.emplace_back("UTILS");
+    std::ofstream s_ut("test_out.txt", std::ofstream::out);
+    tm.RunSuites(whichSuites, 'r', &s_ut);
+    s_ut.close();
 
     return 0;
 }
 
-// Roughly how to organize an app.
-void FakeApp()
-{
-    int stat;
-    bool ok = false;
-    int iret = 0;
-    double dret = 0;
-    bool bret = false;
-    const char* sret = NULL;
+/*
+TODO2 put this somewhere:
 
-    // Init internal stuff.
-    _l = luaL_newstate();
-     luautils_EvalStack(_l, stdout, 0);
+====================== errors/print/... ====================
 
-    // Load std libraries.
-    luaL_openlibs(_l);
+custom stream for error output? use stderr? https://www.gnu.org/software/libc/manual/html_node/Custom-Streams.html
 
-    // Load host funcs into lua space. This table gets pushed on the stack and into globals.
-    luainterop_Load(_l);
+===== log
+- traditional to FILE* (fp or stdout or)
 
-    // Pop the table off the stack as it interferes with calling the module functions.
-    lua_pop(_l, 1);
+lua-C:
+int logger_Init(FILE* fp); // File stream to write to. Can be stdout.
+int logger_Log(log_level_t level, int line, const char* format, ...);
 
-    // Load the script file. Pushes the compiled chunk as a Lua function on top of the stack
-    // - or pushes an error message.
-    const char* fn = "";
-
-    // Try to load non-existent file.
-    fn = "bad_script_file_name.lua";
-    stat = luaL_loadfile(_l, fn);
-    ok = _EvalStatus(stat, __LINE__, "load script file failed");
-    //ERROR LUA_ERRFILE load script file failed
-    //cannot open bad_script_file_name.lua : No such file or directory
-
-    fn = "C:\\Dev\\repos\\Lua\\LuaBagOfTricks\\test_code\\test_code_ch\\script6.lua";
-    stat = luaL_loadfile(_l, fn);
-    ok = _EvalStatus(stat, __LINE__, "load script file failed");
-    //ERROR LUA_ERRSYNTAX 92 load script file failed
-    //    ...os\Lua\LuaBagOfTricks\test_code\test_code_ch\script6.lua:7 : syntax error near 'ts'
-
-    fn = "C:\\Dev\\repos\\Lua\\LuaBagOfTricks\\test_code\\test_code_ch\\script7.lua";
-    stat = luaL_loadfile(_l, fn);
-    ok = _EvalStatus(stat, __LINE__, "load script file failed");
-    // Should be ok.
-
-    // If stat is ok, run the script to init everything.
-    stat = lua_pcall(_l, 0, LUA_MULTRET, 0);
-    ok = _EvalStatus(stat, __LINE__, "execute script failed: %s", fn);
-    // Should be ok.
-    // or:
-    //ERROR LUA_ERRRUN execute script failed
-    //attempt to call a string value
-
-    // This should be set by the script execution.
-    printf(">>>%s\n", _last_log);
-
-    //luautils_DumpGlobals(_l, stdout);
-
-    // Call to the script.
-    stat = luainterop_Calculator(_l, 12.96, "*", 3.15, &dret);
-    ok = _EvalStatus(stat, __LINE__, "calculator()");
-
-    stat = luainterop_DayOfWeek(_l, "Moonday", &iret);
-    ok = _EvalStatus(stat, __LINE__, "day_of_week()");
-
-    stat = luainterop_FirstDay(_l, &sret);
-    ok = _EvalStatus(stat, __LINE__, "first_day()");
-
-    stat = luainterop_InvalidFunc(_l, &bret);
-    ok = _EvalStatus(stat, __LINE__, "invalid_func()");
-    //ERROR INTEROP_BAD_FUNC_NAME 128 invalid function
-
-    stat = luainterop_InvalidArgType(_l, "abc", &bret);
-    ok = _EvalStatus(stat, __LINE__, "invalid_arg()");
-    //ERROR LUA_ERRRUN 131 invalid arg
-    //    ...os\Lua\LuaBagOfTricks\test_code\test_code_ch\script7.lua:68 : attempt to add a 'string' with a 'number'
-    //    stack traceback :
-    //[C] : in metamethod 'add'
-    //    ...os\Lua\LuaBagOfTricks\test_code\test_code_ch\script7.lua:68 : in function 'invalid_arg_type'
-
-    stat = luainterop_InvalidRetType(_l, &iret);
-    ok = _EvalStatus(stat, __LINE__, "invalid_ret_type()");
-    //ERROR INTEROP_BAD_RET_TYPE 140 invalid ret type
-
-    // Force error. This is fatal.
-    stat = luainterop_ErrorFunc(_l, &bret);
-    ok = _EvalStatus(stat, __LINE__, "error_func()");
-    //ERROR LUA_ERRRUN 144 force error
-    //    ...os\Lua\LuaBagOfTricks\test_code\test_code_ch\script7.lua:121 : user_lua_func3() raises error()
-    //    stack traceback :
-    //[C] : in function 'error'
-    //    ...os\Lua\LuaBagOfTricks\test_code\test_code_ch\script7.lua:121 : in function 'user_lua_func3'
-    //    (...tail calls...)
-
-    // Fini!
-    lua_close(_l);
-}
+lua-L:
+host_api.log(level, msg) => calls the lua-C functions. there is no standalone lua-L logger.
+> The I/O library provides two different styles for file manipulation. The first one uses implicit file handles; that is, there are operations to set a default input file and a default output file, and all input/output operations are done over these default files. The second style uses explicit file handles.
+> When using implicit file handles, all operations are supplied by table io. When using explicit file handles, the operation io.open returns a file handle and then all operations are supplied as methods of the file handle.
+> The table io also provides three predefined file handles with their usual meanings from C: io.stdin, io.stdout, and io.stderr. The I/O library never closes these files.
+> Unless otherwise stated, all I/O functions return fail on failure, plus an error message as a second result and a system-dependent error code as a third result, and some non-false value on success.
 
 
-//---------------- Call host functions from Lua - work functions -------------//
-
-int luainteropwork_GetTimestamp()
-{
-    _timestamp += 100;
-    return _timestamp;
-}
-
-bool luainteropwork_Log(int level, const char* msg)
-{
-    snprintf(_last_log, sizeof(_last_log), "Log LVL%d %s", level, msg);
-    return true;
-}
-
-const char* luainteropwork_GetEnvironment(double temp)
-{
-    snprintf(_buff, sizeof(_buff), "Temperature is %.1f degrees", temp);
-    return _buff;
-}
+===== print/printf
+- also dump/Dump - like print/printf but larger size
+- ok in standalone scripts like gen_interop.lua  pnut_runner.lua  etc
+- ok in C main functions
+- ok in test code
+- quicky debug - don't leave them in
+> use fp or stdout only
+> lua-L print => io.write() -- default is stdout, change with io.output()
+> lua-C printf => fprintf(FILE*) -- default is stdout, change with lautils_SetOutput(FILE* fout); user supplies FILE* fout
 
 
-//--------------------------------------------------------//
-bool _EvalStatus(int stat, int line, const char* format, ...)
-{
-    // TODO1 useful?
-    //     luaL_traceback(L, L, NULL, 1);
-    //     snprintf(buff, BUFF_LEN-1, "%s | %s | %s", lua_tostring(L, -1), lua_tostring(L, -2), lua_tostring(L, -3));
-    //     fprintf(fout, "   %s\n", buff);
+===== error
+- means fatal here.
+-   => originate in lua-L code (like user/script syntax errors) or in lua-C code for similar situations.
+- lua-L:
+    - Only the app (top level - user visible) calls error(message [, level]) to notify the user of e.g. app syntax errors.
+    - internal libs should never call error(), let the client deal.
+> use stdout or kustom only + maybe log_error()
 
-    bool has_error = false;
+! lua-L error(message [, level])  Raises an error (see §2.3) with message as the error object. This function never returns.
+... these trickle up to the caller via luaex_docall/lua_pcall return
 
-    if (stat >= LUA_ERRRUN)
-    {
-        has_error = true;
-
-        // Format info string.
-        char info[100];
-        va_list args;
-        va_start(args, format);
-        vsnprintf(info, sizeof(info) - 1, format, args);
-        va_end(args);
-
-        // Readable error string.
-        const char* sstat = NULL;
-        switch (stat)
-        {
-            // generic LUA_OK
-            case 0:                         sstat = "NO_ERR"; break;
-            // lua
-            case LUA_YIELD:                 sstat = "LUA_YIELD"; break; // the thread(coroutine) yields.
-            case LUA_ERRRUN:                sstat = "LUA_ERRRUN"; break; // a runtime error.
-            case LUA_ERRSYNTAX:             sstat = "LUA_ERRSYNTAX"; break; // syntax error during pre-compilation
-            case LUA_ERRMEM:                sstat = "LUA_ERRMEM"; break; // memory allocation error. For such errors, Lua does not call the message handler.
-            case LUA_ERRERR:                sstat = "LUA_ERRERR"; break; // error while running the error handler function
-            case LUA_ERRFILE:               sstat = "LUA_ERRFILE"; break; // a file - related error; e.g., it cannot open or read the file.
-            // lbot
-            case INTEROP_BAD_FUNC_NAME:     sstat = "INTEROP_BAD_FUNC_NAME"; break; // function not in loaded script
-            case INTEROP_BAD_RET_TYPE:      sstat = "INTEROP_BAD_RET_TYPE"; break; // script doesn't recognize function arg type
-            // app specific
-            // ...
-            default:                        sstat = "UNKNOWN_ERROR"; break;
-        }
-
-        // Additional error message.
-        const char* errmsg = NULL;
-        if (stat <= LUA_ERRFILE && lua_gettop(_l) > 0) // internal lua error - get error message on stack if provided.
-        {
-            errmsg = lua_tostring(_l, -1);
-        }
-        // else cbot or nebulua error
-
-        //char buff2[100];
-        //snprintf(buff2, sizeof(buff2) - 1, "Status:%s info:%s", sstat, info);
-
-        fprintf(_error_out, "ERROR %s %d %s\n", sstat, line, info);
-        if (errmsg != NULL)
-        {
-            fprintf(_error_out, "%s\n", errmsg);
-        }
-    }
-
-    return has_error;
-}
+! lua-C host does not call luaL_error(lua_State *L, const char *fmt, ...);
+only call luaL_error() in code that is called from the lua side. C side needs to handle host-call-lua() manually via status codes, error msgs, etc.
 
 
-/////////////////////////////////////////////////////////////////////////////
-UT_SUITE(ERROR_MAIN, "Test error stuff.")
-{
-    // double dper = nebcommon_InternalPeriod(178);
-    // UT_EQUAL(dper, 1.1111);
+- => collected/handled by:
+- lua-C lua_pcall (lua_State *L, int nargs, int nresults, int msgh);
+Calls a function (or a callable object) in protected mode.
+    => only exec.c - probably? use luaex_docall()
+! lua-C app luaex_docall(lua_State* l, int narg, int nres)
+    => calls lua_pcall()
+    => has _handler which calls luaL_traceback(l, l, msg, 1);
 
-    // int iper = nebcommon_RoundedInternalPeriod(92);
-    // UT_EQUAL(iper, 1234);
+? lua-L pcall (f [, arg1, ···]) Calls the function f with the given arguments in protected mode.
+    => only used for test, debugger, standalone scripts
+    => not currently used: xpcall (f, msgh [, arg1, ···])  sets a new message handler msgh.
 
-    // double msec = nebcommon_InternalToMsec(111, 1033);
-    // UT_EQUAL(msec, 1.1111);
-
-    return 0;
-}
+*/

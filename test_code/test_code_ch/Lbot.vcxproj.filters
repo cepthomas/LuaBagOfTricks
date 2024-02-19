@@ -24,9 +24,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="another.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\..\C\c_bag_of_tricks\pnut\pnut.h">
       <Filter>cbot</Filter>
     </ClInclude>
@@ -65,8 +62,8 @@
     <ClCompile Include="..\..\..\..\C\c_bag_of_tricks\source_code\private\logger.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="script7.lua" />
+    <ClCompile Include="test_interop.cpp">
+      <Filter>test</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

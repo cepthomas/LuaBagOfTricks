@@ -1,8 +1,5 @@
 -- Test script.
 
--- TODO1?? lua-L print => io.write() -- default is stdout, change with io.output()
--- TODO1?? error(message [, level])  Raises an error (see §2.3) with message as the error object. This function never returns.
--- ... these trickle up to the caller via luaex_docall/lua_pcall return
 
 
 local gen = require("gen_lib") -- lua-C api

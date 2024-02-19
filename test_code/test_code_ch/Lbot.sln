@@ -5,6 +5,13 @@ VisualStudioVersion = 17.8.34330.188
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Lbot", "Lbot.vcxproj", "{2902A50D-CDC6-4AFC-81F7-DCF28453ECFD}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{79A503D0-CDFF-45DF-9E60-9A105FCF0F86}"
+	ProjectSection(SolutionItems) = preProject
+		log_out.txt = log_out.txt
+		script7.lua = script7.lua
+		test_out.txt = test_out.txt
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64

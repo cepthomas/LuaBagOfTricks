@@ -57,22 +57,6 @@ int luautils_DumpStack(lua_State* L, FILE* fout, const char* info)
     return 0;
 }
 
-// //--------------------------------------------------------//
-// void luautils_LuaError(lua_State* L, FILE* fout, int err, const char* format, ...)
-// {
-//     static char buff[BUFF_LEN];
-//     va_list args;
-//     va_start(args, format);
-//     fprintf(fout, format, args);
-//     va_end(args);
-//     fprintf(fout, "   %s\n", luautils_LuaStatusToString(err));
-//     // Dump trace.
-//     luaL_traceback(L, L, NULL, 1);
-//     snprintf(buff, BUFF_LEN-1, "%s | %s | %s", lua_tostring(L, -1), lua_tostring(L, -2), lua_tostring(L, -3));
-//     fprintf(fout, "   %s\n", buff);
-//     luaL_error(L); // never returns
-// }
-
 //--------------------------------------------------------//
 const char* luautils_LuaStatusToString(int stat)
 {

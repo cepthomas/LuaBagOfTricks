@@ -23,7 +23,6 @@
     <ClInclude Include="..\..\..\..\C\c_bag_of_tricks\source_code\logger.h" />
     <ClInclude Include="..\..\source_code\luaex.h" />
     <ClInclude Include="..\..\source_code\luautils.h" />
-    <ClInclude Include="another.h" />
     <ClInclude Include="luainterop.h" />
   </ItemGroup>
   <ItemGroup>
@@ -32,11 +31,9 @@
     <ClCompile Include="..\..\source_code\luaex.c" />
     <ClCompile Include="..\..\source_code\luautils.c" />
     <ClCompile Include="luainterop.c" />
+    <ClCompile Include="test_interop.cpp" />
     <ClCompile Include="test_luautils.cpp" />
     <ClCompile Include="Lbot.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="script7.lua" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
