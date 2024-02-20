@@ -39,7 +39,7 @@ UT_SUITE(INTEROP_MAIN, "Test luainterop.")
     const char* sret = NULL;
 
     // Init system before running tests.
-    _log_out = fopen("out\\log", "w");
+    _log_out = fopen("_log.txt", "w");
     logger_Init(_log_out);
 
     // Init internal stuff.

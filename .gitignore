@@ -46,8 +46,7 @@ luac.out
 
 # My adds.
 *.sublime-*
-build_test/
 *.vcxproj.user
 .x64/
-/_stuff
 /test_code/test_code_ch/x64
+_*.txt
