@@ -12,24 +12,24 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\C\c_bag_of_tricks\pnut\pnut.h">
+    <ClInclude Include="..\..\..\C\c_bag_of_tricks\pnut\pnut.h">
       <Filter>cbot</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\source_code\luaex.h">
+    <ClInclude Include="..\source_code\luaex.h">
       <Filter>source</Filter>
     </ClInclude>
     <ClInclude Include="luainterop.h">
       <Filter>source</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\source_code\luautils.h">
+    <ClInclude Include="..\source_code\luautils.h">
       <Filter>source</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\C\c_bag_of_tricks\source_code\logger.h">
+    <ClInclude Include="..\..\..\C\c_bag_of_tricks\source_code\logger.h">
       <Filter>cbot</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\C\c_bag_of_tricks\pnut\pnut.cpp">
+    <ClCompile Include="..\..\..\C\c_bag_of_tricks\pnut\pnut.cpp">
       <Filter>cbot</Filter>
     </ClCompile>
     <ClCompile Include="test_luautils.cpp">
@@ -38,19 +38,19 @@
     <ClCompile Include="test_interop.cpp">
       <Filter>test</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\source_code\luaex.c">
+    <ClCompile Include="..\source_code\luaex.c">
       <Filter>source</Filter>
     </ClCompile>
     <ClCompile Include="luainterop.c">
       <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\source_code\luautils.c">
+    <ClCompile Include="..\source_code\luautils.c">
       <Filter>source</Filter>
     </ClCompile>
     <ClCompile Include="Lbot.cpp">
       <Filter>test</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\C\c_bag_of_tricks\source_code\private\logger.c">
+    <ClCompile Include="..\..\..\C\c_bag_of_tricks\source_code\private\logger.c">
       <Filter>cbot</Filter>
     </ClCompile>
   </ItemGroup>

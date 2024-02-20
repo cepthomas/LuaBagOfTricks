@@ -48,6 +48,6 @@ luac.out
 *.sublime-*
 *.vcxproj.user
 .x64/
-/test_code/test_code_ch/x64
+/test_ch/x64
 _log.txt
 _test.txt
