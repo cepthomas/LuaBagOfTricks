@@ -10,7 +10,7 @@ int main()
     std::vector<std::string> whichSuites;
     whichSuites.emplace_back("INTEROP");
     whichSuites.emplace_back("UTILS");
-    std::ofstream s_ut("test_out.txt", std::ofstream::out);
+    std::ofstream s_ut("out\\test.txt", std::ofstream::out);
     tm.RunSuites(whichSuites, 'r', &s_ut);
     s_ut.close();
 

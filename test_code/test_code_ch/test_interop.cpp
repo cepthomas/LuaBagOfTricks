@@ -39,7 +39,7 @@ UT_SUITE(INTEROP_MAIN, "Test luainterop.")
     const char* sret = NULL;
 
     // Init system before running tests.
-    _log_out = fopen("log_out.txt", "w");
+    _log_out = fopen("out\\log", "w");
     logger_Init(_log_out);
 
     // Init internal stuff.
@@ -176,7 +176,7 @@ const char* luainteropwork_GetEnvironment(double temp)
 //--------------------------------------------------------//
 bool _EvalStatus(int stat, int line, const char* format, ...)
 {
-    // TODO1 useful?
+    // TODO2 useful?
     //     luaL_traceback(L, L, NULL, 1);
     //     snprintf(buff, BUFF_LEN-1, "%s | %s | %s", lua_tostring(L, -1), lua_tostring(L, -2), lua_tostring(L, -3));
     //     fprintf(fout, "   %s\n", buff);
@@ -222,7 +222,7 @@ bool _EvalStatus(int stat, int line, const char* format, ...)
         {
             errmsg = lua_tostring(_l, -1);
         }
-        // else cbot or nebulua error
+        // else app error
 
         // Log the error info.
         if (errmsg == NULL)
