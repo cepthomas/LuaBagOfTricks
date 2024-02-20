@@ -49,4 +49,5 @@ luac.out
 *.vcxproj.user
 .x64/
 /test_code/test_code_ch/x64
-_*.txt
+_log.txt
+_test.txt

@@ -71,12 +71,12 @@ function invalid_ret_type()
 end
 
 -----------------------------------------------------------------------------
-function error_func()
-    -- gen.call_invalid_func()
-    -- ERROR LUA_ERRRUN 102 execute script failed
-    -- ...os\Lua\LuaBagOfTricks\test_code\test_code_ch\script7.lua:26: attempt to call a nil value (field 'call_invalid_func')
-
-    return user_lua_func1()
+function error_func(flavor)
+    if flavor == 1 then
+        return user_lua_func1()
+    else
+        return gen.force_error()
+    end
 end
 
 

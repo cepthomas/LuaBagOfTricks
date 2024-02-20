@@ -215,7 +215,7 @@ int luainterop_InvalidRetType(lua_State* l, int* ret)
 }
 
 //--------------------------------------------------------//
-int luainterop_ErrorFunc(lua_State* l, bool* ret)
+int luainterop_ErrorFunc(lua_State* l, int flavor, bool* ret)
 {
     int stat = LUA_OK;
     int num_args = 0;
@@ -228,6 +228,8 @@ int luainterop_ErrorFunc(lua_State* l, bool* ret)
     if (stat == LUA_OK)
     {
         // Push arguments. No error checking required.
+        lua_pushinteger(l, flavor);
+        num_args++;
 
         // Do the actual call. If script fails, luaex_docall adds the script stack to the error object.
         stat = luaex_docall(l, num_args, num_ret);
@@ -248,12 +250,12 @@ int luainterop_ErrorFunc(lua_State* l, bool* ret)
 //---------------- Call host functions from Lua -------------//
 
 //--------------------------------------------------------//
-// Host export function: Record something for me
+// Host export function: Record something for me.
 // @param[in] l Internal lua state.
 // @return Number of lua return values.
-// Lua arg: level Log level
-// Lua arg: msg What to log
-// Lua return: bool Required dummy return value
+// Lua arg: level Log level.
+// Lua arg: msg What to log.
+// Lua return: bool Required dummy return value.
 static int luainterop_Log(lua_State* l)
 {
     // Get arguments
@@ -271,11 +273,11 @@ static int luainterop_Log(lua_State* l)
 }
 
 //--------------------------------------------------------//
-// Host export function: How hot
+// Host export function: How hot are you?
 // @param[in] l Internal lua state.
 // @return Number of lua return values.
-// Lua arg: temp Temperature
-// Lua return: const char* String environment
+// Lua arg: temp Temperature.
+// Lua return: const char* String environment.
 static int luainterop_GetEnvironment(lua_State* l)
 {
     // Get arguments
@@ -290,10 +292,10 @@ static int luainterop_GetEnvironment(lua_State* l)
 }
 
 //--------------------------------------------------------//
-// Host export function: Milliseconds
+// Host export function: Milliseconds.
 // @param[in] l Internal lua state.
 // @return Number of lua return values.
-// Lua return: int a returned thing
+// Lua return: int The time.
 static int luainterop_GetTimestamp(lua_State* l)
 {
     // Get arguments
@@ -301,6 +303,21 @@ static int luainterop_GetTimestamp(lua_State* l)
     // Do the work. One result.
     int ret = luainteropwork_GetTimestamp();
     lua_pushinteger(l, ret);
+    return 1;
+}
+
+//--------------------------------------------------------//
+// Host export function: Raise an error from lua code.
+// @param[in] l Internal lua state.
+// @return Number of lua return values.
+// Lua return: bool Required dummy return value.
+static int luainterop_ForceError(lua_State* l)
+{
+    // Get arguments
+
+    // Do the work. One result.
+    bool ret = luainteropwork_ForceError();
+    lua_pushboolean(l, ret);
     return 1;
 }
 
@@ -312,6 +329,7 @@ static const luaL_Reg function_map[] =
     { "log", luainterop_Log },
     { "get_environment", luainterop_GetEnvironment },
     { "get_timestamp", luainterop_GetTimestamp },
+    { "force_error", luainterop_ForceError },
     { NULL, NULL }
 };
 

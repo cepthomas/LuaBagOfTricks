@@ -11,7 +11,7 @@ local arg = {...}
 
 ------------------------------------------------
 local function usage()
-    print("Usage: gen_interop.lua (-d) (-t) [-ch|-cs] [your_spec.lua] [your_outpath]")
+    print("Usage: gen_interop.lua (-d) [-ch|-cs] [your_spec.lua] [your_outpath]")
     print("  -ch generate c and h files")
     print("  -cs generate c# file")
     print("  -d enable debugger if available")

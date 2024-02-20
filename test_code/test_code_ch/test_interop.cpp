@@ -25,6 +25,7 @@ static char _last_error[500];
 static FILE* _log_out = stdout;
 static FILE* _error_out = stdout;
 
+// Top level error handler for nebulua status.
 static bool _EvalStatus(int stat, int line, const char* format, ...);
 
 
@@ -55,8 +56,8 @@ UT_SUITE(INTEROP_MAIN, "Test luainterop.")
     // Pop the table off the stack as it interferes with calling the module functions.
     lua_pop(_l, 1);
 
-    // Load the script file. Pushes the compiled chunk as a Lua function on top of the stack
-    // - or pushes an error message.
+    // Load the script file.
+    // Pushes the compiled chunk as a Lua function on top of the stack or pushes an error message.
     const char* fn = "";
 
     // Try to load non-existent file.
@@ -120,24 +121,35 @@ UT_SUITE(INTEROP_MAIN, "Test luainterop.")
     ok = _EvalStatus(stat, __LINE__, "invalid_arg()");
     UT_FALSE(ok);
     UT_STR_CONTAINS(_last_error, "LUA_ERRRUN invalid_arg()");
+    UT_STR_CONTAINS(_last_error, "attempt to add a \'string\' with a \'number\'");
 
     stat = luainterop_InvalidRetType(_l, &iret);
     ok = _EvalStatus(stat, __LINE__, "invalid_ret_type()");
     UT_FALSE(ok);
     UT_STR_CONTAINS(_last_error, "INTEROP_BAD_RET_TYPE invalid_ret_type()");
 
-    // Force error. This is fatal.
-    stat = luainterop_ErrorFunc(_l, &bret);
-    ok = _EvalStatus(stat, __LINE__, "error_func()");
+    // Force error - C calls lua which calls error(). This is fatal.
+    stat = luainterop_ErrorFunc(_l, 1, &bret);
+    ok = _EvalStatus(stat, __LINE__, "error_func(1)");
     UT_FALSE(ok);
-    UT_STR_CONTAINS(_last_error, "LUA_ERRRUN error_func()");
+    UT_STR_CONTAINS(_last_error, "user_lua_func3() raises error()");
 
-    // Fini!
+    // Force error - C calls lua which calls C which calls luaL_error().
+    stat = luainterop_ErrorFunc(_l, 2, &bret);
+    ok = _EvalStatus(stat, __LINE__, "error_func(2)");
+    UT_FALSE(ok);
+    UT_STR_CONTAINS(_last_error, "Let's blow someing up in lua");
+
+    UT_INFO("Fini!", "");
     lua_close(_l);
 
     if (_log_out != stdout)
     {
         fclose(_log_out);
+    }
+    if (_error_out != stdout)
+    {
+        fclose(_error_out);
     }
 
     return 0;
@@ -167,6 +179,13 @@ const char* luainteropwork_GetEnvironment(double temp)
     static char buff[50];
     snprintf(buff, sizeof(buff), "Temperature is %.1f degrees", temp);
     return buff;
+}
+
+//--------------------------------------------------------//
+bool luainteropwork_ForceError()
+{
+    luaL_error(_l, "Let's blow someing up in lua");
+    return true;
 }
 
 

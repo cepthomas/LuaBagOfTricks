@@ -31,3 +31,7 @@ Utilities for validation of lua data types.
 
 ## C source_code
 Several functions to support the C side of lua applications.
+
+## Talk about test(s)
+
+I'm using 64 bit Lua 5.4.2 from https://luabinaries.sourceforge.net/download.html.

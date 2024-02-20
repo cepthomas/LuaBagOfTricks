@@ -1,4 +1,4 @@
--- Script with syntax errors.
+-- Script with syntax errors to detect on loadfile.
 
 local gen = require("gen_lib") -- lua-C api
 

@@ -8,6 +8,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{79A503D0-CDFF-45DF-9E60-9A105FCF0F86}"
 	ProjectSection(SolutionItems) = preProject
 		script7.lua = script7.lua
+		_log.txt = _log.txt
+		_test.txt = _test.txt
 	EndProjectSection
 EndProject
 Global

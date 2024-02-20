@@ -22,7 +22,7 @@ M.lua_export_funcs =
             {
                 name = "op_one",
                 type = "N",
-                description = "Operand 1"
+                description = "Operand 1."
             },
             {
                 name = "oper",
@@ -32,7 +32,7 @@ M.lua_export_funcs =
             {
                 name = "op_two",
                 type = "N",
-                description = "Operand 2"
+                description = "Operand 2."
             },
         },
         ret =
@@ -45,82 +45,90 @@ M.lua_export_funcs =
     {
         lua_func_name = "day_of_week",
         host_func_name = "DayOfWeek",
-        description = "String to integer",
+        description = "String to integer.",
         args =
         {
             {
                 name = "day",
                 type = "S",
-                description = "The day name"
+                description = "The day name."
             },
         },
          ret =
         {
             type = "I",
-            description = "The answer"
+            description = "The answer."
         }
     },
 
     {
         lua_func_name = "first_day",
         host_func_name = "FirstDay",
-        description = "Function with no args",
+        description = "Function with no args.",
         ret =
         {
             type = "S",
-            description = "Day name"
+            description = "Day name."
         },
     },
 
     {
         lua_func_name = "invalid_func",
         host_func_name = "InvalidFunc",
-        description = "Function not implemented in script",
+        description = "Function not implemented in script.",
         ret =
         {
             type = "B",
-            description = "Required dummy return value"
+            description = "Required dummy return value."
         }
     },
 
     {
         lua_func_name = "invalid_arg_type",
         host_func_name = "InvalidArgType",
-        description = "Function argument type incorrect",
+        description = "Function argument type incorrect.",
         args =
         {
             {
                 name = "arg1",
                 type = "S",
-                description = "The arg"
+                description = "The arg."
             },
         },
          ret =
         {
             type = "B",
-            description = "Required dummy return value"
+            description = "Required dummy return value."
         }
     },
 
     {
         lua_func_name = "invalid_ret_type",
         host_func_name = "InvalidRetType",
-        description = "Function return type incorrect",
+        description = "Function return type incorrect.",
         ret =
         {
             type = "I",
-            description = "Required dummy return value"
+            description = "Required dummy return value."
         }
     },
 
     {
         lua_func_name = "error_func",
         host_func_name = "ErrorFunc",
-        description = "Function that calls error()",
+        description = "Function that calls error().",
+        args =
+        {
+            {
+                name = "flavor",
+                type = "I",
+                description = "Tweak behavior."
+            },
+        },
         ret =
         {
             type = "B",
-            description = "Required dummy return value"
+            description = "Required dummy return value."
         }
     },
 }
@@ -131,52 +139,62 @@ M.host_export_funcs =
     {
         lua_func_name = "log",
         host_func_name = "Log",
-        description = "Record something for me",
+        description = "Record something for me.",
         args =
         {
             {
                 name = "level",
                 type = "I",
-                description = "Log level"
+                description = "Log level."
             },
             {
                 name = "msg",
                 type = "S",
-                description = "What to log"
+                description = "What to log."
             },
         },
         ret =
         {
             type = "B",
-            description = "Required dummy return value"
+            description = "Required dummy return value."
         }
     },
     {
         lua_func_name = "get_environment",
         host_func_name = "GetEnvironment",
-        description = "How hot",
+        description = "How hot are you?",
         args =
         {
             {
                 name = "temp",
                 type = "N",
-                description = "Temperature"
+                description = "Temperature."
             },
         },
         ret =
         {
             type = "S",
-            description = "String environment"
+            description = "String environment."
         }
     },
     {
         lua_func_name = "get_timestamp",
         host_func_name = "GetTimestamp",
-        description = "Milliseconds",
+        description = "Milliseconds.",
         ret =
         {
             type = "I",
-            description = "a returned thing"
+            description = "The time."
+        }
+    },
+    {
+        lua_func_name = "force_error",
+        host_func_name = "ForceError",
+        description = "Raise an error from lua code.",
+        ret =
+        {
+            type = "B",
+            description = "Required dummy return value."
         }
     },
 }
