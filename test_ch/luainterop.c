@@ -19,7 +19,7 @@
 #if defined(_MSC_VER)
 // Ignore some generated code warnings
 #pragma warning( push )
-#pragma warning( disable : 6001 4244 4703 )
+#pragma warning( disable : 6001 4244 4703 4090 )
 #endif
 
 //---------------- Call lua functions from host -------------//
@@ -114,7 +114,7 @@ int luainterop_FirstDay(lua_State* l, char** ret)
     if (stat == LUA_OK)
     {
         // Get the results from the stack.
-        if (lua_tostring(l, -1)) { strncpy(ret, lua_tostring(l, -1), lua_tostring(l, -1)); }
+        if (lua_tostring(l, -1)) { strncpy(*ret, lua_tostring(l, -1), MAX_STRING); }
         else { stat = INTEROP_BAD_RET_TYPE; }
         lua_pop(l, num_ret); // Clean up results.
     }

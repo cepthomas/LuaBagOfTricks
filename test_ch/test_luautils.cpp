@@ -23,11 +23,11 @@ static lua_State* _l;
 /////////////////////////////////////////////////////////////////////////////
 UT_SUITE(UTILS_MAIN, "Test luautils.") // TODO2 flesh out.
 {
-    double dval;
-    int ival;
-    bool ok;
-    int stat = LUA_OK;
-    FILE* fout = stdout;
+    //double dval;
+    //int ival;
+    //bool ok;
+    //int stat = LUA_OK;
+    //FILE* fout = stdout;
 
     /// Dump the lua stack contents.
     /// @param L Lua state.

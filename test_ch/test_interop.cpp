@@ -30,14 +30,13 @@ static bool _EvalStatus(int stat, int line, const char* format, ...);
 
 
 /////////////////////////////////////////////////////////////////////////////
-UT_SUITE(INTEROP_MAIN, "Test luainterop.")
+UT_SUITE(INTEROP_LOAD, "Test load and unload lua script.")
 {
     int stat;
     bool ok = false;
     int iret = 0;
     double dret = 0;
     bool bret = false;
-    char sret[MAX_STRING];
 
     // Init system before running tests.
     _log_out = fopen("_log.txt", "w");
@@ -67,13 +66,70 @@ UT_SUITE(INTEROP_MAIN, "Test luainterop.")
     UT_FALSE(ok);
     UT_STR_EQUAL(_last_error, "LUA_ERRFILE load script file failed: bad_script_file_name.lua\ncannot open bad_script_file_name.lua: No such file or directory");
 
-    fn = "C:\\Dev\\repos\\Lua\\LuaBagOfTricks\\test_code\\test_code_ch\\script6.lua";
+    fn = "C:\\Dev\\repos\\Lua\\LuaBagOfTricks\\test_ch\\script6.lua";
     stat = luaL_loadfile(_l, fn);
     ok = _EvalStatus(stat, __LINE__, "load script file failed: %s", fn);
     UT_FALSE(ok);
-    UT_STR_CONTAINS(_last_error, "LUA_ERRSYNTAX load script file failed: C:\\Dev\\repos\\Lua\\LuaBagOfTricks\\test_code\\test_code_ch\\script6.lua");
+    UT_STR_CONTAINS(_last_error, "LUA_ERRSYNTAX load script file failed: C:\\Dev\\repos\\Lua\\LuaBagOfTricks\\test_ch\\script6.lua");
 
-    fn = "C:\\Dev\\repos\\Lua\\LuaBagOfTricks\\test_code\\test_code_ch\\script7.lua";
+    fn = "C:\\Dev\\repos\\Lua\\LuaBagOfTricks\\test_ch\\script7.lua";
+    stat = luaL_loadfile(_l, fn);
+    ok = _EvalStatus(stat, __LINE__, "load script file failed: %s", fn);
+    UT_TRUE(ok);
+    UT_STR_EQUAL(_last_error, "No error");
+    // Should be ok.
+
+    //luautils_DumpGlobals(_l, stdout);
+
+    UT_INFO("Fini!", "");
+    lua_close(_l);
+
+    if (_log_out != stdout)
+    {
+        fclose(_log_out);
+    }
+    if (_error_out != stdout)
+    {
+        fclose(_error_out);
+    }
+
+    return 0;
+}    
+
+
+/////////////////////////////////////////////////////////////////////////////
+UT_SUITE(INTEROP_EXEC, "Test execute script via luainterop.")
+{
+    int stat;
+    bool ok = false;
+    int iret = 0;
+    double dret = 0;
+    bool bret = false;
+    char _sret[MAX_STRING]; // TODO2 MAX_STRING kinda klunky.
+    char* sret = _sret;
+
+    // Init system before running tests.
+    _log_out = fopen("_log.txt", "w");
+    logger_Init(_log_out);
+
+    // Init internal stuff.
+    _l = luaL_newstate();
+     //luautils_EvalStack(_l, stdout, 0);
+
+    // Load std libraries.
+    luaL_openlibs(_l);
+
+    // Load host funcs into lua space. This table gets pushed on the stack and into globals.
+    luainterop_Load(_l);
+
+    // Pop the table off the stack as it interferes with calling the module functions.
+    lua_pop(_l, 1);
+
+    // Load the script file.
+    // Pushes the compiled chunk as a Lua function on top of the stack or pushes an error message.
+    const char* fn = "";
+
+    fn = "C:\\Dev\\repos\\Lua\\LuaBagOfTricks\\test_ch\\script7.lua";
     stat = luaL_loadfile(_l, fn);
     ok = _EvalStatus(stat, __LINE__, "load script file failed: %s", fn);
     UT_TRUE(ok);
@@ -88,25 +144,26 @@ UT_SUITE(INTEROP_MAIN, "Test luainterop.")
     // Should be ok.
 
     // This should be set by the script execution.
-    //printf(">>>%s\n", _last_log);
     UT_STR_EQUAL(_last_log, "Log LVL1 I know this: ts:1100 env:Temperature is 27.3 degrees");
 
     //luautils_DumpGlobals(_l, stdout);
 
     // Call to the script.
-    stat = luainterop_Calculator(_l, 12.96, "*", 3.15, &dret);
+    char op[] = {"*"};
+    stat = luainterop_Calculator(_l, 12.96, op, 3.15, &dret);
     ok = _EvalStatus(stat, __LINE__, "calculator()");
     UT_TRUE(ok);
     UT_STR_EQUAL(_last_error, "No error");
     UT_CLOSE(dret, 40.824, 0.001);
 
-    stat = luainterop_DayOfWeek(_l, "Moonday", &iret);
+    char day[] = { "Moonday" };
+    stat = luainterop_DayOfWeek(_l, day, &iret);
     ok = _EvalStatus(stat, __LINE__, "day_of_week()");
     UT_TRUE(ok);
     UT_STR_EQUAL(_last_error, "No error");
     UT_EQUAL(iret, 3);
 
-    stat = luainterop_FirstDay(_l, sret);
+    stat = luainterop_FirstDay(_l, &sret);
     ok = _EvalStatus(stat, __LINE__, "first_day()");
     UT_TRUE(ok);
     UT_STR_EQUAL(_last_error, "No error");
@@ -117,7 +174,8 @@ UT_SUITE(INTEROP_MAIN, "Test luainterop.")
     UT_FALSE(ok);
     UT_STR_CONTAINS(_last_error, "INTEROP_BAD_FUNC_NAME invalid_func()");
 
-    stat = luainterop_InvalidArgType(_l, "abc", &bret);
+    char arg[] = { "abc" };
+    stat = luainterop_InvalidArgType(_l, arg, &bret);
     ok = _EvalStatus(stat, __LINE__, "invalid_arg()");
     UT_FALSE(ok);
     UT_STR_CONTAINS(_last_error, "LUA_ERRRUN invalid_arg()");
@@ -167,14 +225,14 @@ int luainteropwork_GetTimestamp()
 }
 
 //--------------------------------------------------------//
-bool luainteropwork_Log(int level, const char* msg)
+bool luainteropwork_Log(int level, char* msg)
 {
     snprintf(_last_log, sizeof(_last_log), "Log LVL%d %s", level, msg);
     return true;
 }
 
 //--------------------------------------------------------//
-const char* luainteropwork_GetEnvironment(double temp)
+char* luainteropwork_GetEnvironment(double temp)
 {
     static char buff[50];
     snprintf(buff, sizeof(buff), "Temperature is %.1f degrees", temp);
@@ -253,9 +311,6 @@ bool _EvalStatus(int stat, int line, const char* format, ...)
             snprintf(_last_error, sizeof(_last_error), "%s %s\n%s", sstat, info, errmsg);
         }
         logger_Log(LVL_INFO, line, _last_error);
-
-        // Also spit it out.
-        //fprintf(_error_out, "ERROR %s\n", _last_error);
     }
 
     return ok;
