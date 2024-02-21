@@ -37,7 +37,7 @@ UT_SUITE(INTEROP_MAIN, "Test luainterop.")
     int iret = 0;
     double dret = 0;
     bool bret = false;
-    const char* sret = NULL;
+    char sret[MAX_STRING];
 
     // Init system before running tests.
     _log_out = fopen("_log.txt", "w");
@@ -106,7 +106,7 @@ UT_SUITE(INTEROP_MAIN, "Test luainterop.")
     UT_STR_EQUAL(_last_error, "No error");
     UT_EQUAL(iret, 3);
 
-    stat = luainterop_FirstDay(_l, &sret);
+    stat = luainterop_FirstDay(_l, sret);
     ok = _EvalStatus(stat, __LINE__, "first_day()");
     UT_TRUE(ok);
     UT_STR_EQUAL(_last_error, "No error");

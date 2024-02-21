@@ -29,7 +29,6 @@ UT_SUITE(UTILS_MAIN, "Test luautils.") // TODO2 flesh out.
     int stat = LUA_OK;
     FILE* fout = stdout;
 
-
     /// Dump the lua stack contents.
     /// @param L Lua state.
     /// @param fout where to boss.

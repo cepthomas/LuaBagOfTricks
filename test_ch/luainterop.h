@@ -15,6 +15,7 @@
 
 #define INTEROP_BAD_FUNC_NAME 10
 #define INTEROP_BAD_RET_TYPE  11
+#define MAX_STRING 100
 
 //---------------- Call lua functions from host -------------//
 
@@ -25,20 +26,20 @@
 /// @param[in] op_two Operand 2.
 /// @param[out] double* The answer
 /// @return status
-int luainterop_Calculator(lua_State* l, double op_one, const char* oper, double op_two, double* ret);
+int luainterop_Calculator(lua_State* l, double op_one, char* oper, double op_two, double* ret);
 
 /// Lua export function: String to integer.
 /// @param[in] l Internal lua state.
 /// @param[in] day The day name.
 /// @param[out] int* The answer.
 /// @return status
-int luainterop_DayOfWeek(lua_State* l, const char* day, int* ret);
+int luainterop_DayOfWeek(lua_State* l, char* day, int* ret);
 
 /// Lua export function: Function with no args.
 /// @param[in] l Internal lua state.
-/// @param[out] const char** Day name.
+/// @param[out] char** Day name.
 /// @return status
-int luainterop_FirstDay(lua_State* l, const char** ret);
+int luainterop_FirstDay(lua_State* l, char** ret);
 
 /// Lua export function: Function not implemented in script.
 /// @param[in] l Internal lua state.
@@ -51,7 +52,7 @@ int luainterop_InvalidFunc(lua_State* l, bool* ret);
 /// @param[in] arg1 The arg.
 /// @param[out] bool* Required dummy return value.
 /// @return status
-int luainterop_InvalidArgType(lua_State* l, const char* arg1, bool* ret);
+int luainterop_InvalidArgType(lua_State* l, char* arg1, bool* ret);
 
 /// Lua export function: Function return type incorrect.
 /// @param[in] l Internal lua state.
@@ -73,12 +74,12 @@ int luainterop_ErrorFunc(lua_State* l, int flavor, bool* ret);
 /// @param[in] level Log level.
 /// @param[in] msg What to log.
 /// @return Required dummy return value.
-bool luainteropwork_Log(int level, const char* msg);
+bool luainteropwork_Log(int level, char* msg);
 
 /// How hot are you?
 /// @param[in] temp Temperature.
 /// @return String environment.
-const char* luainteropwork_GetEnvironment(double temp);
+char* luainteropwork_GetEnvironment(double temp);
 
 /// Milliseconds.
 /// @return The time.

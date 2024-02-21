@@ -25,7 +25,7 @@
 //---------------- Call lua functions from host -------------//
 
 //--------------------------------------------------------//
-int luainterop_Calculator(lua_State* l, double op_one, const char* oper, double op_two, double* ret)
+int luainterop_Calculator(lua_State* l, double op_one, char* oper, double op_two, double* ret)
 {
     int stat = LUA_OK;
     int num_args = 0;
@@ -61,7 +61,7 @@ int luainterop_Calculator(lua_State* l, double op_one, const char* oper, double 
 }
 
 //--------------------------------------------------------//
-int luainterop_DayOfWeek(lua_State* l, const char* day, int* ret)
+int luainterop_DayOfWeek(lua_State* l, char* day, int* ret)
 {
     int stat = LUA_OK;
     int num_args = 0;
@@ -93,7 +93,7 @@ int luainterop_DayOfWeek(lua_State* l, const char* day, int* ret)
 }
 
 //--------------------------------------------------------//
-int luainterop_FirstDay(lua_State* l, const char** ret)
+int luainterop_FirstDay(lua_State* l, char** ret)
 {
     int stat = LUA_OK;
     int num_args = 0;
@@ -114,7 +114,7 @@ int luainterop_FirstDay(lua_State* l, const char** ret)
     if (stat == LUA_OK)
     {
         // Get the results from the stack.
-        if (lua_tostring(l, -1)) { *ret = lua_tostring(l, -1); }
+        if (lua_tostring(l, -1)) { strncpy(ret, lua_tostring(l, -1), lua_tostring(l, -1)); }
         else { stat = INTEROP_BAD_RET_TYPE; }
         lua_pop(l, num_ret); // Clean up results.
     }
@@ -153,7 +153,7 @@ int luainterop_InvalidFunc(lua_State* l, bool* ret)
 }
 
 //--------------------------------------------------------//
-int luainterop_InvalidArgType(lua_State* l, const char* arg1, bool* ret)
+int luainterop_InvalidArgType(lua_State* l, char* arg1, bool* ret)
 {
     int stat = LUA_OK;
     int num_args = 0;
@@ -262,7 +262,7 @@ static int luainterop_Log(lua_State* l)
     int level;
     if (lua_isinteger(l, 1)) { level = lua_tointeger(l, 1); }
     else { luaL_error(l, "Bad arg type for level"); }
-    const char* msg;
+    char* msg;
     if (lua_isstring(l, 2)) { msg = lua_tostring(l, 2); }
     else { luaL_error(l, "Bad arg type for msg"); }
 
@@ -277,7 +277,7 @@ static int luainterop_Log(lua_State* l)
 // @param[in] l Internal lua state.
 // @return Number of lua return values.
 // Lua arg: temp Temperature.
-// Lua return: const char* String environment.
+// Lua return: char* String environment.
 static int luainterop_GetEnvironment(lua_State* l)
 {
     // Get arguments
@@ -286,7 +286,7 @@ static int luainterop_GetEnvironment(lua_State* l)
     else { luaL_error(l, "Bad arg type for temp"); }
 
     // Do the work. One result.
-    const char* ret = luainteropwork_GetEnvironment(temp);
+    char* ret = luainteropwork_GetEnvironment(temp);
     lua_pushstring(l, ret);
     return 1;
 }

@@ -83,7 +83,11 @@ int luainterop_$(func.host_func_name)(lua_State* l, $(c_ret_type)* ret)
     if (stat == LUA_OK)
     {
         // Get the results from the stack.
+>if lua_ret_type ==  lua_types.S then
+        if (lua_to$(lua_ret_type)(l, -1)) { strncpy(ret, lua_tostring(l, -1), lua_tostring(l, -1)); }
+>else
         if (lua_to$(lua_ret_type)(l, -1)) { *ret = lua_to$(lua_ret_type)(l, -1); }
+>end -- #sargs
         else { stat = INTEROP_BAD_RET_TYPE; }
         lua_pop(l, num_ret); // Clean up results.
     }
@@ -183,6 +187,7 @@ local tmpl_interop_h =
 
 #define INTEROP_BAD_FUNC_NAME 10
 #define INTEROP_BAD_RET_TYPE  11
+#define MAX_STRING 100
 
 //---------------- Call lua functions from host -------------//
 
@@ -232,43 +237,11 @@ void luainterop_Load(lua_State* l);
 #endif // LUAINTEROP_H
 ]]
 
-----------------------------------------------------------------------------
---local tmpl_interopwork_h =
---[[
-#ifndef LUAINTEROPWORK_H
-#define LUAINTEROPWORK_H
-
-///// Warning - this file is created by gen_interop.lua, do not edit. /////
->local ut = require('utils')
->local sx = require("stringex")
-
-#include "luainterop.h"
-
-//---------------- Work functions for interop -------------//
->for _, func in ipairs(host_funcs) do
-
-/// $(func.description or "")
-/// @param[in] l Internal lua state.
->for _, arg in ipairs(func.args or {}) do
-/// @param[in] $(arg.name) $(arg.description or "")
->end -- func.args
-/// @return $(func.ret.description)
->local arg_specs = { "lua_State* l" }
->for _, arg in ipairs(func.args or {}) do
->table.insert(arg_specs, c_types[arg.type] .. " " .. arg.name)
->end -- func.args
->sargs = sx.strjoin(", ", arg_specs)
-$(c_types[func.ret.type]) luainteropwork_$(func.host_func_name)($(sargs));
->end -- host_funcs
-
-#endif // LUAINTEROPWORK_H
-]]
-
 
 ----------------------------------------------------------------------------
 -- Type name conversions.
 local lua_types = { B = "boolean", I = "integer", N = "number", S ="string" }
-local c_types = { B = "bool", I = "int", N = "double", S = "const char*" }
+local c_types = { B = "bool", I = "int", N = "double", S = "char*" }
 
 -- Make the output content.
 local tmpl_env =
@@ -302,14 +275,5 @@ else -- failed, look at intermediary code
     ret.err = err
     ret.dcode = dcode
 end
-
--- -- h interopwork part
--- rendered, err, dcode = tmpl.substitute(tmpl_interopwork_h, tmpl_env)
--- if not err then -- ok
---     ret["luainteropwork.h"] = rendered
--- else -- failed, look at intermediary code
---     ret.err = err
---     ret.dcode = dcode
--- end
 
 return ret
