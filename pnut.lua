@@ -50,7 +50,7 @@ local function case_failed(msg, info)
     -- Print failure information.
     local caller = ut.get_caller_info(4)
     info = info or ""
-    write_error(caller[1]..":"..caller[2].." "..msg..". "..info)
+    write_error(caller.filename..":"..caller.linenumber.." "..msg..". "..info)
 end
 
 -----------------------------------------------------------------------------

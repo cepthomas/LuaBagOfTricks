@@ -18,7 +18,7 @@ local script_fail = false
 -----------------------------------------------------------------------------
 -- Errors not associated with test cases.
 local function internal_error(msg)
-    pn.UT_ERROR(msg)
+    pn.UT_ERROR(debug.traceback(msg, 1))
 end
 
 -----------------------------------------------------------------------------
@@ -37,7 +37,7 @@ end
 -- Get the cmd line args.
 if #arg < 1 then
     -- log a message and exit.
-    internal_error("No files supplied")
+    error("No files supplied")
     app_fail = true
     goto done
 end
@@ -50,8 +50,11 @@ for i = 1, #arg do
 
     -- Load file in protected mode.
     ok, mut = pcall(require, mod)
+
+-- local ok, res = xpcall(f, debug.traceback, args...)
+
     if not ok or type(mut) ~= "table" then
-        internal_error(string.format("Failed to load file %s: %s ", scrfn, mut))
+        error(string.format("Failed to load file %s: %s ", scrfn, mut))
         app_fail = true
         goto done
     end
@@ -63,25 +66,28 @@ for i = 1, #arg do
             pn.start_suite(k.." in "..scrfn)
 
             -- Optional setup().
-            local ok, result = pcall(mut["setup"], pn)
+            local ok, result = xpcall(mut["setup"], debug.traceback, pn)
             if not ok then
-                internal_error(result)
+                pn.UT_ERROR(result)
+                -- internal_error(result)
                 script_fail = true
                 goto done
             end
 
             -- Run the suite.
-            ok, result = pcall(v, pn)
+            ok, result = xpcall(v, debug.traceback, pn)
             if not ok then
-                internal_error(result)
+                pn.UT_ERROR(result)
+                -- internal_error(result)
                 script_fail = true
                 goto done
             end
 
             -- Optional teardown().
-            ok, result = pcall(mut["teardown"], pn)
+            ok, result = xpcall(mut["teardown"], debug.traceback, pn)
             if not ok then
-                internal_error(result)
+                pn.UT_ERROR(result)
+                -- internal_error(result)
                 script_fail = true
                 goto done
             end

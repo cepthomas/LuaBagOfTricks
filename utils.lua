@@ -103,7 +103,7 @@ function M.get_caller_info(level)
     local s = debug.getinfo(level, 'S')
     local l = debug.getinfo(level, 'l')
     if s ~= nil and l ~= nil then
-        ret = { s.short_src, l.currentline }
+        ret = { filename = s.short_src, linenumber = l.currentline }
     end
     return ret
 end
