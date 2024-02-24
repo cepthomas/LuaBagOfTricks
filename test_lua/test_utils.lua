@@ -45,11 +45,6 @@ function M.dump_table(tbl, name, indent)
 function M.dump_table_string(tbl, name)
 
 --- Gets the file and line of the caller.
--- @param level How deep to look:
---    0 is the getinfo() itself
---    1 is the function that called getinfo() - get_caller_info()
---    2 is the function that called get_caller_info() - usually the one of interest
--- @return { filename, linenumber } or nil if invalid
 function M.get_caller_info(level)
 
 function M.is_integer(v) return M.to_integer(v) ~= nil end

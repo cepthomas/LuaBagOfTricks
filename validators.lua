@@ -6,7 +6,7 @@ local ut = require('utils')
 local M = {}
 
 
--- All return nil if ok or an error string if not.
+-- All return nil if ok or an error string if not. TODO1 ok,err ? 
 
 
 -----------------------------------------------------------------------------
