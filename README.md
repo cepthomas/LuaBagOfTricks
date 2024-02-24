@@ -23,8 +23,8 @@ Slightly modified version of the nifty [debugger.lua](https://github.com/slembck
 ## interop
 Generates C# and C code for the standard lua interop via `gen_interop.lua`.
 Two test projects demonstrate how to use it:
-- Test\test_code_cs
-- Test\test_code_ch
+- Test\test_cs
+- Test\test_ch
 
 ## validators
 Utilities for validation of lua data types.
