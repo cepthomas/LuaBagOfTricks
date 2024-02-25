@@ -16,10 +16,10 @@ local script_fail = false
 
 
 -----------------------------------------------------------------------------
--- Errors not associated with test cases.
-local function internal_error(msg)
-    pn.UT_ERROR(debug.traceback(msg, 1))
-end
+-- -- Errors not associated with test cases.
+-- local function internal_error(msg)
+--     pn.UT_ERROR(debug.traceback(msg, 1))
+-- end
 
 -----------------------------------------------------------------------------
 -- Report writer.
@@ -65,32 +65,41 @@ for i = 1, #arg do
             -- Found something to do. Run it in between optional test boilerplate.
             pn.start_suite(k.." in "..scrfn)
 
+
             -- Optional setup().
-            local ok, result = xpcall(mut["setup"], debug.traceback, pn)
+            local ok, result = pcall(mut.setup, pn)
             if not ok then
                 pn.UT_ERROR(result)
-                -- internal_error(result)
                 script_fail = true
                 goto done
             end
+            -- without pcall():
+            -- if mut.setup ~= nil then
+            --     mut.setup(pn)
+            -- end
+
 
             -- Run the suite.
-            ok, result = xpcall(v, debug.traceback, pn)
+            ok, result = pcall(v, pn)
             if not ok then
                 pn.UT_ERROR(result)
-                -- internal_error(result)
                 script_fail = true
                 goto done
             end
+            -- without pcall():
+            -- v(pn)
 
             -- Optional teardown().
-            ok, result = xpcall(mut["teardown"], debug.traceback, pn)
+            ok, result = pcall(mut.teardown, pn)
             if not ok then
                 pn.UT_ERROR(result)
-                -- internal_error(result)
                 script_fail = true
                 goto done
             end
+            -- without pcall():
+            -- if mut.teardown ~= nil then
+            --     mut.teardown(pn)
+            -- end
         end
     end
 end

@@ -147,6 +147,7 @@ end
 function M.UT_STR_EQUAL(val1, val2, info)
     local pass = true
     M.num_cases_run = M.num_cases_run + 1
+
     if type(val1) ~= "string" then
         local msg = string.format("[%s] is not a string", tostring(val1))
         case_failed(msg, info)
@@ -160,6 +161,7 @@ function M.UT_STR_EQUAL(val1, val2, info)
         case_failed(msg, info)
         pass = false
     end
+
     return pass
 end
 
@@ -171,11 +173,47 @@ end
 function M.UT_STR_NOT_EQUAL(val1, val2, info)
     local pass = true
     M.num_cases_run = M.num_cases_run + 1
-    if tostring(val1) == tostring(val2) then
+
+    if type(val1) ~= "string" then
+        local msg = string.format("[%s] is not a string", tostring(val1))
+        case_failed(msg, info)
+        pass = false
+    elseif type(val2) ~= "string" then
+        local msg = string.format("[%s] is not a string", tostring(val2))
+        case_failed(msg, info)
+        pass = false
+    elseif val1 == val2 then
         local msg = string.format("[%s] is equal to [%s]", tostring(val1), tostring(val2))
         case_failed(msg, info)
         pass = false
     end
+
+    return pass
+end
+
+-----------------------------------------------------------------------------
+-- Tests expression and registers a failure if phrase not in val.
+-- @param val Look in this...
+-- @param phrase For this.
+-- @param info optional additional info.
+function M.UT_STR_CONTAINS(val, phrase, info)
+    local pass = true
+    M.num_cases_run = M.num_cases_run + 1
+
+    if type(val) ~= "string" then
+        local msg = string.format("[%s] is not a string", tostring(val))
+        case_failed(msg, info)
+        pass = false
+    elseif type(phrase) ~= "string" then
+        local msg = string.format("[%s] is not a string", tostring(phrase))
+        case_failed(msg, info)
+        pass = false
+    elseif val:find(phrase) == nil then
+        local msg = string.format("[%s] does not contain [%s]", tostring(val), tostring(phase))
+        case_failed(msg, info)
+        pass = false
+    end
+
     return pass
 end
 
