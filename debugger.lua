@@ -20,7 +20,7 @@
 	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 	SOFTWARE.
 	
-	TODO3 from original:
+	FUTURE from original:
 	* Print short function arguments as part of stack location.
 	* Properly handle being reentrant due to coroutines.
 ]]

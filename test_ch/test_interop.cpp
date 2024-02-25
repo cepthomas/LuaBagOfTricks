@@ -105,8 +105,8 @@ UT_SUITE(INTEROP_EXEC, "Test execute script via luainterop.")
     int iret = 0;
     double dret = 0;
     bool bret = false;
-    char _sret[MAX_STRING]; // TODO2 MAX_STRING kinda klunky.
-    char* sret = _sret;
+    char buff[MAX_STRING]; // TODO2 MAX_STRING kinda klunky.
+    char* sret = buff;
 
     // Init system before running tests.
     _log_out = fopen("_log.txt", "w");
@@ -253,11 +253,6 @@ bool luainteropwork_ForceError()
 //--------------------------------------------------------//
 bool _EvalStatus(int stat, int line, const char* format, ...)
 {
-    // TODO2 useful?
-    //     luaL_traceback(L, L, NULL, 1);
-    //     snprintf(buff, BUFF_LEN-1, "%s | %s | %s", lua_tostring(L, -1), lua_tostring(L, -2), lua_tostring(L, -3));
-    //     fprintf(fout, "   %s\n", buff);
-
     bool ok = true;
     strcpy(_last_error, "No error");
 
