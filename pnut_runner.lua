@@ -65,7 +65,6 @@ for i = 1, #arg do
             -- Found something to do. Run it in between optional test boilerplate.
             pn.start_suite(k.." in "..scrfn)
 
-
             -- Optional setup().
             local ok, result = pcall(mut.setup, pn)
             if not ok then
@@ -77,7 +76,6 @@ for i = 1, #arg do
             -- if mut.setup ~= nil then
             --     mut.setup(pn)
             -- end
-
 
             -- Run the suite.
             ok, result = pcall(v, pn)
