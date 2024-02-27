@@ -21,7 +21,7 @@ static lua_State* _l;
 
 
 /////////////////////////////////////////////////////////////////////////////
-UT_SUITE(UTILS_MAIN, "Test luautils.") // TODO2 flesh out.
+UT_SUITE(UTILS_MAIN, "Test luautils.") // FUTURE flesh out.
 {
     //double dval;
     //int ival;
@@ -35,7 +35,6 @@ UT_SUITE(UTILS_MAIN, "Test luautils.") // TODO2 flesh out.
     /// @param info Extra info.
     //stat = luautils_DumpStack(_l, fout, "const char* info");
 
-
     /// Make a readable string.
     /// @param status Specific Lua status.
     /// @return the string.
@@ -45,12 +44,12 @@ UT_SUITE(UTILS_MAIN, "Test luautils.") // TODO2 flesh out.
     /// @param L Lua state.
     /// @param fout where to boss.
     /// @param L name visual.
-    //stat =  luautils_DumpTable(_l, fout, "const char* name");
+    //stat = luautils_DumpTable(_l, fout, "const char* name");
 
     /// Dump the lua globals.
     /// @param L Lua state.
     /// @param fout where to boss.
-    //stat =  luautils_DumpGlobals(_l, fout);
+    //stat = luautils_DumpGlobals(_l, fout);
 
     /// Check stack.
     //luautils_EvalStack(_l, fout, 3);

@@ -1,4 +1,4 @@
--- TODO2 Unit tests for the utils. also validators?
+-- FUTURE Unit tests for the utils. also validators?
 
 local sx = require("stringex")
 local ut = require("utils")
@@ -24,8 +24,6 @@ function M.suite_utils(pn)
     pn.UT_EQUAL(#s, 310)
 
 --[[
-
----------------------------------------------------------------
 --- Execute a file and return the output.
 -- @param cmd Command to run.
 -- @return Output text.
@@ -58,7 +56,6 @@ function M.is_boolean(v) return v ~= nil and type(v) == 'boolean' end
 function M.is_function(v) return v ~= nil and type(v) == 'function' end
 
 function M.is_table(v) return v ~= nil and type(v) == 'table' end
-
 
 --- Convert value to integer.
 -- @param v value to convert
@@ -103,9 +100,8 @@ function M.clamp(val, granularity, round)
 
 ]]
 
-
-
 end
+
 
 -----------------------------------------------------------------------------
 -- Return the module.

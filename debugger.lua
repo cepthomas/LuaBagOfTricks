@@ -27,11 +27,12 @@
 
 local dbg
 
--- TODO2 l cmd gets noisy.
--- TODO2 hot reload.
+-- My changes are marked CET.
+-- FUTURE l cmd gets noisy.
+-- FUTURE hot reload.
 
 
--- Use ANSI color codes in the prompt by default. TODO2 play with these.
+-- Use ANSI color codes in the prompt by default. FUTURE play with these.
 local COLOR_GRAY = ""
 local COLOR_RED = ""
 local COLOR_BLUE = ""
@@ -602,7 +603,7 @@ end
 
 -- Conditionally enable color support. https://stackoverflow.com/a/33206814
 function dbg.enable_color()
-	COLOR_GRAY = string.char(27) .. "[95m" --"[90m" TODO2 I changed
+	COLOR_GRAY = string.char(27) .. "[95m" --"[90m" CET
 	COLOR_RED = string.char(27) .. "[91m"
 	COLOR_BLUE = string.char(27) .. "[94m"
 	COLOR_YELLOW = string.char(27) .. "[33m"
@@ -618,7 +619,7 @@ end
 
 if stdin_isatty and not os.getenv("DBG_NOREADLINE") then
 	pcall(function()
-		local linenoise = require 'linenoise' --TODO2 don't have.
+		local linenoise = require 'linenoise' --FUTURE don't have - something else for windows? Native console?
 		
 		-- Load command history from ~/.lua_history
 		local hist_path = os.getenv('HOME') .. '/.lua_history'

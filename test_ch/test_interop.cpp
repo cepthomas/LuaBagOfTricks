@@ -105,7 +105,7 @@ UT_SUITE(INTEROP_EXEC, "Test execute script via luainterop.")
     int iret = 0;
     double dret = 0;
     bool bret = false;
-    char buff[MAX_STRING]; // TODO2 MAX_STRING kinda klunky.
+    char buff[MAX_STRING];
     char* sret = buff;
 
     // Init system before running tests.
