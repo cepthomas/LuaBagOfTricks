@@ -19,10 +19,10 @@ end
 ---------------------------------------------------------------
 --- If using debugger, bind lua error() function to it.
 -- @param use_dbgr Use debugger.
--- @param use_term Use terminal for debugger.
-function M.config_debug(use_dbgr, use_term)
+function M.config_debug(use_dbgr)
     local have_dbgr = false
     local og_error = error -- save original error function
+    local use_term = true -- Use terminal for debugger.
 
     if use_dbgr then
         have_dbgr, dbg = pcall(require, "debugger")
