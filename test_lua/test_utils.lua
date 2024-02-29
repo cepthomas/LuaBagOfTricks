@@ -20,7 +20,7 @@ function M.suite_utils(pn)
 
     -- Test dump_table().
     tt = { aa="pt1", bb=90901, alist={"qwerty", 777, temb1={ jj="pt8", b=true, temb2={ num=1.517, dd="strdd" } }, intx=5432}}
-    s = ut.dump_table_string(tt, 0, true)
+    s = ut.dump_table_string(tt, true)
     pn.UT_EQUAL(#s, 310)
 
 --[[
@@ -40,7 +40,7 @@ function M.dump_table(tbl, name, indent)
 -- @param tbl What to dump.
 -- @param name Of tbl.
 -- @return string
-function M.dump_table_string(tbl, name)
+function M.dump_table_string(tbl, true, name)
 
 --- Gets the file and line of the caller.
 function M.get_caller_info(level)

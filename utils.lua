@@ -33,29 +33,31 @@ function M.config_debug(use_dbgr)
         error = dbg.error
         if use_term then
             dbg.enable_color()
-            dbg.auto_where = 2
+            dbg.auto_where = 3
         end
     else
         -- Not using debugger so make global stubs to keep breakpoints from yelling.
-        function dbg() end
         dbg =
         {
             error = function(error, level) end,
             assert = function(error, message) end,
-            call = function(f, ...) end
+            call = function(f, ...) end,
         }
+        setmetatable(dbg, { __call = function(self) end })
     end
 end
 
 -----------------------------------------------------------------------------
 --- Diagnostic.
 -- @param tbl What to dump.
+-- @param recursive Avoid death loops.
 -- @param name Of the tbl.
 -- @param indent Nesting.
 -- @return list table of strings
-function M.dump_table(tbl, name, indent)
+function M.dump_table(tbl, recursive, name, indent)
     local res = {}
     indent = indent or 0
+    name = name or "no_name"
 
     if type(tbl) == "table" then
         local sindent = string.rep("    ", indent)
@@ -65,8 +67,8 @@ function M.dump_table(tbl, name, indent)
         indent = indent + 1
         sindent = sindent.."    "
         for k, v in pairs(tbl) do
-            if type(v) == "table" then
-                trec = M.dump_table(v, k, indent) -- recursion!
+            if type(v) == "table" and recursive then
+                trec = M.dump_table(v, recursive, k, indent) -- recursion!
                 for _,v in ipairs(trec) do
                     table.insert(res, v)
                 end
@@ -84,10 +86,11 @@ end
 -----------------------------------------------------------------------------
 --- Diagnostic.
 -- @param tbl What to dump.
+-- @param recursive Avoid death loops.
 -- @param name Of tbl.
 -- @return string
-function M.dump_table_string(tbl, name)
-    local res = M.dump_table(tbl, name, 0)
+function M.dump_table_string(tbl, recursive, name)
+    local res = M.dump_table(tbl, recursive, name, 0)
     return sx.strjoin('\n', res)
 end
 

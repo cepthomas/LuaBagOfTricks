@@ -66,38 +66,28 @@ for i = 1, #arg do
             pn.start_suite(k.." in "..scrfn)
 
             -- Optional setup().
-            local ok, result = pcall(mut.setup, pn)
+            local ok, result = xpcall(mut.setup, debug.traceback, pn)
             if not ok then
                 pn.UT_ERROR(result)
                 script_fail = true
                 goto done
             end
-            -- without pcall():
-            -- if mut.setup ~= nil then
-            --     mut.setup(pn)
-            -- end
 
             -- Run the suite.
-            ok, result = pcall(v, pn)
+            ok, result = xpcall(v, debug.traceback, pn)
             if not ok then
                 pn.UT_ERROR(result)
                 script_fail = true
                 goto done
             end
-            -- without pcall():
-            -- v(pn)
 
             -- Optional teardown().
-            ok, result = pcall(mut.teardown, pn)
+            ok, result = xpcall(mut.teardown, debug.traceback, pn)
             if not ok then
                 pn.UT_ERROR(result)
                 script_fail = true
                 goto done
             end
-            -- without pcall():
-            -- if mut.teardown ~= nil then
-            --     mut.teardown(pn)
-            -- end
         end
     end
 end
