@@ -14,8 +14,8 @@ M.config =
     add_refs = { "System.Diagnostics", }, -- -> using (optional)
 }
 
--- Host calls lua.
-M.lua_export_funcs =
+-- Host calls script.
+M.script_funcs =
 {
     {
         lua_func_name = "my_lua_func",
@@ -74,8 +74,8 @@ M.lua_export_funcs =
     },
 }
 
--- Lua calls host.
-M.host_export_funcs =
+-- Script calls host.
+M.host_funcs =
 {
     {
         lua_func_name = "my_lua_func3",

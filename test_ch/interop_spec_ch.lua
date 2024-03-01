@@ -10,8 +10,8 @@ M.config =
     lua_lib_name = "gen_lib",       -- -> lua lib name
 }
 
--- Host calls Lua.
-M.lua_export_funcs =
+-- Host calls script.
+M.script_funcs =
 {
     {
         lua_func_name = "calculator",
@@ -133,8 +133,8 @@ M.lua_export_funcs =
     },
 }
 
--- Lua calls host.
-M.host_export_funcs =
+-- Script calls host.
+M.host_funcs =
 {
     {
         lua_func_name = "log",

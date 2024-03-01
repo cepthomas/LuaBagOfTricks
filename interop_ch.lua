@@ -44,7 +44,7 @@ local tmpl_interop_c =
 
 //---------------- Call lua functions from host -------------//
 
->for _, func in ipairs(lua_funcs) do
+>for _, func in ipairs(script_funcs) do
 >local lua_ret_type = lua_types[func.ret.type]
 >local c_ret_type = c_types[func.ret.type]
 >local arg_specs = {}
@@ -95,7 +95,7 @@ int luainterop_$(func.host_func_name)(lua_State* l, $(c_ret_type)* ret)
     return stat;
 }
 
->end -- lua_funcs
+>end -- script_funcs
 
 //---------------- Call host functions from Lua -------------//
 
@@ -191,7 +191,7 @@ local tmpl_interop_h =
 
 //---------------- Call lua functions from host -------------//
 
->for _, func in ipairs(lua_funcs) do
+>for _, func in ipairs(script_funcs) do
 >local lua_ret_type = lua_types[func.ret.type]
 >local c_ret_type = c_types[func.ret.type]
 /// Lua export function: $(func.description or "")
@@ -212,7 +212,7 @@ int luainterop_$(func.host_func_name)(lua_State* l, $(sargs), $(c_ret_type)* ret
 int luainterop_$(func.host_func_name)(lua_State* l, $(c_ret_type)* ret);
 >end -- #sargs
 
->end -- lua_funcs
+>end -- script_funcs
 
 //---------------- Work functions for lua call host -------------//
 >for _, func in ipairs(host_funcs) do
@@ -250,8 +250,8 @@ local tmpl_env =
     _escape='>',
     _debug=true,
     config=spec.config,
-    lua_funcs=spec.lua_export_funcs,
-    host_funcs=spec.host_export_funcs,
+    script_funcs=spec.script_funcs,
+    host_funcs=spec.host_funcs,
     lua_types=lua_types,
     c_types=c_types
 }

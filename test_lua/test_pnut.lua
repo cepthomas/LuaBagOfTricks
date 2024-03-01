@@ -20,7 +20,7 @@ function M.suite_basic(pn)
     pn.UT_INFO("Verify that this info line appears in the report file. There should be 3 Infos: 2, 3, 5.")
     pn.UT_ERROR("Verify that this error line appears in the report file.")
 
-    pn.UT_TRUE(2 + 2 == 4, ">>> Info 1.") -- pass
+    pn.UT_TRUE(2 + 2 == 4, "Info 1.") -- pass
     pn.UT_TRUE(2 + 2 == 5, "should fail") -- fail
 
     pn.UT_FALSE(2 + 2 == 4, "should fail") -- fail
@@ -50,7 +50,7 @@ function M.suite_basic(pn)
     pn.UT_LESS_OR_EQUAL(555.1, 555.1) -- pass
     pn.UT_LESS_OR_EQUAL(432.01, 432.001, "should fail") -- fail
 
-    pn.UT_GREATER(432.01, 432.001, ">>> Info 4.") -- pass
+    pn.UT_GREATER(432.01, 432.001, "Info 4.") -- pass
     pn.UT_GREATER(555, 555.1, "should fail") -- fail
 
     pn.UT_GREATER_OR_EQUAL(555.1, 555) -- pass
@@ -62,7 +62,7 @@ function M.suite_basic(pn)
 
     -- Return status.
     local stat = pn.UT_NOT_NIL(nil, "should fail") -- fail
-    pn.UT_TRUE(stat, ">>> You should see me!!!")
+    pn.UT_TRUE(stat, "You should see me!!!")
 
     stat = pn.UT_NIL(nil) -- pass
     pn.UT_TRUE(stat, "should fail")
@@ -73,7 +73,7 @@ function M.suite_basic(pn)
     num_cases_run = pn.num_cases_run
     num_cases_failed = pn.num_cases_failed
     pn.UT_EQUAL(num_suites_run, 1)
-    pn.UT_EQUAL(num_suites_failed, 1, ">>> Info 6.")
+    pn.UT_EQUAL(num_suites_failed, 1, "Info 6.")
     pn.UT_EQUAL(num_cases_run, 33)
     pn.UT_EQUAL(num_cases_failed, 16)
 

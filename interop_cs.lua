@@ -31,7 +31,7 @@ namespace $(config.namespace)
     public partial class $(config.class)
     {
         #region Functions exported from lua for execution by host
->for _, func in ipairs(lua_funcs) do
+>for _, func in ipairs(script_funcs) do
 >local klex_ret_type = klex_types[func.ret.type]
 >local cs_ret_type = cs_types[func.ret.type]
         /// <summary>Lua export function: $(func.description or "")</summary>
@@ -71,7 +71,7 @@ namespace $(config.namespace)
             return ret;
         }
 
->end -- lua_funcs
+>end -- script_funcs
         #endregion
 
         #region Functions exported from host for execution by lua
@@ -157,8 +157,8 @@ local tmpl_env =
     _escape='>',
     _debug=true,
     config=spec.config,
-    lua_funcs=spec.lua_export_funcs,
-    host_funcs=spec.host_export_funcs,
+    script_funcs=spec.script_funcs,
+    host_funcs=spec.host_funcs,
     klex_types=klex_types,
     cs_types=cs_types
 }
