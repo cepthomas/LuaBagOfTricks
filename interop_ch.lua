@@ -84,9 +84,9 @@ int luainterop_$(func.host_func_name)(lua_State* l, $(c_ret_type)* ret)
     {
         // Get the results from the stack.
 >if lua_ret_type ==  lua_types.S then
-        if (lua_to$(lua_ret_type)(l, -1)) { strncpy(*ret, lua_tostring(l, -1), MAX_STRING); }
+        if (lua_is$(lua_ret_type)(l, -1)) { strncpy(*ret, lua_tostring(l, -1), MAX_STRING); }
 >else
-        if (lua_to$(lua_ret_type)(l, -1)) { *ret = lua_to$(lua_ret_type)(l, -1); }
+        if (lua_is$(lua_ret_type)(l, -1)) { *ret = lua_to$(lua_ret_type)(l, -1); }
 >end -- #sargs
         else { stat = INTEROP_BAD_RET_TYPE; }
         lua_pop(l, num_ret); // Clean up results.
@@ -185,8 +185,8 @@ local tmpl_interop_h =
 
 #include "lua.h"
 
-#define INTEROP_BAD_FUNC_NAME 10
-#define INTEROP_BAD_RET_TYPE  11
+#define INTEROP_BAD_FUNC_NAME 200
+#define INTEROP_BAD_RET_TYPE  201
 #define MAX_STRING 100
 
 //---------------- Call lua functions from host -------------//
