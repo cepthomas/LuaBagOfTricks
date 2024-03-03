@@ -11,10 +11,10 @@
 //---------------- Uilities --------------------------//
 
 /// Dump the lua stack contents.
-/// @param L Lua state.
+/// @param l Lua state.
 /// @param fout where to boss.
 /// @param info Extra info.
-int luautils_DumpStack(lua_State *L, FILE* fout, const char* info);
+int luautils_DumpStack(lua_State *l, FILE* fout, const char* info);
 
 /// Make a readable string.
 /// @param status Specific Lua status.
@@ -22,15 +22,15 @@ int luautils_DumpStack(lua_State *L, FILE* fout, const char* info);
 const char* luautils_LuaStatusToString(int err);
 
 /// Dump the table at the top.
-/// @param L Lua state.
+/// @param l Lua state.
 /// @param fout where to boss.
-/// @param L name visual.
-int luautils_DumpTable(lua_State* L, FILE* fout, const char* name);
+/// @param name visual.
+int luautils_DumpTable(lua_State* l, FILE* fout, const char* name);
 
 /// Dump the lua globals.
-/// @param L Lua state.
+/// @param l Lua state.
 /// @param fout where to boss.
-int luautils_DumpGlobals(lua_State* L, FILE* fout);
+int luautils_DumpGlobals(lua_State* l, FILE* fout);
 
  /// Check stack.
  void luautils_EvalStack(lua_State* l, FILE* fout, int expected);

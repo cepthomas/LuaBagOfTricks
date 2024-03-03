@@ -12,26 +12,26 @@
 
 
 //--------------------------------------------------------//
-int luautils_DumpStack(lua_State* L, FILE* fout, const char* info)
+int luautils_DumpStack(lua_State* l, FILE* fout, const char* info)
 {
     static char buff[BUFF_LEN];
 
-    fprintf(fout, "Dump stack:%s (L:%p)\n", info, L);
+    fprintf(fout, "Dump stack:%s (L:%p)\n", info, l);
 
-    for(int i = lua_gettop(L); i >= 1; i--)
+    for(int i = lua_gettop(l); i >= 1; i--)
     {
-        int t = lua_type(L, i);
+        int t = lua_type(l, i);
 
         switch(t)
         {
             case LUA_TSTRING:
-                snprintf(buff, BUFF_LEN-1, "index:%d string:%s ", i, lua_tostring(L, i));
+                snprintf(buff, BUFF_LEN-1, "index:%d string:%s ", i, lua_tostring(l, i));
                 break;
             case LUA_TBOOLEAN:
-                snprintf(buff, BUFF_LEN-1, "index:%d bool:%s ", i, lua_toboolean(L, i) ? "true" : "false");
+                snprintf(buff, BUFF_LEN-1, "index:%d bool:%s ", i, lua_toboolean(l, i) ? "true" : "false");
                 break;
             case LUA_TNUMBER:
-                snprintf(buff, BUFF_LEN-1, "index:%d number:%g ", i, lua_tonumber(L, i));
+                snprintf(buff, BUFF_LEN-1, "index:%d number:%g ", i, lua_tonumber(l, i));
                 break;
             case LUA_TNIL:
                 snprintf(buff, BUFF_LEN-1, "index:%d nil", i);
@@ -44,7 +44,7 @@ int luautils_DumpStack(lua_State* L, FILE* fout, const char* info)
             case LUA_TTHREAD:
             case LUA_TUSERDATA:
             case LUA_TLIGHTUSERDATA:
-                snprintf(buff, BUFF_LEN-1, "index:%d %s:%p ", i, lua_typename(L, t), lua_topointer(L, i));
+                snprintf(buff, BUFF_LEN-1, "index:%d %s:%p ", i, lua_typename(l, t), lua_topointer(l, i));
                 break;
             default:
                 snprintf(buff, BUFF_LEN-1, "index:%d type:%d", i, t);
@@ -76,41 +76,45 @@ const char* luautils_LuaStatusToString(int stat)
 }
 
 //--------------------------------------------------------//
-int luautils_DumpTable(lua_State* L, FILE* fout, const char* name)
+int luautils_DumpTable(lua_State* l, FILE* fout, const char* name) // FUTURE make recursive like lua dump_table()?
 {
     fprintf(fout, "%s\n", name);
 
     // Put a nil key on stack.
-    lua_pushnil(L);
+    lua_pushnil(l);
 
     // key(-1) is replaced by the next key(-1) in table(-2).
-    while (lua_next(L, -2) != 0)
+    while (lua_next(l, -2) != 0)
     {
         // Get key(-2) name.
-        const char* name = lua_tostring(L, -2);
+        const char* name = lua_tostring(l, -2);
 
         // Get type of value(-1).
-        const char* type = luaL_typename(L, -1);
+        const char* type = luaL_typename(l, -1);
 
-        fprintf(fout, "   %s=%s\n", name, type);
+        // Get value(-1).
+        const char* sval = luaL_tolstring(l, -1, NULL);
+        fprintf(fout, "   %s:%s(%s)\n", name, sval, type);
+        // Remove the sval from the stack.
+        lua_pop(l, 1);
 
         // Remove value(-1), now key on top at(-1).
-        lua_pop(L, 1);
+        lua_pop(l, 1);
     }
     
     return 0;
 }
 
 //--------------------------------------------------------//
-int luautils_DumpGlobals(lua_State* L, FILE* fout)
+int luautils_DumpGlobals(lua_State* l, FILE* fout)
 {
     // Get global table.
-    lua_pushglobaltable(L);
+    lua_pushglobaltable(l);
 
-    luautils_DumpTable(L, fout, "GLOBALS");
+    luautils_DumpTable(l, fout, "GLOBALS");
 
     // Remove global table(-1).
-    lua_pop(L,1);
+    lua_pop(l,1);
 
     return 0;
 }

@@ -227,7 +227,7 @@ int luainteropwork_GetTimestamp()
 //--------------------------------------------------------//
 bool luainteropwork_Log(int level, char* msg)
 {
-    snprintf(_last_log, sizeof(_last_log), "Log LVL%d %s", level, msg);
+    snprintf(_last_log, sizeof(_last_log) - 1, "Log LVL%d %s", level, msg);
     return true;
 }
 
@@ -235,7 +235,7 @@ bool luainteropwork_Log(int level, char* msg)
 char* luainteropwork_GetEnvironment(double temp)
 {
     static char buff[50];
-    snprintf(buff, sizeof(buff), "Temperature is %.1f degrees", temp);
+    snprintf(buff, sizeof(buff) - 1, "Temperature is %.1f degrees", temp);
     return buff;
 }
 
@@ -299,11 +299,11 @@ bool _EvalStatus(int stat, int line, const char* format, ...)
         // Log the error info.
         if (errmsg == NULL)
         {
-            snprintf(_last_error, sizeof(_last_error), "%s %s", sstat, info);
+            snprintf(_last_error, sizeof(_last_error) - 1, "%s %s", sstat, info);
         }
         else
         {
-            snprintf(_last_error, sizeof(_last_error), "%s %s\n%s", sstat, info, errmsg);
+            snprintf(_last_error, sizeof(_last_error) - 1, "%s %s\n%s", sstat, info, errmsg);
         }
         logger_Log(LVL_INFO, line, _last_error);
     }

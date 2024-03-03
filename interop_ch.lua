@@ -84,7 +84,7 @@ int luainterop_$(func.host_func_name)(lua_State* l, $(c_ret_type)* ret)
     {
         // Get the results from the stack.
 >if lua_ret_type ==  lua_types.S then
-        if (lua_is$(lua_ret_type)(l, -1)) { strncpy(*ret, lua_tostring(l, -1), MAX_STRING); }
+        if (lua_is$(lua_ret_type)(l, -1)) { strncpy(*ret, lua_tostring(l, -1), MAX_STRING - 1); }
 >else
         if (lua_is$(lua_ret_type)(l, -1)) { *ret = lua_to$(lua_ret_type)(l, -1); }
 >end -- #sargs
