@@ -66,13 +66,13 @@ UT_SUITE(INTEROP_LOAD, "Test load and unload lua script.")
     UT_FALSE(ok);
     UT_STR_EQUAL(_last_error, "LUA_ERRFILE load script file failed: bad_script_file_name.lua\ncannot open bad_script_file_name.lua: No such file or directory");
 
-    fn = "C:\\Dev\\repos\\Lua\\LuaBagOfTricks\\test_ch\\script6.lua";
+    fn = "C:\\Dev\\repos\\Lua\\LuaBagOfTricks\\test_ch\\script_load_error.lua";
     stat = luaL_loadfile(_l, fn);
     ok = _EvalStatus(stat, __LINE__, "load script file failed: %s", fn);
     UT_FALSE(ok);
-    UT_STR_CONTAINS(_last_error, "LUA_ERRSYNTAX load script file failed: C:\\Dev\\repos\\Lua\\LuaBagOfTricks\\test_ch\\script6.lua");
+    UT_STR_CONTAINS(_last_error, "LUA_ERRSYNTAX load script file failed: C:\\Dev\\repos\\Lua\\LuaBagOfTricks\\test_ch\\script_load_error.lua");
 
-    fn = "C:\\Dev\\repos\\Lua\\LuaBagOfTricks\\test_ch\\script7.lua";
+    fn = "C:\\Dev\\repos\\Lua\\LuaBagOfTricks\\test_ch\\script_main.lua";
     stat = luaL_loadfile(_l, fn);
     ok = _EvalStatus(stat, __LINE__, "load script file failed: %s", fn);
     UT_TRUE(ok);
@@ -129,7 +129,7 @@ UT_SUITE(INTEROP_EXEC, "Test execute script via luainterop.")
     // Pushes the compiled chunk as a Lua function on top of the stack or pushes an error message.
     const char* fn = "";
 
-    fn = "C:\\Dev\\repos\\Lua\\LuaBagOfTricks\\test_ch\\script7.lua";
+    fn = "C:\\Dev\\repos\\Lua\\LuaBagOfTricks\\test_ch\\script_main.lua";
     stat = luaL_loadfile(_l, fn);
     ok = _EvalStatus(stat, __LINE__, "load script file failed: %s", fn);
     UT_TRUE(ok);
