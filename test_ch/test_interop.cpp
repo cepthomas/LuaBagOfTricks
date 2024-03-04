@@ -59,7 +59,7 @@ UT_SUITE(INTEROP_LOAD, "Test load and unload lua script.")
     // Pushes the compiled chunk as a Lua function on top of the stack or pushes an error message.
     const char* fn = "";
 
-    // Try to load non-existent file.
+    // Try to load/compile non-existent file.
     fn = "bad_script_file_name.lua";
     stat = luaL_loadfile(_l, fn);
     ok = _EvalStatus(stat, __LINE__, "load script file failed: %s", fn);
