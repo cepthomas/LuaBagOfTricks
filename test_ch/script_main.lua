@@ -85,12 +85,7 @@ end
 -----------------------------------------------------------------------------
 function user_lua_func3()
     error("user_lua_func3() raises error()")
-
     script_cnt = script_cnt + 1
-    -- if script_cnt == 5 then
-    --     error("user_lua_func3() raises error()")
-    -- end
-
     return script_cnt
 end
 
