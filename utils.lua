@@ -200,9 +200,9 @@ end
 -----------------------------------------------------------------------------
 --- Snap to closest neighbor.
 -- @param val
--- @param granularity">The neighbors property line.
--- @param round">Round or truncate.
--- @return
+-- @param granularity The neighbors property line.
+-- @param round Round or truncate.
+-- @return snapped value
 function M.clamp(val, granularity, round)
     res = (val / granularity) * granularity
     if round and (val % granularity > granularity / 2) then res = res + granularity end
@@ -210,5 +210,17 @@ function M.clamp(val, granularity, round)
 end
 
 -----------------------------------------------------------------------------
+--- Lua has no builtin way to count number of values in an associative table so this does.
+-- @param tbl
+-- @return number of values
+function M.table_count(tbl)
+    num = 0
+    for k, _ in pairs(tbl) do
+        num = num + 1
+    end
+    return num
+end
+
+
 -- Return the module.
 return M
