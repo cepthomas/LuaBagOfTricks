@@ -208,7 +208,7 @@ function M.UT_STR_CONTAINS(val, phrase, info)
         local msg = string.format("[%s] is not a string", tostring(phrase))
         case_failed(msg, info)
         pass = false
-    elseif val:find(phrase) == nil then
+    elseif val:find(phrase, 1, true) == nil then
         local msg = string.format("[%s] does not contain [%s]", tostring(val), tostring(phase))
         case_failed(msg, info)
         pass = false
