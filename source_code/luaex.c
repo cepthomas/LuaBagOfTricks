@@ -32,7 +32,7 @@ static int _handler(lua_State* l)
         }
     }
 
-    // Append and return a standard traceback.
+    // Append and return a standard traceback. TODO2 make optional?
     luaL_traceback(l, l, msg, 1);  
     return 1;
 }

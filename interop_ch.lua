@@ -103,7 +103,7 @@ int luainterop_$(func.host_func_name)(lua_State* l, $(c_ret_type)* ret)
 >local lua_ret_type = lua_types[func.ret.type]
 >local c_ret_type = c_types[func.ret.type]
 //--------------------------------------------------------//
-// Host export function: $(func.description or "")
+// Lua call host: $(func.description or "")
 // @param[in] l Internal lua state.
 // @return Number of lua return values.
 >for _, arg in ipairs(func.args or {}) do
@@ -194,7 +194,7 @@ local tmpl_interop_h =
 >for _, func in ipairs(script_funcs) do
 >local lua_ret_type = lua_types[func.ret.type]
 >local c_ret_type = c_types[func.ret.type]
-/// Lua export function: $(func.description or "")
+/// Host call lua: $(func.description or "")
 /// @param[in] l Internal lua state.
 >for _, arg in ipairs(func.args or {}) do
 /// @param[in] $(arg.name) $(arg.description or "")
