@@ -199,7 +199,7 @@ end
 
 -----------------------------------------------------------------------------
 --- Snap to closest neighbor.
--- @param val
+-- @param val what to snap
 -- @param granularity The neighbors property line.
 -- @param round Round or truncate.
 -- @return snapped value
@@ -211,7 +211,7 @@ end
 
 -----------------------------------------------------------------------------
 --- Lua has no builtin way to count number of values in an associative table so this does.
--- @param tbl
+-- @param tbl the table
 -- @return number of values
 function M.table_count(tbl)
     num = 0
@@ -219,6 +219,16 @@ function M.table_count(tbl)
         num = num + 1
     end
     return num
+end
+
+-----------------------------------------------------------------------------
+-- Boilerplate for adding a new kv to a table.
+-- @param tbl the table
+-- @param key new entry key
+-- @param val new entry value
+function M.table_add(tbl, key, val)
+   if tbl[key] == nil then tbl[key] = {} end
+   table.insert(tbl[key], val)
 end
 
 
