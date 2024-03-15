@@ -7,7 +7,7 @@
 
 #include "luautils.h"
 
-#define BUFF_LEN 100
+#define BUFF_LEN 300
 
 
 
