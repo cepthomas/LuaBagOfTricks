@@ -16,6 +16,7 @@ M.script_funcs =
     {
         lua_func_name = "calculator",
         host_func_name = "Calculator",
+        required = "true", -- TODO1 test these
         description = "Simple caalculations.",
         args =
         {

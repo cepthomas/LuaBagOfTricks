@@ -20,6 +20,7 @@ M.script_funcs =
     {
         lua_func_name = "my_lua_func",
         host_func_name = "MyLuaFunc",
+        required = "true", -- TODO1 test these
         description = "Tell me something good.",
         args =
         {

@@ -50,11 +50,15 @@ $(c_ret_type) luainterop_$(func.host_func_name)(lua_State* l)
     int stat = LUA_OK;
     int num_args = 0;
     int num_ret = 1;
-    $(c_ret_type) ret;
+    $(c_ret_type) ret = 0;
 
     // Get function.
     int ltype = lua_getglobal(l, "$(func.lua_func_name)");
-    if (ltype != LUA_TFUNCTION) { luaL_error(l, "Bad func name: $(func.lua_func_name)"); }
+    if (ltype != LUA_TFUNCTION)
+    {
+        if ($(func.required)) { _error = "Bad function name: $(func.lua_func_name)()"; }
+        return ret;
+    }
 
     // Push arguments. No error checking required.
 >for _, arg in ipairs(func.args or {}) do
@@ -63,21 +67,16 @@ $(c_ret_type) luainterop_$(func.host_func_name)(lua_State* l)
     num_args++;
 >end -- func.args
 
-    // Do the protected call. If script fails, luaex_docall adds the script stack to the error object.
+    // Do the protected call.
     stat = luaex_docall(l, num_args, num_ret);
-
     if (stat == LUA_OK)
     {
         // Get the results from the stack.
         if (lua_is$(lua_ret_type)(l, -1)) { ret = lua_to$(lua_ret_type)(l, -1); }
-        else { luaL_error(l, "Bad return type: $(lua_ret_type)"); }
-        lua_pop(l, num_ret); // Clean up results.
+        else { _error = "Bad return type for $(func.lua_func_name)(): should be $(lua_ret_type)"; }
     }
-    else
-    {
-        luaL_error(l, "Func call failed $(func.lua_func_name)");
-    }
-
+    else { _error = lua_tostring(l, -1); }
+    lua_pop(l, num_ret); // Clean up results.
     return ret;
 }
 
