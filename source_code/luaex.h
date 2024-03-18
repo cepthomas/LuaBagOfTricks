@@ -8,7 +8,7 @@
 
 //---------------- Public API ----------------------//
 
-/// FUTURE Add tableex type support similar to LuaEx.cs/TableEx.cs (see structinator).
+/// TODO3 Add tableex type support similar to LuaEx.cs/TableEx.cs (see structinator).
 //  Also consider arrays of scalars or tableex.
 
 typedef struct tableex

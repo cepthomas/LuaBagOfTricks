@@ -28,7 +28,7 @@
 local dbg
 
 -- My changes are marked CET.
--- FUTURE l cmd gets noisy.
+-- FUTURE l cmd gets noisy with large tables.
 -- FUTURE hot reload.
 
 
