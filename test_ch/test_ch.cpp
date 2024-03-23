@@ -10,9 +10,10 @@ int main()
     std::vector<std::string> whichSuites;
     whichSuites.emplace_back("INTEROP");
     whichSuites.emplace_back("UTILS");
-    std::ofstream s_ut("_test.txt", std::ofstream::out);
-    tm.RunSuites(whichSuites, 'r', true, &s_ut);
-    s_ut.close();
+    tm.RunSuites(whichSuites, 'r', true, &std::cout);
+    //std::ofstream s_ut("_test.txt", std::ofstream::out);
+    //tm.RunSuites(whichSuites, 'r', true, &s_ut);
+    //s_ut.close();
 
     return 0;
 }

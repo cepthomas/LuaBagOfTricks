@@ -165,6 +165,8 @@ local tmpl_interop_h =
 >local ut = require('utils')
 >local sx = require("stringex")
 
+#include <stdbool.h>
+
 #ifdef __cplusplus
 #include "lua.hpp"
 extern "C" {
@@ -174,8 +176,6 @@ extern "C" {
 #include "lua.h"
 #include "luaex.h"
 #endif
-
-#define MAX_STRING 100
 
 //---------------- Call lua functions from host -------------//
 
@@ -194,9 +194,9 @@ extern "C" {
 >end -- func.args
 >sargs = sx.strjoin(", ", arg_specs)
 >if #sargs > 0 then
-int luainterop_$(func.host_func_name)(lua_State* l, $(sargs));
+$(c_ret_type) luainterop_$(func.host_func_name)(lua_State* l, $(sargs));
 >else
-int luainterop_$(func.host_func_name)(lua_State* l);
+$(c_ret_type) luainterop_$(func.host_func_name)(lua_State* l);
 >end -- #sargs
 
 >end -- script_funcs

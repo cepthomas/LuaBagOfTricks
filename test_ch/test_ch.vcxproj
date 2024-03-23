@@ -33,13 +33,13 @@
     <ClCompile Include="luainterop.c" />
     <ClCompile Include="test_interop.cpp" />
     <ClCompile Include="test_luautils.cpp" />
-    <ClCompile Include="Lbot.cpp" />
+    <ClCompile Include="test_ch.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{2902a50d-cdc6-4afc-81f7-dcf28453ecfd}</ProjectGuid>
-    <RootNamespace>Lbot</RootNamespace>
+    <RootNamespace>test_ch</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />

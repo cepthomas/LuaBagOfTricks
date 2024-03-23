@@ -97,6 +97,30 @@ namespace MyLuaInteropLib
             return ret;
         }
 
+        /// <summary>Lua export function: Function is optional.</summary>
+        /// <returns>int Dummy return value.></returns>
+        public int? OptionalFunc()
+        {
+            int numArgs = 0;
+            int numRet = 1;
+
+            // Get function.
+            LuaType ltype = _l.GetGlobal("optional_func");
+            if (ltype != LuaType.Function) { ErrorHandler(new SyntaxException($"Bad lua function: optional_func")); return null; }
+
+            // Push arguments.
+
+            // Do the actual call.
+            LuaStatus lstat = _l.DoCall(numArgs, numRet);
+            if (lstat >= LuaStatus.ErrRun) { ErrorHandler(new SyntaxException("DoCall() failed")); return null; }
+
+            // Get the results from the stack.
+            int? ret = _l.ToInteger(-1);
+            if (ret is null) { ErrorHandler(new SyntaxException("Return value is not a int")); return null; }
+            _l.Pop(1);
+            return ret;
+        }
+
         #endregion
 
         #region Functions exported from host for execution by lua
@@ -116,7 +140,7 @@ namespace MyLuaInteropLib
             else { ErrorHandler(new SyntaxException($"Bad arg type for {arg_one}")); return 0; }
 
             // Do the work. One result.
-            bool ret = MyLuaFunc3_Work(arg_one);
+            bool ret = MyLuaFunc3Work(arg_one);
             l.PushBoolean(ret);
             return 1;
         }
@@ -133,7 +157,7 @@ namespace MyLuaInteropLib
             // Get arguments
 
             // Do the work. One result.
-            double ret = FuncWithNoArgs_Work();
+            double ret = FuncWithNoArgsWork();
             l.PushNumber(ret);
             return 1;
         }

@@ -19,24 +19,20 @@ extern "C"
 static lua_State* _l;
 static int _timestamp = 1000;
 static char _last_log[500];
-static char _last_error[500];
 
 // Point these where you like.
 static FILE* _log_out = stdout;
 static FILE* _error_out = stdout;
 
 // Top level error handler for nebulua status.
-static bool _EvalStatus(int stat, int line, const char* format, ...);
+static const char* _EvalStatus(int stat);
 
 
 /////////////////////////////////////////////////////////////////////////////
 UT_SUITE(INTEROP_LOAD, "Test load and unload lua script.")
 {
     int stat;
-    bool ok = false;
-    int iret = 0;
-    double dret = 0;
-    bool bret = false;
+    const char* slua_error;
 
     // Init system before running tests.
     _log_out = fopen("_log.txt", "w");
@@ -62,21 +58,23 @@ UT_SUITE(INTEROP_LOAD, "Test load and unload lua script.")
     // Try to load/compile non-existent file.
     fn = "bad_script_file_name.lua";
     stat = luaL_loadfile(_l, fn);
-    ok = _EvalStatus(stat, __LINE__, "load script file failed: %s", fn);
-    UT_FALSE(ok);
-    UT_STR_EQUAL(_last_error, "LUA_ERRFILE load script file failed: bad_script_file_name.lua\ncannot open bad_script_file_name.lua: No such file or directory");
+    UT_EQUAL(stat, LUA_ERRFILE);
+    slua_error = _EvalStatus(stat);
+    UT_NOT_NULL(slua_error);
+    UT_STR_CONTAINS(slua_error, "cannot open bad_script_file_name.lua: No such file or directory");
 
     fn = "C:\\Dev\\repos\\Lua\\LuaBagOfTricks\\test_ch\\script_load_error.lua";
     stat = luaL_loadfile(_l, fn);
-    ok = _EvalStatus(stat, __LINE__, "load script file failed: %s", fn);
-    UT_FALSE(ok);
-    UT_STR_CONTAINS(_last_error, "LUA_ERRSYNTAX load script file failed: C:\\Dev\\repos\\Lua\\LuaBagOfTricks\\test_ch\\script_load_error.lua");
+    UT_EQUAL(stat, LUA_ERRSYNTAX);
+    slua_error = _EvalStatus(stat);
+    UT_NOT_NULL(slua_error);
+    UT_STR_CONTAINS(slua_error, "syntax error near 'ts'");
 
     fn = "C:\\Dev\\repos\\Lua\\LuaBagOfTricks\\test_ch\\script_main.lua";
     stat = luaL_loadfile(_l, fn);
-    ok = _EvalStatus(stat, __LINE__, "load script file failed: %s", fn);
-    UT_TRUE(ok);
-    UT_STR_EQUAL(_last_error, "No error");
+    UT_EQUAL(stat, LUA_OK);
+    slua_error = _EvalStatus(stat);
+    UT_NULL(slua_error);
     // Should be ok.
 
     //luautils_DumpGlobals(_l, stdout);
@@ -88,6 +86,7 @@ UT_SUITE(INTEROP_LOAD, "Test load and unload lua script.")
     {
         fclose(_log_out);
     }
+
     if (_error_out != stdout)
     {
         fclose(_error_out);
@@ -101,12 +100,8 @@ UT_SUITE(INTEROP_LOAD, "Test load and unload lua script.")
 UT_SUITE(INTEROP_EXEC, "Test execute script via luainterop.")
 {
     int stat;
-    bool ok = false;
-    int iret = 0;
-    double dret = 0;
-    bool bret = false;
-    char buff[MAX_STRING];
-    char* sret = buff;
+    const char* slua_error;
+    const char* sinterop_error;
 
     // Init system before running tests.
     _log_out = fopen("_log.txt", "w");
@@ -131,16 +126,16 @@ UT_SUITE(INTEROP_EXEC, "Test execute script via luainterop.")
 
     fn = "C:\\Dev\\repos\\Lua\\LuaBagOfTricks\\test_ch\\script_main.lua";
     stat = luaL_loadfile(_l, fn);
-    ok = _EvalStatus(stat, __LINE__, "load script file failed: %s", fn);
-    UT_TRUE(ok);
-    UT_STR_EQUAL(_last_error, "No error");
+    UT_EQUAL(stat, LUA_OK);
+    slua_error = _EvalStatus(stat);
+    UT_NULL(slua_error);
     // Should be ok.
 
     // If stat is ok, run the script to init everything.
     stat = lua_pcall(_l, 0, LUA_MULTRET, 0);
-    ok = _EvalStatus(stat, __LINE__, "execute script failed: %s", fn);
-    UT_TRUE(ok);
-    UT_STR_EQUAL(_last_error, "No error");
+    UT_EQUAL(stat, LUA_OK);
+    slua_error = _EvalStatus(stat);
+    UT_NULL(slua_error);
     // Should be ok.
 
     // This should be set by the script execution.
@@ -150,54 +145,56 @@ UT_SUITE(INTEROP_EXEC, "Test execute script via luainterop.")
 
     // Call to the script.
     char op[] = {"*"};
-    stat = luainterop_Calculator(_l, 12.96, op, 3.15, &dret);
-    ok = _EvalStatus(stat, __LINE__, "calculator()");
-    UT_TRUE(ok);
-    UT_STR_EQUAL(_last_error, "No error");
-    UT_CLOSE(dret, 40.824, 0.001);
+    double answer = luainterop_Calculator(_l, 12.96, op, 3.15);
+    sinterop_error = luainterop_Error();
+    UT_NULL(sinterop_error);
+    UT_CLOSE(answer, 40.824, 0.001);
 
     char day[] = { "Moonday" };
-    stat = luainterop_DayOfWeek(_l, day, &iret);
-    ok = _EvalStatus(stat, __LINE__, "day_of_week()");
-    UT_TRUE(ok);
-    UT_STR_EQUAL(_last_error, "No error");
-    UT_EQUAL(iret, 3);
+    int daynum = luainterop_DayOfWeek(_l, day);
+    sinterop_error = luainterop_Error();
+    UT_NULL(sinterop_error);
+    UT_EQUAL(daynum, 3);
 
-    stat = luainterop_FirstDay(_l, &sret);
-    ok = _EvalStatus(stat, __LINE__, "first_day()");
-    UT_TRUE(ok);
-    UT_STR_EQUAL(_last_error, "No error");
-    UT_STR_EQUAL(sret, "Hamday");
+    const char* dayname = luainterop_FirstDay(_l);
+    sinterop_error = luainterop_Error();
+    UT_NULL(sinterop_error);
+    UT_STR_EQUAL(dayname, "Hamday");
 
-    stat = luainterop_InvalidFunc(_l, &bret);
-    ok = _EvalStatus(stat, __LINE__, "invalid_func()");
-    UT_FALSE(ok);
-    UT_STR_CONTAINS(_last_error, "INTEROP_BAD_FUNC_NAME invalid_func()");
+    int dummy = luainterop_InvalidFunc(_l);
+    sinterop_error = luainterop_Error();
+    UT_NOT_NULL(sinterop_error);
+    UT_STR_CONTAINS(sinterop_error, "Bad function name: invalid_func()");
 
     char arg[] = { "abc" };
-    stat = luainterop_InvalidArgType(_l, arg, &bret);
-    ok = _EvalStatus(stat, __LINE__, "invalid_arg()");
-    UT_FALSE(ok);
-    UT_STR_CONTAINS(_last_error, "LUA_ERRRUN invalid_arg()");
-    UT_STR_CONTAINS(_last_error, "attempt to add a \'string\' with a \'number\'");
+    dummy = luainterop_InvalidArgType(_l, arg);
+    sinterop_error = luainterop_Error();
+    UT_NOT_NULL(sinterop_error);
+    UT_STR_CONTAINS(sinterop_error, "attempt to add a 'string' with a 'number'");
 
-    stat = luainterop_InvalidRetType(_l, &iret);
-    ok = _EvalStatus(stat, __LINE__, "invalid_ret_type()");
-    UT_FALSE(ok);
-    UT_STR_CONTAINS(_last_error, "INTEROP_BAD_RET_TYPE invalid_ret_type()");
+    dummy = luainterop_InvalidRetType(_l);
+    sinterop_error = luainterop_Error();
+    UT_NOT_NULL(sinterop_error);
+    UT_STR_CONTAINS(sinterop_error, "Bad return type for invalid_ret_type(): should be integer");
 
     // Force error - C calls lua which calls error(). This is fatal.
-    stat = luainterop_ErrorFunc(_l, 1, &bret);
-    ok = _EvalStatus(stat, __LINE__, "error_func(1)");
-    UT_FALSE(ok);
-    UT_STR_CONTAINS(_last_error, "user_lua_func3() raises error()");
+    dummy = luainterop_ErrorFunc(_l, 1);
+    sinterop_error = luainterop_Error();
+    UT_NOT_NULL(sinterop_error);
+    UT_STR_CONTAINS(sinterop_error, "user_lua_func3() raises error()");
 
     // Force error - C calls lua which calls C which calls luaL_error().
-    stat = luainterop_ErrorFunc(_l, 2, &bret);
-    ok = _EvalStatus(stat, __LINE__, "error_func(2)");
-    UT_FALSE(ok);
-    UT_STR_CONTAINS(_last_error, "Let's blow someing up in lua");
+    dummy = luainterop_ErrorFunc(_l, 2);
+    sinterop_error = luainterop_Error();
+    UT_NOT_NULL(sinterop_error);
+    UT_STR_CONTAINS(sinterop_error, "Let's blow something up in lua");
 
+    // Try to call optional function.
+    dummy = luainterop_OptionalFunc(_l);
+    sinterop_error = luainterop_Error();
+    UT_NULL(sinterop_error);
+
+    // Done.
     UT_INFO("Fini!", "");
     lua_close(_l);
 
@@ -205,6 +202,7 @@ UT_SUITE(INTEROP_EXEC, "Test execute script via luainterop.")
     {
         fclose(_log_out);
     }
+
     if (_error_out != stdout)
     {
         fclose(_error_out);
@@ -225,14 +223,14 @@ int luainteropwork_GetTimestamp()
 }
 
 //--------------------------------------------------------//
-bool luainteropwork_Log(int level, char* msg)
+bool luainteropwork_Log(int level, const char* msg)
 {
     snprintf(_last_log, sizeof(_last_log) - 1, "Log LVL%d %s", level, msg);
     return true;
 }
 
 //--------------------------------------------------------//
-char* luainteropwork_GetEnvironment(double temp)
+const char* luainteropwork_GetEnvironment(double temp)
 {
     static char buff[50];
     snprintf(buff, sizeof(buff) - 1, "Temperature is %.1f degrees", temp);
@@ -242,7 +240,7 @@ char* luainteropwork_GetEnvironment(double temp)
 //--------------------------------------------------------//
 bool luainteropwork_ForceError()
 {
-    luaL_error(_l, "Let's blow someing up in lua");
+    luaL_error(_l, "Let's blow something up in lua");
     return true;
 }
 
@@ -251,62 +249,22 @@ bool luainteropwork_ForceError()
 
 
 //--------------------------------------------------------//
-bool _EvalStatus(int stat, int line, const char* format, ...)
+const char* _EvalStatus(int stat)
 {
-    bool ok = true;
-    strcpy(_last_error, "No error");
+    static char buff[500];
+    char* sret = NULL;
 
     if (stat >= LUA_ERRRUN)
     {
-        ok = false;
-
-        // Format info string.
-        char info[100];
-        va_list args;
-        va_start(args, format);
-        vsnprintf(info, sizeof(info) - 1, format, args);
-        va_end(args);
-
-        // Readable error string.
-        const char* sstat = NULL;
-        switch (stat)
-        {
-            // generic LUA_OK
-            case 0:                         sstat = "NO_ERR"; break;
-            // lua
-            case LUA_YIELD:                 sstat = "LUA_YIELD"; break; // the thread(coroutine) yields.
-            case LUA_ERRRUN:                sstat = "LUA_ERRRUN"; break; // a runtime error.
-            case LUA_ERRSYNTAX:             sstat = "LUA_ERRSYNTAX"; break; // syntax error during pre-compilation
-            case LUA_ERRMEM:                sstat = "LUA_ERRMEM"; break; // memory allocation error. For such errors, Lua does not call the message handler.
-            case LUA_ERRERR:                sstat = "LUA_ERRERR"; break; // error while running the error handler function
-            case LUA_ERRFILE:               sstat = "LUA_ERRFILE"; break; // a file - related error; e.g., it cannot open or read the file.
-            // lbot
-            case INTEROP_BAD_FUNC_NAME:     sstat = "INTEROP_BAD_FUNC_NAME"; break; // function not in loaded script
-            case INTEROP_BAD_RET_TYPE:      sstat = "INTEROP_BAD_RET_TYPE"; break; // script doesn't recognize function arg type
-            // app specific
-            // ...
-            default:                        sstat = "UNKNOWN_ERROR"; break;
-        }
-
-        // Additional error message.
+        // Error message.
         const char* errmsg = NULL;
         if (stat <= LUA_ERRFILE && lua_gettop(_l) > 0) // internal lua error - get error message on stack if provided.
         {
             errmsg = lua_tostring(_l, -1);
+            strncpy(buff, errmsg, sizeof(buff) - 1);
+            sret = buff;
         }
-        // else app error
-
-        // Log the error info.
-        if (errmsg == NULL)
-        {
-            snprintf(_last_error, sizeof(_last_error) - 1, "%s %s", sstat, info);
-        }
-        else
-        {
-            snprintf(_last_error, sizeof(_last_error) - 1, "%s %s\n%s", sstat, info, errmsg);
-        }
-        logger_Log(LVL_INFO, line, _last_error);
     }
 
-    return ok;
+    return sret;
 }

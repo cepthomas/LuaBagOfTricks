@@ -16,7 +16,7 @@ M.script_funcs =
     {
         lua_func_name = "calculator",
         host_func_name = "Calculator",
-        required = "true", -- TODO1 test these
+        required = "true",
         description = "Simple caalculations.",
         args =
         {
@@ -39,32 +39,34 @@ M.script_funcs =
         ret =
         {
             type = "N",
-            description = "The answer"
+            description = "Calculated answer"
         }
     },
 
     {
         lua_func_name = "day_of_week",
         host_func_name = "DayOfWeek",
+        required = "true",
         description = "String to integer.",
         args =
         {
             {
                 name = "day",
                 type = "S",
-                description = "The day name."
+            description = "Day name."
             },
         },
          ret =
         {
             type = "I",
-            description = "The answer."
+            description = "Day number."
         }
     },
 
     {
         lua_func_name = "first_day",
         host_func_name = "FirstDay",
+        required = "true",
         description = "Function with no args.",
         ret =
         {
@@ -76,17 +78,19 @@ M.script_funcs =
     {
         lua_func_name = "invalid_func",
         host_func_name = "InvalidFunc",
+        required = "true",
         description = "Function not implemented in script.",
         ret =
         {
             type = "B",
-            description = "Required dummy return value."
+            description = "Dummy return value."
         }
     },
 
     {
         lua_func_name = "invalid_arg_type",
         host_func_name = "InvalidArgType",
+        required = "true",
         description = "Function argument type incorrect.",
         args =
         {
@@ -99,24 +103,26 @@ M.script_funcs =
          ret =
         {
             type = "B",
-            description = "Required dummy return value."
+            description = "Dummy return value."
         }
     },
 
     {
         lua_func_name = "invalid_ret_type",
         host_func_name = "InvalidRetType",
+        required = "true",
         description = "Function return type incorrect.",
         ret =
         {
             type = "I",
-            description = "Required dummy return value."
+            description = "Dummy return value."
         }
     },
 
     {
         lua_func_name = "error_func",
         host_func_name = "ErrorFunc",
+        required = "true",
         description = "Function that calls error().",
         args =
         {
@@ -129,7 +135,19 @@ M.script_funcs =
         ret =
         {
             type = "B",
-            description = "Required dummy return value."
+            description = "Dummy return value."
+        }
+    },
+
+    {
+        lua_func_name = "optional_func",
+        host_func_name = "OptionalFunc",
+        required = "false",
+        description = "Function is optional.",
+        ret =
+        {
+            type = "I",
+            description = "Dummy return value."
         }
     },
 }
@@ -157,7 +175,7 @@ M.host_funcs =
         ret =
         {
             type = "B",
-            description = "Required dummy return value."
+            description = "Dummy return value."
         }
     },
     {
@@ -195,7 +213,7 @@ M.host_funcs =
         ret =
         {
             type = "B",
-            description = "Required dummy return value."
+            description = "Dummy return value."
         }
     },
 }

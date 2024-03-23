@@ -3,69 +3,65 @@
 
 ///// Warning - this file is created by gen_interop.lua, do not edit. /////
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <stdarg.h>
 #include <stdbool.h>
-#include <stdint.h>
-#include <string.h>
-#include <float.h>
 
+#ifdef __cplusplus
+#include "lua.hpp"
+extern "C" {
+#include "luaex.h"
+};
+#else
 #include "lua.h"
-
-#define INTEROP_BAD_FUNC_NAME 10
-#define INTEROP_BAD_RET_TYPE  11
-#define MAX_STRING 100
+#include "luaex.h"
+#endif
 
 //---------------- Call lua functions from host -------------//
 
-/// Lua export function: Simple caalculations.
+/// Host call lua: Simple caalculations.
 /// @param[in] l Internal lua state.
 /// @param[in] op_one Operand 1.
 /// @param[in] oper Operator: + - * /
 /// @param[in] op_two Operand 2.
-/// @param[out] double* The answer
-/// @return status
-int luainterop_Calculator(lua_State* l, double op_one, char* oper, double op_two, double* ret);
+/// @return double Calculated answer
+double luainterop_Calculator(lua_State* l, double op_one, const char* oper, double op_two);
 
-/// Lua export function: String to integer.
+/// Host call lua: String to integer.
 /// @param[in] l Internal lua state.
-/// @param[in] day The day name.
-/// @param[out] int* The answer.
-/// @return status
-int luainterop_DayOfWeek(lua_State* l, char* day, int* ret);
+/// @param[in] day Day name.
+/// @return int Day number.
+int luainterop_DayOfWeek(lua_State* l, const char* day);
 
-/// Lua export function: Function with no args.
+/// Host call lua: Function with no args.
 /// @param[in] l Internal lua state.
-/// @param[out] char** Day name.
-/// @return status
-int luainterop_FirstDay(lua_State* l, char** ret);
+/// @return const char* Day name.
+const char* luainterop_FirstDay(lua_State* l);
 
-/// Lua export function: Function not implemented in script.
+/// Host call lua: Function not implemented in script.
 /// @param[in] l Internal lua state.
-/// @param[out] bool* Required dummy return value.
-/// @return status
-int luainterop_InvalidFunc(lua_State* l, bool* ret);
+/// @return bool Dummy return value.
+bool luainterop_InvalidFunc(lua_State* l);
 
-/// Lua export function: Function argument type incorrect.
+/// Host call lua: Function argument type incorrect.
 /// @param[in] l Internal lua state.
 /// @param[in] arg1 The arg.
-/// @param[out] bool* Required dummy return value.
-/// @return status
-int luainterop_InvalidArgType(lua_State* l, char* arg1, bool* ret);
+/// @return bool Dummy return value.
+bool luainterop_InvalidArgType(lua_State* l, const char* arg1);
 
-/// Lua export function: Function return type incorrect.
+/// Host call lua: Function return type incorrect.
 /// @param[in] l Internal lua state.
-/// @param[out] int* Required dummy return value.
-/// @return status
-int luainterop_InvalidRetType(lua_State* l, int* ret);
+/// @return int Dummy return value.
+int luainterop_InvalidRetType(lua_State* l);
 
-/// Lua export function: Function that calls error().
+/// Host call lua: Function that calls error().
 /// @param[in] l Internal lua state.
 /// @param[in] flavor Tweak behavior.
-/// @param[out] bool* Required dummy return value.
-/// @return status
-int luainterop_ErrorFunc(lua_State* l, int flavor, bool* ret);
+/// @return bool Dummy return value.
+bool luainterop_ErrorFunc(lua_State* l, int flavor);
+
+/// Host call lua: Function is optional.
+/// @param[in] l Internal lua state.
+/// @return int Dummy return value.
+int luainterop_OptionalFunc(lua_State* l);
 
 
 //---------------- Work functions for lua call host -------------//
@@ -73,24 +69,28 @@ int luainterop_ErrorFunc(lua_State* l, int flavor, bool* ret);
 /// Record something for me.
 /// @param[in] level Log level.
 /// @param[in] msg What to log.
-/// @return Required dummy return value.
-bool luainteropwork_Log(int level, char* msg);
+/// @return Dummy return value.
+bool luainteropwork_Log(int level, const char* msg);
 
 /// How hot are you?
 /// @param[in] temp Temperature.
 /// @return String environment.
-char* luainteropwork_GetEnvironment(double temp);
+const char* luainteropwork_GetEnvironment(double temp);
 
 /// Milliseconds.
 /// @return The time.
 int luainteropwork_GetTimestamp();
 
 /// Raise an error from lua code.
-/// @return Required dummy return value.
+/// @return Dummy return value.
 bool luainteropwork_ForceError();
 
 //---------------- Infrastructure ----------------------//
 
+/// Load Lua C lib.
 void luainterop_Load(lua_State* l);
+
+/// Return operation error or NULL if ok.
+const char* luainterop_Error();
 
 #endif // LUAINTEROP_H

@@ -47,7 +47,7 @@
     <ClCompile Include="..\source_code\luautils.c">
       <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="Lbot.cpp">
+    <ClCompile Include="test_ch.cpp">
       <Filter>test</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\C\c_bag_of_tricks\source_code\private\logger.c">

@@ -20,7 +20,7 @@ M.script_funcs =
     {
         lua_func_name = "my_lua_func",
         host_func_name = "MyLuaFunc",
-        required = "true", -- TODO1 test these
+        required = "true",
         description = "Tell me something good.",
         args =
         {
@@ -45,9 +45,11 @@ M.script_funcs =
             description = "a returned thing"
         }
     },
+
     {
         lua_func_name = "my_lua_func2",
         host_func_name = "MyLuaFunc2",
+        required = "true",
         description = "wooga wooga",
         args =
         {
@@ -63,9 +65,11 @@ M.script_funcs =
             description = "a returned number"
         }
     },
+
     {
         lua_func_name = "no_args_func",
         host_func_name = "NoArgsFunc",
+        required = "true",
         description = "no_args",
         ret =
         {
@@ -73,6 +77,19 @@ M.script_funcs =
             description = "a returned number"
         },
     },
+
+    {
+        lua_func_name = "optional_func",
+        host_func_name = "OptionalFunc",
+        required = "false",
+        description = "Function is optional.",
+        ret =
+        {
+            type = "I",
+            description = "Dummy return value."
+        }
+    },
+
 }
 
 -- Script calls host.
@@ -96,6 +113,7 @@ M.host_funcs =
             description = "required return value"
         }
     },
+
     {
         lua_func_name = "func_with_no_args",
         host_func_name = "FuncWithNoArgs",
