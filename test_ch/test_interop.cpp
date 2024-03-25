@@ -11,7 +11,7 @@ extern "C"
 #include "lauxlib.h"
 #include "luautils.h"
 #include "luainterop.h"
-#include "logger.h"
+//#include "logger.h"
 }
 
 
@@ -34,9 +34,9 @@ UT_SUITE(INTEROP_LOAD, "Test load and unload lua script.")
     int stat;
     const char* slua_error;
 
-    // Init system before running tests.
-    _log_out = fopen("_log.txt", "w");
-    logger_Init(_log_out);
+    //// Init system before running tests.
+    //_log_out = fopen("_log.txt", "w");
+    //logger_Init(_log_out);
 
     // Init internal stuff.
     _l = luaL_newstate();
@@ -103,9 +103,9 @@ UT_SUITE(INTEROP_EXEC, "Test execute script via luainterop.")
     const char* slua_error;
     const char* sinterop_error;
 
-    // Init system before running tests.
-    _log_out = fopen("_log.txt", "w");
-    logger_Init(_log_out);
+    //// Init system before running tests.
+    //_log_out = fopen("_log.txt", "w");
+    //logger_Init(_log_out);
 
     // Init internal stuff.
     _l = luaL_newstate();

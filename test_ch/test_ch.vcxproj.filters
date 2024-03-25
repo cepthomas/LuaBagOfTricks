@@ -1,20 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="cbot">
-      <UniqueIdentifier>{d20d46b1-721f-411f-98e8-ef1b4aabb06b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="test">
-      <UniqueIdentifier>{60c03f1b-71c4-4dee-9f8d-b8f70bfa0abd}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="source">
-      <UniqueIdentifier>{4a763242-e011-41bb-88fc-3ae9b6c3507b}</UniqueIdentifier>
-    </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\..\..\C\c_bag_of_tricks\pnut\pnut.h">
-      <Filter>cbot</Filter>
-    </ClInclude>
     <ClInclude Include="..\source_code\luaex.h">
       <Filter>source</Filter>
     </ClInclude>
@@ -24,14 +10,8 @@
     <ClInclude Include="..\source_code\luautils.h">
       <Filter>source</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\C\c_bag_of_tricks\source_code\logger.h">
-      <Filter>cbot</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\C\c_bag_of_tricks\pnut\pnut.cpp">
-      <Filter>cbot</Filter>
-    </ClCompile>
     <ClCompile Include="test_luautils.cpp">
       <Filter>test</Filter>
     </ClCompile>
@@ -49,9 +29,6 @@
     </ClCompile>
     <ClCompile Include="test_ch.cpp">
       <Filter>test</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\C\c_bag_of_tricks\source_code\private\logger.c">
-      <Filter>cbot</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

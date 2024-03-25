@@ -1,8 +1,8 @@
 
 echo off
 
-:: Set the lua path. TODO1 test
-set LUA_PATH=;;%~dp0\..\?.lua;%~dp0\?.lua;
+:: Set the lua path.
+set LUA_PATH=;;%~dp0..\?.lua;%~dp0?.lua;
 
 pushd ".."
 

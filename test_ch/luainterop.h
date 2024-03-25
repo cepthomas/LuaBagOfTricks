@@ -17,7 +17,7 @@ extern "C" {
 
 //---------------- Call lua functions from host -------------//
 
-/// Host call lua: Simple caalculations.
+/// Host call lua: Simple calculations.
 /// @param[in] l Internal lua state.
 /// @param[in] op_one Operand 1.
 /// @param[in] oper Operator: + - * /

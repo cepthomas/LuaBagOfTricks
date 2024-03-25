@@ -19,18 +19,15 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\C\c_bag_of_tricks\pnut\pnut.h" />
-    <ClInclude Include="..\..\..\C\c_bag_of_tricks\source_code\logger.h" />
     <ClInclude Include="..\source_code\luaex.h" />
     <ClInclude Include="..\source_code\luautils.h" />
     <ClInclude Include="luainterop.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\C\c_bag_of_tricks\pnut\pnut.cpp" />
-    <ClCompile Include="..\..\..\C\c_bag_of_tricks\source_code\private\logger.c" />
     <ClCompile Include="..\source_code\luaex.c" />
     <ClCompile Include="..\source_code\luautils.c" />
     <ClCompile Include="luainterop.c" />
+    <ClCompile Include="pnut.cpp" />
     <ClCompile Include="test_interop.cpp" />
     <ClCompile Include="test_luautils.cpp" />
     <ClCompile Include="test_ch.cpp" />
@@ -122,12 +119,12 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard_C>stdc11</LanguageStandard_C>
-      <AdditionalIncludeDirectories>C:\Dev\repos\Lua\LuaBagOfTricks\test_ch;C:\Dev\repos\Lua\LuaBagOfTricks\test_ch\lua_lib\include;C:\Dev\repos\C\c_bag_of_tricks\pnut;C:\Dev\repos\C\c_bag_of_tricks\source_code;C:\Dev\repos\Lua\LuaBagOfTricks\source_code;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(LBOT)\test_ch;$(LBOT)\test_ch\lua_lib\include;$(LBOT)\source_code;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>C:\Dev\repos\Lua\LuaBagOfTricks\test_ch\lua_lib\lua54.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(LBOT)\test_ch\lua_lib\lua54.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/NODEFAULTLIB:MSVCR %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>

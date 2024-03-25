@@ -150,7 +150,7 @@ namespace $(config.namespace)
 local klex_types = { B = "Boolean", I = "Integer", N = "Number", S ="String", T = "TableEx" }
 local cs_types = { B = "bool", I = "int", N = "double", S = "string", T = "TableEx" }
 
--- Make the output content.
+-- Make the output content. 
 local tmpl_env =
 {
     _parent=_G,
@@ -166,6 +166,7 @@ local tmpl_env =
 local ret = {} -- { "gensrc1.cs"=rendered, "gensrc2.cs"=rendered, err, dcode }
 
 local rendered, err, dcode = tmpl.substitute(tmpl_src, tmpl_env)
+
 if not err then -- ok
     ret["LuaInterop.cs"] = rendered
 else -- failed, look at intermediary code
