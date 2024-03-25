@@ -90,6 +90,7 @@ if ok then
     -- pcall ok, examine the result.
     sep = package.config:sub(1,1)
     for k, v in pairs(result) do
+        print(k, v)
         if k == "err" then
             -- Compile error, save the intermediate code.
             err_fn = sx.strjoin(sep, { out_path, "err_dcode.lua" } )

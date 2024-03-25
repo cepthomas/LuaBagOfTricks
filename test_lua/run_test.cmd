@@ -1,8 +1,8 @@
 
 echo off
 
-:: Set the lua path.
-set LUA_PATH=;;C:\Dev\repos\Lua\LuaBagOfTricks\?.lua;C:\Dev\repos\Lua\LuaBagOfTricks\Test\?.lua;
+:: Set the lua path. TODO1 test
+set LUA_PATH=;;%~dp0\..\?.lua;%~dp0\?.lua;
 
 pushd ".."
 
