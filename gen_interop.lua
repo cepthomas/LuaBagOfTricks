@@ -1,8 +1,8 @@
 -- Generate lua interop for C, C#.
 -- It's generally simpler to make the types more lua-friendly as C handles translation a bit easier.
 -- Later maybe: enums, markdown, out pointers ...
--- TODO3 Need to check spec files for required elements.
--- TODO3 If error, err_dcode.lua will contain info to parse and present to user:
+-- TODO2 Need to check spec files for required elements.
+-- TODO2 If error, err_dcode.lua will contain info to parse and present to user:
 --   lua: gen_interop.lua:103: Error in TMP file ...\err_dcode.lua: attempt to index a nil value
 --   stack traceback:
 --       [C]: in for iterator 'for iterator'

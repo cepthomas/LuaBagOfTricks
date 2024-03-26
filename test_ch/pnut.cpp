@@ -1,7 +1,7 @@
 
 #include "pnut.h"
 
-// TODO3 Copied from cbot - use submodule instead?
+// TODO2 Copied from cbot - use submodule instead?
 
 //-------------------------- TestSuite ------------------------------//
 
