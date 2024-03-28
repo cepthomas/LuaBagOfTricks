@@ -63,7 +63,7 @@ UT_SUITE(INTEROP_LOAD, "Test load and unload lua script.")
     UT_NOT_NULL(slua_error);
     UT_STR_CONTAINS(slua_error, "cannot open bad_script_file_name.lua: No such file or directory");
 
-    fn = "C:\\Dev\\repos\\Lua\\LuaBagOfTricks\\test_ch\\script_load_error.lua";
+    fn = "C:\\Dev\\repos\\Lua\\LuaBagOfTricks\\test_ch\\script_load_error.lua"; TODO1 fix these paths
     stat = luaL_loadfile(_l, fn);
     UT_EQUAL(stat, LUA_ERRSYNTAX);
     slua_error = _EvalStatus(stat);
