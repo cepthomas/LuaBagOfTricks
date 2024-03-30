@@ -20,7 +20,7 @@ static int _timestamp = 1000;
 static char _last_log[500];
 
 // Top level error handler for nebulua status.
-static const char* _EvalStatus(int stat);
+static const char* CheckStatus(int stat);
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -53,21 +53,21 @@ UT_SUITE(INTEROP_LOAD, "Test load and unload lua script.")
     fn = "bad_script_file_name.lua";
     stat = luaL_loadfile(_l, fn);
     UT_EQUAL(stat, LUA_ERRFILE);
-    slua_error = _EvalStatus(stat);
+    slua_error = CheckStatus(stat);
     UT_NOT_NULL(slua_error);
     UT_STR_CONTAINS(slua_error, "cannot open bad_script_file_name.lua: No such file or directory");
 
     fn = "script_load_error.lua";
     stat = luaL_loadfile(_l, fn);
     UT_EQUAL(stat, LUA_ERRSYNTAX);
-    slua_error = _EvalStatus(stat);
+    slua_error = CheckStatus(stat);
     UT_NOT_NULL(slua_error);
     UT_STR_CONTAINS(slua_error, "syntax error near 'ts'");
 
     fn = "script_main.lua";
     stat = luaL_loadfile(_l, fn);
     UT_EQUAL(stat, LUA_OK);
-    slua_error = _EvalStatus(stat);
+    slua_error = CheckStatus(stat);
     UT_NULL(slua_error);
     // Should be ok.
 
@@ -104,17 +104,17 @@ UT_SUITE(INTEROP_EXEC, "Test execute script via luainterop.")
     // Pushes the compiled chunk as a Lua function on top of the stack or pushes an error message.
     const char* fn = "";
 
-    fn = "C:\\Dev\\repos\\Lua\\LuaBagOfTricks\\test_ch\\script_main.lua";
+    fn = "script_main.lua";
     stat = luaL_loadfile(_l, fn);
     UT_EQUAL(stat, LUA_OK);
-    slua_error = _EvalStatus(stat);
+    slua_error = CheckStatus(stat);
     UT_NULL(slua_error);
     // Should be ok.
 
     // If stat is ok, run the script to init everything.
     stat = lua_pcall(_l, 0, LUA_MULTRET, 0);
     UT_EQUAL(stat, LUA_OK);
-    slua_error = _EvalStatus(stat);
+    slua_error = CheckStatus(stat);
     UT_NULL(slua_error);
     // Should be ok.
 
@@ -219,7 +219,7 @@ bool luainteropwork_ForceError()
 
 
 //--------------------------------------------------------//
-const char* _EvalStatus(int stat)
+const char* CheckStatus(int stat)
 {
     static char buff[500];
     char* sret = NULL;
