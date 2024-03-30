@@ -11,7 +11,6 @@ extern "C"
 #include "lauxlib.h"
 #include "luautils.h"
 #include "luainterop.h"
-//#include "logger.h"
 }
 
 
@@ -19,10 +18,6 @@ extern "C"
 static lua_State* _l;
 static int _timestamp = 1000;
 static char _last_log[500];
-
-// Point these where you like.
-static FILE* _log_out = stdout;
-static FILE* _error_out = stdout;
 
 // Top level error handler for nebulua status.
 static const char* _EvalStatus(int stat);
@@ -34,13 +29,12 @@ UT_SUITE(INTEROP_LOAD, "Test load and unload lua script.")
     int stat;
     const char* slua_error;
 
-    //// Init system before running tests.
-    //_log_out = fopen("_log.txt", "w");
-    //logger_Init(_log_out);
-
     // Init internal stuff.
     _l = luaL_newstate();
      //luautils_EvalStack(_l, stdout, 0);
+
+    //FILE* fp = fopen("_here .txt", "w");
+    //fprintf(fp, "here");
 
     // Load std libraries.
     luaL_openlibs(_l);
@@ -63,14 +57,14 @@ UT_SUITE(INTEROP_LOAD, "Test load and unload lua script.")
     UT_NOT_NULL(slua_error);
     UT_STR_CONTAINS(slua_error, "cannot open bad_script_file_name.lua: No such file or directory");
 
-    fn = "C:\\Dev\\repos\\Lua\\LuaBagOfTricks\\test_ch\\script_load_error.lua"; TODO1 fix these paths
+    fn = "script_load_error.lua";
     stat = luaL_loadfile(_l, fn);
     UT_EQUAL(stat, LUA_ERRSYNTAX);
     slua_error = _EvalStatus(stat);
     UT_NOT_NULL(slua_error);
     UT_STR_CONTAINS(slua_error, "syntax error near 'ts'");
 
-    fn = "C:\\Dev\\repos\\Lua\\LuaBagOfTricks\\test_ch\\script_main.lua";
+    fn = "script_main.lua";
     stat = luaL_loadfile(_l, fn);
     UT_EQUAL(stat, LUA_OK);
     slua_error = _EvalStatus(stat);
@@ -82,16 +76,6 @@ UT_SUITE(INTEROP_LOAD, "Test load and unload lua script.")
     UT_INFO("Fini!", "");
     lua_close(_l);
 
-    if (_log_out != stdout)
-    {
-        fclose(_log_out);
-    }
-
-    if (_error_out != stdout)
-    {
-        fclose(_error_out);
-    }
-
     return 0;
 }    
 
@@ -102,10 +86,6 @@ UT_SUITE(INTEROP_EXEC, "Test execute script via luainterop.")
     int stat;
     const char* slua_error;
     const char* sinterop_error;
-
-    //// Init system before running tests.
-    //_log_out = fopen("_log.txt", "w");
-    //logger_Init(_log_out);
 
     // Init internal stuff.
     _l = luaL_newstate();
@@ -197,16 +177,6 @@ UT_SUITE(INTEROP_EXEC, "Test execute script via luainterop.")
     // Done.
     UT_INFO("Fini!", "");
     lua_close(_l);
-
-    if (_log_out != stdout)
-    {
-        fclose(_log_out);
-    }
-
-    if (_error_out != stdout)
-    {
-        fclose(_error_out);
-    }
 
     return 0;
 }    

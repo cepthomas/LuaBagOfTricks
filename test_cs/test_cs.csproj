@@ -17,4 +17,9 @@
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <SatelliteResourceLanguages>none</SatelliteResourceLanguages>
     </PropertyGroup>
-/Project>
+    <ItemGroup>
+      <Reference Include="KeraLuaEx">
+        <HintPath>lib\KeraLuaEx.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+</Project>
