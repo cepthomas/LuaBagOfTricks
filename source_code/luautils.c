@@ -76,7 +76,7 @@ const char* luautils_LuaStatusToString(int stat)
 }
 
 //--------------------------------------------------------//
-int luautils_DumpTable(lua_State* l, FILE* fout, const char* name) // FUTURE make recursive like lua dump_table()?
+int luautils_DumpTable(lua_State* l, FILE* fout, const char* name) // TODOF make recursive like lua dump_table()?
 {
     fprintf(fout, "%s\n", name);
 

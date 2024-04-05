@@ -1,6 +1,7 @@
 # Lua Bag Of Tricks
 - Making lua life easier. For me.
 - Pure Lua so far so *should* work anywhere.
+- Uses 64 bit Lua 5.4.2 from https://luabinaries.sourceforge.net/download.html.
 
 ## pnut
 `pnut.lua` and `pnut_runner.lua` comprise a minimalist unit test framework based on previous implementations in C/C++/C#.
@@ -31,7 +32,3 @@ Utilities for validation of lua data types.
 
 ## C source_code
 Several functions to support the C side of lua applications.
-
-## Talk about test(s)
-
-I'm using 64 bit Lua 5.4.2 from https://luabinaries.sourceforge.net/download.html.
