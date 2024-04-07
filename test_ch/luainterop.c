@@ -289,7 +289,7 @@ int luainterop_OptionalFunc(lua_State* l)
 // Lua arg: level Log level.
 // Lua arg: msg What to log.
 // Lua return: bool Dummy return value.
-static int luainterop_Log(lua_State* l)
+static bool luainterop_Log(lua_State* l)
 {
     // Get arguments
     int level;
@@ -300,7 +300,7 @@ static int luainterop_Log(lua_State* l)
     else { luaL_error(l, "Bad arg type for: msg"); }
 
     // Do the work. One result.
-    bool ret = luainteropwork_Log(level, msg);
+    bool ret = luainteropwork_Log(l, level, msg);
     lua_pushboolean(l, ret);
     return 1;
 }
@@ -311,7 +311,7 @@ static int luainterop_Log(lua_State* l)
 // @return Number of lua return values.
 // Lua arg: temp Temperature.
 // Lua return: const char* String environment.
-static int luainterop_GetEnvironment(lua_State* l)
+static const char* luainterop_GetEnvironment(lua_State* l)
 {
     // Get arguments
     double temp;
@@ -319,7 +319,7 @@ static int luainterop_GetEnvironment(lua_State* l)
     else { luaL_error(l, "Bad arg type for: temp"); }
 
     // Do the work. One result.
-    const char* ret = luainteropwork_GetEnvironment(temp);
+    const char* ret = luainteropwork_GetEnvironment(l, temp);
     lua_pushstring(l, ret);
     return 1;
 }
@@ -334,7 +334,7 @@ static int luainterop_GetTimestamp(lua_State* l)
     // Get arguments
 
     // Do the work. One result.
-    int ret = luainteropwork_GetTimestamp();
+    int ret = luainteropwork_GetTimestamp(l);
     lua_pushinteger(l, ret);
     return 1;
 }
@@ -344,12 +344,12 @@ static int luainterop_GetTimestamp(lua_State* l)
 // @param[in] l Internal lua state.
 // @return Number of lua return values.
 // Lua return: bool Dummy return value.
-static int luainterop_ForceError(lua_State* l)
+static bool luainterop_ForceError(lua_State* l)
 {
     // Get arguments
 
     // Do the work. One result.
-    bool ret = luainteropwork_ForceError();
+    bool ret = luainteropwork_ForceError(l);
     lua_pushboolean(l, ret);
     return 1;
 }

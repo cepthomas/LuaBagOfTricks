@@ -67,23 +67,27 @@ int luainterop_OptionalFunc(lua_State* l);
 //---------------- Work functions for lua call host -------------//
 
 /// Record something for me.
+/// @param[in] l Internal lua state.
 /// @param[in] level Log level.
 /// @param[in] msg What to log.
 /// @return Dummy return value.
-bool luainteropwork_Log(int level, const char* msg);
+bool luainteropwork_Log(lua_State* l, int level, const char* msg);
 
 /// How hot are you?
+/// @param[in] l Internal lua state.
 /// @param[in] temp Temperature.
 /// @return String environment.
-const char* luainteropwork_GetEnvironment(double temp);
+const char* luainteropwork_GetEnvironment(lua_State* l, double temp);
 
 /// Milliseconds.
+/// @param[in] l Internal lua state.
 /// @return The time.
-int luainteropwork_GetTimestamp();
+int luainteropwork_GetTimestamp(lua_State* l);
 
 /// Raise an error from lua code.
+/// @param[in] l Internal lua state.
 /// @return Dummy return value.
-bool luainteropwork_ForceError();
+bool luainteropwork_ForceError(lua_State* l);
 
 //---------------- Infrastructure ----------------------//
 

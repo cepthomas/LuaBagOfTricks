@@ -95,7 +95,7 @@ $(c_ret_type) luainterop_$(func.host_func_name)(lua_State* l)
 // Lua arg: $(arg.name) $(arg.description or "")
 >end -- func.args
 // Lua return: $(c_ret_type) $(func.ret.description or "")
-static int luainterop_$(func.host_func_name)(lua_State* l)
+static $(c_ret_type) luainterop_$(func.host_func_name)(lua_State* l)
 {
     // Get arguments
 >for i, arg in ipairs(func.args or {}) do
@@ -109,6 +109,7 @@ static int luainterop_$(func.host_func_name)(lua_State* l)
     // Do the work. One result.
 >local arg_specs = { }
 >for _, arg in ipairs(func.args or {}) do
+>local c_ret_type = c_types[func.ret.type]
 >table.insert(arg_specs, arg.name)
 >end -- func.args
 >sargs = sx.strjoin(", ", arg_specs)
@@ -215,7 +216,11 @@ $(c_ret_type) luainterop_$(func.host_func_name)(lua_State* l);
 >table.insert(arg_specs, c_types[arg.type].." "..arg.name)
 >end -- func.args
 >sargs = sx.strjoin(", ", arg_specs)
+>if #sargs > 0 then
 $(c_types[func.ret.type]) luainteropwork_$(func.host_func_name)(lua_State* l, $(sargs));
+>else
+$(c_types[func.ret.type]) luainteropwork_$(func.host_func_name)(lua_State* l);
+>end -- #sargs
 >end -- host_funcs
 
 //---------------- Infrastructure ----------------------//
