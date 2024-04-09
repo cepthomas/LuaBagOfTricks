@@ -21,7 +21,7 @@ static lua_State* _l;
 
 
 /////////////////////////////////////////////////////////////////////////////
-UT_SUITE(UTILS_MAIN, "Test luautils.") // TODO2 flesh out.
+UT_SUITE(UTILS_MAIN, "Test luautils.") // TODO flesh out.
 {
     //double dval;
     //int ival;
