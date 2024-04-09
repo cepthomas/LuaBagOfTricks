@@ -1,8 +1,8 @@
 -- Generate lua interop for C and C#.
 -- Supported types are Boolean, Integer, Number, String.
 -- Later maybe: tables, enums, markdown, out pointers ...
--- TODO2 Need to check spec files for syntax.
--- TODO2 If error, err_decode.lua will contain info to parse and present to user:
+-- TODO1 Need to check spec files for syntax.
+-- TODO1 If error, err_decode.lua will contain info to parse and present to user:
 --   lua: gen_interop.lua:103: Error in TMP file ...\err_dcode.lua: attempt to index a nil value
 --   stack traceback:
 --       [C]: in for iterator 'for iterator'
