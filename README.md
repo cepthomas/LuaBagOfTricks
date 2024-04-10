@@ -1,4 +1,4 @@
-# Lua Bag Of Tricks
+# LuaBagOfTricks
 - Making lua life easier. For me.
 - Pure Lua so far so *should* work anywhere.
 - Uses 64 bit Lua 5.4.2 from https://luabinaries.sourceforge.net/download.html.
@@ -24,8 +24,8 @@ Slightly modified version of the nifty [debugger.lua](https://github.com/slembck
 ## interop
 Generates C# and C code for the standard lua interop via `gen_interop.lua`.
 Two test projects demonstrate how to use it:
-- Test\test_cs
-- Test\test_ch
+- test_ch: Fully-formed and functional, used by Nebulua
+- test_cs: Partially implemented, uses KeraLuaEx/
 
 ## validators
 Utilities for validation of lua data types.
