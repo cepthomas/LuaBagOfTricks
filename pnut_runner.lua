@@ -44,17 +44,18 @@ end
 
 -- Process each script filename.
 for i = 1, #arg do
-    -- load script
+    -- load script by converting to module.
     local scrfn = arg[i]
     local mod = scrfn:gsub('%.lua', '')
 
     -- Load file in protected mode.
-    ok, mut = pcall(require, mod)
 
--- local ok, res = xpcall(f, debug.traceback, args...)
+    local ok, mut = pcall(require, mod)
 
-    if not ok or type(mut) ~= "table" then
-        error(string.format("Failed to load file %s: %s ", scrfn, mut))
+    -- local ok, mut = xpcall(require, debug.traceback, mod)
+
+    if not ok then -- or type(mut) ~= "table" then
+        error(string.format("Failed to load file %s mut:%s ", scrfn, mut))
         app_fail = true
         goto done
     end

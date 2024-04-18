@@ -12,6 +12,9 @@
 #include <stdlib.h>
 
 
+// TODO This is copied from c_bag_of_tricks.
+
+
 /// Runtime stuff.
 struct TestContext
 {
