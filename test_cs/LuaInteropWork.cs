@@ -43,7 +43,7 @@ namespace MyLuaInteropLib
         /// <returns></returns>
         bool ErrorHandler(Exception e)
         {
-            Debug.WriteLine(e.ToString());
+xx            Debug.WriteLine(e.ToString());
             return false;
         }
 
