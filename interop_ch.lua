@@ -23,7 +23,6 @@ local tmpl_interop_c =
 
 #if defined(_MSC_VER)
 // Ignore some generated code warnings
-#pragma warning( push )
 #pragma warning( disable : 6001 4244 4703 4090 )
 #endif
 
@@ -149,10 +148,6 @@ const char* luainterop_Error()
 {
     return _error;
 }
-
-#if defined(_MSC_VER)
-#pragma warning( pop )
-#endif
 ]]
 
 
