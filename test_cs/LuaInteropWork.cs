@@ -37,14 +37,15 @@ namespace MyLuaInteropLib
         #endregion
 
         /// <summary>
-        /// Interop error handler. TODO1 Do something with this - log it or other.
+        /// Interop error handler.
         /// </summary>
         /// <param name="e"></param>
         /// <returns></returns>
         bool ErrorHandler(Exception e)
         {
-//>>>            Debug.WriteLine(e.ToString());
-            return false;
+            // TODO Client does something with this.
+            Debug.WriteLine(e.ToString());
+            throw e;
         }
 
         /// <summary>
