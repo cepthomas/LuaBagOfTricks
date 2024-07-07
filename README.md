@@ -30,5 +30,5 @@ Two test projects demonstrate how to use it:
 ## validators
 Utilities for validation of lua data types.
 
-## C source_code
+## C c_code
 Several functions to support the C side of lua applications.
