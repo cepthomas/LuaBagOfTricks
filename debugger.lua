@@ -679,15 +679,15 @@ if stdin_isatty and not os.getenv("DBG_NOREADLINE") then
 	end)
 end
 
--- Detect Lua version.
+-- Detect Lua version. CET comment out dbg_writeln.
 if jit then -- LuaJIT
 	LUA_JIT_SETLOCAL_WORKAROUND = -1
-	dbg_writeln(COLOR_YELLOW.."debugger.lua: "..COLOR_RESET.."Loaded for "..jit.version)
-elseif "Lua 5.1" <= _VERSION and _VERSION <= "Lua 5.4" then
-	dbg_writeln(COLOR_YELLOW.."debugger.lua: "..COLOR_RESET.."Loaded for ".._VERSION)
-else
-	dbg_writeln(COLOR_YELLOW.."debugger.lua: "..COLOR_RESET.."Not tested against ".._VERSION)
-	dbg_writeln("Please send me feedback!")
+-- 	dbg_writeln(COLOR_YELLOW.."debugger.lua: "..COLOR_RESET.."Loaded for "..jit.version)
+-- elseif "Lua 5.1" <= _VERSION and _VERSION <= "Lua 5.4" then
+-- 	dbg_writeln(COLOR_YELLOW.."debugger.lua: "..COLOR_RESET.."Loaded for ".._VERSION)
+-- else
+-- 	dbg_writeln(COLOR_YELLOW.."debugger.lua: "..COLOR_RESET.."Not tested against ".._VERSION)
+-- 	dbg_writeln("Please send me feedback!")
 end
 
 return dbg
