@@ -3,7 +3,6 @@
 
 #if defined(_MSC_VER)
 // Ignore some generated code warnings
-#pragma warning( push )
 #pragma warning( disable : 6001 4244 4703 4090 )
 #endif
 
@@ -289,7 +288,7 @@ int luainterop_OptionalFunc(lua_State* l)
 // Lua arg: level Log level.
 // Lua arg: msg What to log.
 // Lua return: bool Dummy return value.
-static bool luainterop_Log(lua_State* l)
+static int luainterop_Log(lua_State* l)
 {
     // Get arguments
     int level;
@@ -311,7 +310,7 @@ static bool luainterop_Log(lua_State* l)
 // @return Number of lua return values.
 // Lua arg: temp Temperature.
 // Lua return: const char* String environment.
-static const char* luainterop_GetEnvironment(lua_State* l)
+static int luainterop_GetEnvironment(lua_State* l)
 {
     // Get arguments
     double temp;
@@ -344,7 +343,7 @@ static int luainterop_GetTimestamp(lua_State* l)
 // @param[in] l Internal lua state.
 // @return Number of lua return values.
 // Lua return: bool Dummy return value.
-static bool luainterop_ForceError(lua_State* l)
+static int luainterop_ForceError(lua_State* l)
 {
     // Get arguments
 
@@ -381,7 +380,3 @@ const char* luainterop_Error()
 {
     return _error;
 }
-
-#if defined(_MSC_VER)
-#pragma warning( pop )
-#endif

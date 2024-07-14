@@ -94,7 +94,7 @@ $(c_ret_type) luainterop_$(func.host_func_name)(lua_State* l)
 // Lua arg: $(arg.name) $(arg.description or "")
 >end -- func.args
 // Lua return: $(c_ret_type) $(func.ret.description or "")
-static $(c_ret_type) luainterop_$(func.host_func_name)(lua_State* l)
+static int luainterop_$(func.host_func_name)(lua_State* l)
 {
     // Get arguments
 >for i, arg in ipairs(func.args or {}) do
