@@ -19,13 +19,13 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\c_code\luaex.h" />
-    <ClInclude Include="..\c_code\luautils.h" />
+    <ClInclude Include="..\luaex.h" />
+    <ClInclude Include="..\luautils.h" />
     <ClInclude Include="luainterop.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\c_code\luaex.c" />
-    <ClCompile Include="..\c_code\luautils.c" />
+    <ClCompile Include="..\luaex.c" />
+    <ClCompile Include="..\luautils.c" />
     <ClCompile Include="luainterop.c" />
     <ClCompile Include="pnut.cpp" />
     <ClCompile Include="test_interop.cpp" />
@@ -123,12 +123,12 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard_C>stdc11</LanguageStandard_C>
-      <AdditionalIncludeDirectories>..\lua_lib\include;..\c_code;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\lua54\include;..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>..\lua_lib\lua54.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>..\lua54\lua54.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/NODEFAULTLIB:MSVCR %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
