@@ -8,12 +8,16 @@ local M = {}
 ---------------------------------------------------------------
 --- Execute a file and return the output.
 -- @param cmd Command to run.
--- @return Output text.
+-- @return Output text or nil if invalid file.
 function M.execute_and_capture(cmd)
-  local f = io.popen(cmd, 'r')
-  local s = f:read('*a')
-  f:close()
-  return s
+    local f = io.popen(cmd, 'r')
+    if f ~= nil then
+        local s = f:read('*a')
+        f:close()
+        return s
+    else
+        return nil
+    end    
 end
 
 ---------------------------------------------------------------
@@ -21,7 +25,7 @@ end
 -- @param use_dbgr Use debugger.
 function M.config_debug(use_dbgr)
     local have_dbgr = false
-    local og_error = error -- save original error function
+    local orig_error = error -- save original error function
     local use_term = true -- Use terminal for debugger.
 
     if use_dbgr then
@@ -207,17 +211,17 @@ function M.constrain(val, min, max)
 end
 
 -----------------------------------------------------------------------------
---- Ensure integral multiple of resolution, GTE min, LTE max.
--- @param val
--- @param min
--- @param max
--- @param resolution
--- @return
-function M.constrain(val, min, max, resolution)
-    rval = constrain(val, min, max)
-    rval = math.round(rval / resolution) * resolution
-    return rval
-end
+-- --- Ensure integral multiple of resolution, GTE min, LTE max.
+-- -- @param val
+-- -- @param min
+-- -- @param max
+-- -- @param resolution
+-- -- @return
+-- function M.constrain(val, min, max, resolution)
+--     rval = M.constrain(val, min, max)
+--     rval = math.round(rval / resolution) * resolution
+--     return rval
+-- end
 
 -----------------------------------------------------------------------------
 --- Snap to closest neighbor.

@@ -92,9 +92,9 @@ local end_time = os.clock()
 local dur = (end_time - start_time)
 
 -- Open the report file.
-if report_fn ~= nil then
-    rf = io.open (report_fn, "w+")
-end
+-- if report_fn ~= nil then
+--     rf = io.open (report_fn, "w+")
+-- end
 
 -- Overall status.
 if app_fail then pf_run = "Runner Fail"
@@ -122,6 +122,6 @@ for i, v in ipairs(pn.result_text) do
 end
 
 -- Close the report file
-if rf ~= nil then
-    rf:close()
-end
+-- if rf ~= nil then
+--     rf:close()
+-- end

@@ -13,11 +13,11 @@ local days = { "Hamday", "Eggday", "Moonday", "Boogaday" }
 
 --------------------- Lua calls C host -----------------------------------
 
-ts = gen.get_timestamp()
+local ts = gen.get_timestamp()
 
-senv = gen.get_environment(27.34)
+local senv = gen.get_environment(27.34)
 
-b = gen.log(1, string.format("I know this: ts:%d env:%s", ts, senv))
+local b = gen.log(1, string.format("I know this: ts:%d env:%s", ts, senv))
 
 --------------------- C host calls Lua -----------------------------------
 
