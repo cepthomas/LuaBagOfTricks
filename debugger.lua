@@ -664,7 +664,7 @@ end
 
 if stdin_isatty and not os.getenv("DBG_NOREADLINE") then
     pcall(function()
-        local linenoise = require 'linenoise' -- TODOF don't have - something else for windows? Native console?
+        local linenoise = require 'linenoise'
 
         -- Load command history from ~/.lua_history
         local hist_path = os.getenv('HOME') .. '/.lua_history'
