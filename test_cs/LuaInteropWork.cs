@@ -43,7 +43,7 @@ namespace MyLuaInteropLib
         /// <returns></returns>
         bool ErrorHandler(Exception e)
         {
-            // TODO Client does something with this.
+            // TODOT Client does something with this.
             Debug.WriteLine(e.ToString());
             throw e;
         }

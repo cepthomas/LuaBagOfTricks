@@ -12,9 +12,6 @@
 #include <stdlib.h>
 
 
-// TODO This is copied from c_bag_of_tricks. Should be a better way.
-
-
 /// Runtime stuff.
 struct TestContext
 {
