@@ -7,7 +7,7 @@
 `pnut.lua` and `pnut_runner.lua` comprise a minimalist unit test framework based on previous implementations in C/C++/C#.
 See the Test directory for an example of how to use it.
 
-## utils
+## lbot_utils
 Handy collected odds and ends for tables, math, validation, errors, ...
 
 ## stringex
@@ -26,9 +26,6 @@ Generates C# and C code for the standard lua interop via `gen_interop.lua`.
 Two test projects demonstrate how to use it:
 - test_ch: Fully-formed and functional, used by Nebulua
 - test_cs: Partially implemented, uses KeraLuaEx/
-
-## validators
-Utilities for validation of lua data types.
 
 ## C Code
 Several functions to support the C side of lua applications:

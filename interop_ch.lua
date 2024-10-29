@@ -1,6 +1,6 @@
 -- Generate C specific interop code.
 
-local ut = require('utils')
+local ut = require('lbot_utils')
 local tmpl = require('template')
 
 -- Get specification.
@@ -12,7 +12,7 @@ local spec = args[1]
 local tmpl_interop_c =
 [[
 ///// Warning - this file is created by gen_interop.lua, do not edit. /////
->local ut = require('utils')
+>local ut = require('lbot_utils')
 >local sx = require("stringex")
 #include "luainterop.h"
 >if config.add_refs ~= nil then
@@ -158,7 +158,7 @@ local tmpl_interop_h =
 #define LUAINTEROP_H
 
 ///// Warning - this file is created by gen_interop.lua, do not edit. /////
->local ut = require('utils')
+>local ut = require('lbot_utils')
 >local sx = require("stringex")
 
 #include <stdbool.h>

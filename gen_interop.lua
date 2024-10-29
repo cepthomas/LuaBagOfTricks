@@ -3,7 +3,7 @@
 -- Later maybe: tables, enums, markdown, out pointers ...
 -- TODO2 Need to check spec files for syntax. If error, err_decode.lua will contain info to parse and present to user.
 
-local ut = require('utils')
+local ut = require('lbot_utils')
 local sx = require("stringex")
 
 

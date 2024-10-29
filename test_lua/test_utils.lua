@@ -1,7 +1,7 @@
--- TODOT Unit tests for the utils. also validators?
+-- TODOT Unit tests for the utils.
 
 local sx = require("stringex")
-local ut = require("utils")
+local ut = require("lbot_utils")
 
 local M = {}
 
