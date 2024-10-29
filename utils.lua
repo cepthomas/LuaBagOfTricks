@@ -54,7 +54,7 @@ end
 -----------------------------------------------------------------------------
 --- Diagnostic.
 -- @param tbl What to dump.
--- @param recursive Avoid death loops.
+-- @param recursive Avoid death loops. TODO1 number depth
 -- @param name Of the tbl.
 -- @param indent Nesting.
 -- @return list table of strings
