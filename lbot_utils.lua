@@ -5,7 +5,6 @@ local sx = require("stringex")
 local M = {}
 
 local _dump_level = 0
-local _color_spec = {}
 
 -----------------------------------------------------------------------------
 ------------------------------ High level -----------------------------------
@@ -125,12 +124,12 @@ function M.get_caller_info(level)
 end
 
 -----------------------------------------------------------------------------
---- Lua has no builtin way to count number of values in an associative table so this does.
+--- Lua has no built in way to count number of values in an associative table so this does.
 -- @param tbl the table
 -- @return number of values
 function M.table_count(tbl)
     num = 0
-    for k, _ in pairs(tbl) do
+    for _, _ in pairs(tbl) do
         num = num + 1
     end
     return num
@@ -202,262 +201,42 @@ end
 ------------------------- Value checking ------------------------------------
 -----------------------------------------------------------------------------
 
+-----------------------------------------------------------------------------
+--- Validate a number value.
+-- @param v which value
+-- @param min range inclusive - nil means no limit
+-- @param max range inclusive - nil means no limit
+-- @return return true if correct type and in range.
+function M.val_number(v, min, max)
+    local ok = v ~= nil and type(v) == 'number'
+    if ok and max ~= nil then ok = ok and v <= max end
+    if ok and min ~= nil then ok = ok and v >= min end
+    return ok
+end
 
--- ----------------------------------------------------------------------------
--- --- Test for integer type.
--- -- @param v value to test
--- -- @return T/F
--- function M.is_integer(v)
---     return M.to_integer(v) ~= nil
---     -- return type(v) == "number" and math.ceil(v) == v
--- end
-
--- ----------------------------------------------------------------------------
--- --- Test value type.
--- -- @param v value to test
--- -- @return T/F
--- function M.is_number(v)
---     return v ~= nil and type(v) == 'number'
--- end
-
--- ----------------------------------------------------------------------------
--- --- Test value type.
--- -- @param v value to test
--- -- @return T/F
--- function M.is_string(v)
---     return v ~= nil and type(v) == 'string'
--- end
-
--- ----------------------------------------------------------------------------
--- --- Test value type.
--- -- @param v value to test
--- -- @return T/F
--- function M.is_boolean(v)
---     return v ~= nil and type(v) == 'boolean'
--- end
-
--- ----------------------------------------------------------------------------
--- --- Test value type.
--- -- @param v value to test
--- -- @return T/F
--- function M.is_function(v)
---     return v ~= nil and type(v) == 'function'
--- end
-
--- ----------------------------------------------------------------------------
--- --- Test value type.
--- -- @param v value to test
--- -- @return T/F
--- function M.is_table(v)
---     return v ~= nil and type(v) == 'table'
--- end
+-----------------------------------------------------------------------------
+--- Validate an integer value.
+-- @param v which value
+-- @param min range inclusive - nil means no limit
+-- @param max range inclusive - nil means no limit
+-- @return return true if correct type and in range.
+function M.val_integer(v, min, max)
+    local ok = v ~= nil and math.type(v) == 'integer'
+    if ok and max ~= nil then ok = ok and v <= max end
+    if ok and min ~= nil then ok = ok and v >= min end
+    return ok
+end
 
 -----------------------------------------------------------------------------
 --- Convert value to integer.
 -- @param v value to convert
--- @return integer or nil if not convertible
-function M.to_integer(v)
-    if type(v) == "number" and math.ceil(v) == v then return v
+-- @return integer or nil if not convertible.
+function M.tointeger(v)
+    -- if type(v) == "number" and math.ceil(v) == v then return v
+    if math.type(v) == "integer" then return v
     elseif type(v) == "string" then return tonumber(v, 10)
     else return nil
     end
-end
-
--- -----------------------------------------------------------------------------
--- --- Validate a value.
--- -- @param v which value
--- -- @param min range inclusive
--- -- @param max range inclusive
--- -- @param name value name
--- -- @return return nil if ok or an error string if not. Backwards from normal but makes client side cleaner. TODO1 revisit this backwards.
--- function M.val_number(v, min, max, name)
---     local ok = M.is_number(v)
---     ok = ok and (max ~= nil and v <= max)
---     ok = ok and (min ~= nil and v >= min)
---     if not ok then
---         return string.format('Invalid number '..name..': '..v)
---     end
---     return nil
--- end
-
--- -----------------------------------------------------------------------------
--- -- @param v which value
--- -- @param min range inclusive
--- -- @param max range inclusive
--- -- @param name value name
--- -- @return return nil if ok or an error string if not. Backwards from normal but makes client side cleaner.
--- function M.val_integer(v, min, max, name)
---     local ok = M.is_integer(v)
---     ok = ok and (max ~= nil and v <= max)
---     ok = ok and (min ~= nil and v >= min)
---     if not ok then
---         return string.format('Invalid integer '..name..': '..v)
---     end
---     return nil
--- end
-
--- -----------------------------------------------------------------------------
--- -- @param v which value
--- -- @param name value name
--- -- @return return nil if ok or an error string if not. Backwards from normal but makes client side cleaner.
--- function M.val_string(v, name)
---     local ok = M.is_string(v)
---     if not ok then
---         return string.format('Invalid string '..name..': '..v)
---     end
---     return nil
--- end
-
--- -----------------------------------------------------------------------------
--- -- @param v which value
--- -- @param name value name
--- -- @return return nil if ok or an error string if not. Backwards from normal but makes client side cleaner.
--- function M.val_boolean(v, name)
---     local ok = M.is_boolean(v)
---     if not ok then
---         return string.format('Invalid boolean '..name..': '..v)
---     end
---     return nil
--- end
-
--- -----------------------------------------------------------------------------
--- -- @param v which value
--- -- @param name value name
--- -- @return return nil if ok or an error string if not. Backwards from normal but makes client side cleaner.
--- function M.val_table(v, name)
---     local ok = M.is_table(v)
---     if not ok then
---         return string.format('Invalid table '..name..': '..v)
---     end
---     return nil
--- end
-
--- -----------------------------------------------------------------------------
--- -- @param v which value
--- -- @param name value name
--- -- @return return nil if ok or an error string if not. Backwards from normal but makes client side cleaner.
--- function M.val_function(v, name)
---     local ok = M.is_function(v)
---     if not ok then
---         return string.format('Invalid function '..name..': '..v)
---     end
---     return nil
--- end
-
-
------------------------------------- NEW ----------------------------
------------------------------------- NEW ----------------------------
------------------------------------- NEW ----------------------------
-
--- pcall (f [, arg1, ···])
--- Calls the function f with the given arguments in protected mode. This means that any error inside f 
--- is not propagated; instead, pcall catches the error and returns a status code. 
--- Its first result is the status code (a boolean), which is true if the call succeeds without errors. 
--- In such case, pcall also returns all results from the call, after this first result. 
--- In case of any error, pcall returns false plus the error object. 
--- Note that errors caught by pcall do not call a message handler.
-
--- If there are no syntactic errors, load returns the compiled chunk as a function; 
--- otherwise, it returns fail plus the error message.
-
--- The notation fail means a false value representing some kind of failure. (Currently, fail is equal to nil, 
--- but that may change in future versions. The recommendation is to always test the success of these functions 
--- with (not status), instead of (status == nil).)
-
-
--- function M.is_XXX(v) -> bool  only used in this file!
-
--- function M.val_XXX(v, min, max, name) -> nil | errmsg
-
-
--- function M.to_integer(v) -> nil | number  only bar_time.lua - maybe keep?
-
--- function M.val_number(v, min, max, name) -> nil | errmsg
-
-
------------------------------------------------------------------------------
---- Validate a value.
--- @param v which value
--- @param min range inclusive
--- @param max range inclusive
--- @param name value name
--- @return return ok or nil,errmsg if not.
-function M.val_number(v, min, max, name)
-    local ok = v ~= nil and type(v) == 'number'
-
-    if min ~= nil then ok = v >= min end
-    if max ~= nil then ok = v <= max end
-
-    -- ok = ok and (max ~= nil and v <= max)
-    -- ok = ok and (min ~= nil and v >= min)
-    if not ok then
-        return nil, 'Invalid number '..name..': '..v
-    end
-    return true
-end
-
------------------------------------------------------------------------------
--- @param v which value
--- @param min range inclusive
--- @param max range inclusive
--- @param name value name
--- @return return ok or nil,errmsg if not.
-function M.val_integer(v, min, max, name)
-    local ok = M.to_integer(v) ~= nil
-    ok = ok and (max ~= nil and v <= max)
-    ok = ok and (min ~= nil and v >= min)
-    if not ok then
-        return nil, 'Invalid integer '..name..': '..v
-    end
-    return true
-end
-
------------------------------------------------------------------------------
--- @param v which value
--- @param name value name
--- @return return ok or nil,errmsg if not.
-function M.val_string(v, name)
-    local ok = v ~= nil and type(v) == 'string'
-    if not ok then
-        return nil, 'Invalid string '..name..': '..v
-    end
-    return true
-end
-
------------------------------------------------------------------------------
--- @param v which value
--- @param name value name
--- @return return ok or nil,errmsg if not.
-function M.val_boolean(v, name)
-    local ok = v ~= nil and type(v) == 'boolean'
-    if not ok then
-        return nil, 'Invalid boolean '..name..': '..v
-    end
-    return true
-end
-
------------------------------------------------------------------------------
--- @param v which value
--- @param name value name
--- @return return ok or nil,errmsg if not.
-function M.val_table(v, name)
-    local ok = v ~= nil and type(v) == 'table'
-    if not ok then
-        return nil, 'Invalid table '..name..': '..v
-    end
-    return true
-end
-
------------------------------------------------------------------------------
--- @param v which value
--- @param name value name
--- @return return nil if ok or an error string if not. Backwards from normal but makes client side cleaner.
-function M.val_function(v, name)
-    local ok = v ~= nil and type(v) == 'function'
-    if not ok then
-        return nil, 'Invalid function '..name..': '..v
-    end
-    return true
 end
 
 
