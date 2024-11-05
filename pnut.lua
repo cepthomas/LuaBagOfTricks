@@ -62,7 +62,6 @@ function M.start_suite(desc)
 
     -- Reset the current p/f states.
     curr_suite_pass = true
-    curr_case_pass = true
 
     M.num_suites_run = M.num_suites_run + 1
 end
