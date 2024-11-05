@@ -1,4 +1,3 @@
--- TODOT Unit tests for the utils.
 
 local sx = require("stringex")
 local ut = require("lbot_utils")
