@@ -1,3 +1,10 @@
+--[[
+A slightly modified version of the penlight module from https://github.com/lunarmodules/Penlight.
+  - Removed dependencies on other penlight modules - it's standalone.
+  - escape(s) snipped from pl.utils. 
+  - Doesn't support nested expansions like: l.$(to_funcs[$(func.ret.type)]).
+]]
+
 --- A template preprocessor.
 -- Originally by [Ricki Lake](http://lua-users.org/wiki/SlightlyLessSimpleLuaPreprocessor)
 --
@@ -28,20 +35,16 @@
 -- Dependencies: `pl.utils`
 -- @module pl.template
 
+
 -- local utils = require 'pl.utils'
 
--- CT Notes:
--- Doesn't support nested expansions like: l.$(to_funcs[$(func.ret.type)])
 
-
-
---- escape any Lua 'magic' characters in a string - CT snipped from pl.utils.
+--- escape any Lua 'magic' characters in a string.
 -- @param s The input string
 function escape(s)
     -- utils.assert_string(1,s)
     return (s:gsub('[%-%.%+%[%]%(%)%$%^%%%?%*]','%%%1'))
 end
-
 
 
 local append,format,strsub,strfind,strgsub = table.insert,string.format,string.sub,string.find,string.gsub
