@@ -37,7 +37,7 @@ function M.suite_dump_table(pn)
     d = ut.dump_table(tt, 4)
     pn.UT_EQUAL(#d, 13)
 
-    local s = ut.dump_table_string(tt, 0, 'howdy')
+    local s = ut.dump_table_string(tt, 0, 'doody')
     pn.UT_EQUAL(#s, 94)
 
     s = ut.dump_table_string(tt, 1)
@@ -51,6 +51,12 @@ function M.suite_dump_table(pn)
 
     s = ut.dump_table_string(tt, 4)
     pn.UT_EQUAL(#s, 316)
+
+    local tl = {'aaa', 'bbb', 'ccc', 'ddd', 'eee'}
+    s = ut.dump_list(tl)
+    print(s)
+    pn.UT_EQUAL(#s, 19)
+
 
 end
 
