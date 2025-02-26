@@ -1,4 +1,4 @@
--- Generate C specific interop code.
+-- Generate C++/CLI interop code for final .NET assembly.
 
 local ut = require('lbot_utils')
 local tmpl = require('template')
@@ -8,8 +8,8 @@ local args = {...}
 local spec = args[1]
 
 
----------------------------- Gen C file ----------------------------------------
-local tmpl_interop_c =
+---------------------------- Gen C++ file ----------------------------------------
+local tmpl_interop_cpp =
 [[
 ///// Warning - this file is created by gen_interop.lua, do not edit. /////
 >local ut = require('lbot_utils')
@@ -248,7 +248,7 @@ local tmpl_env =
 local ret = {}
 
 -- c interop part
-local rendered, err, dcode = tmpl.substitute(tmpl_interop_c, tmpl_env)
+local rendered, err, dcode = tmpl.substitute(tmpl_interop_cpp, tmpl_env)
 if not err then -- ok
     ret[spec.config.lua_lib_name..".c"] = rendered
 else -- failed, look at intermediary code

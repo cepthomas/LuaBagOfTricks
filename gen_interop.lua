@@ -12,16 +12,20 @@ local arg = {...}
 
 ------------------------------------------------
 local function usage()
-    print("Usage: gen_interop.lua (-d) [-ch|-cs] [your_spec.lua] [your_outpath]")
-    print("  -ch generate c and h files")
-    print("  -cs generate c# file")
-    print("  -d enable debugger if available")
+    print("Usage: gen_interop.lua (-d) [-ch|-cs] [ns] [sf] [op]")
+    print("  -ch - generate C/H files")
+    print("  -net - generate .NET assembly")
+    print("  -cs - generate C# file")
+    print("  -d - enable debugger if available")
+    print("  sf - your_spec.lua")
+    print("  op - your_outpath")
 end
 
 -- Supported flavors.
 local syntaxes =
 {
     ch = "interop_ch.lua",
+    cpp = "interop_net.lua",
     cs = "interop_cs.lua"
 }
 
@@ -38,15 +42,16 @@ local function write_output(fn, content)
 end
 
 -- Gather args.
-local syntax_fn = nil
+local use_dbgr = false
 local syntax = nil
 local spec_fn = nil
 local out_path = nil
-local use_dbgr = false
+local syntax_fn = nil
 
 for i = 1, #arg do
     local a = arg[i]
     local valid_arg = true
+    -- flags
     if a:sub(1, 1) == '-' then
         opt = a:sub(2)
         if opt == "d" then use_dbgr = true
@@ -55,6 +60,7 @@ for i = 1, #arg do
             syntax_fn = syntaxes[syntax]
             if not syntax_fn then valid_arg = false end
         end
+    -- positional args
     elseif not spec_fn then
         spec_fn = a
     elseif not out_path then
