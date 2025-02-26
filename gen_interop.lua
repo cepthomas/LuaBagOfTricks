@@ -14,7 +14,7 @@ local arg = {...}
 local function usage()
     print("Usage: gen_interop.lua (-d) [-ch|-cs] [ns] [sf] [op]")
     print("  -ch - generate C/H files")
-    print("  -net - generate .NET assembly")
+    print("  -cpp - generate C++/CLI files")
     print("  -cs - generate C# file")
     print("  -d - enable debugger if available")
     print("  sf - your_spec.lua")
@@ -25,7 +25,7 @@ end
 local syntaxes =
 {
     ch = "interop_ch.lua",
-    cpp = "interop_net.lua",
+    cpp = "interop_cpp.lua",
     cs = "interop_cs.lua"
 }
 

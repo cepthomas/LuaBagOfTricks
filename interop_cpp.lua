@@ -1,4 +1,4 @@
--- Generate C++/CLI interop code for final .NET assembly.
+-- Generate .NET C++/CLI interop code.
 
 local ut = require('lbot_utils')
 local tmpl = require('template')
