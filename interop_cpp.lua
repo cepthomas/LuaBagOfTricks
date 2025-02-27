@@ -11,142 +11,101 @@ local spec = args[1]
 ---------------------------- Gen C++ file ----------------------------------------
 local tmpl_interop_cpp =
 [[
-///// Warning - this file is created by gen_interop.lua, do not edit. /////
 >local ut = require('lbot_utils')
 >local sx = require("stringex")
+///// Warning - this file is created by gen_interop.lua, do not edit. /////
+
+#include <windows.h>
 #include "$(config.lua_lib_name).h"
+#include "$(config.host_lib_name).h"
 >if config.add_refs ~= nil then
 >for _, inc in ipairs(config.add_refs) do
 #include $(inc)
 >end
 >end
 
-#if defined(_MSC_VER)
-// Ignore some generated code warnings
-#pragma warning( disable : 6001 4244 4703 4090 )
-#endif
+using namespace System;
+using namespace System::Collections::Generic;
+using namespace Interop;
 
-static const char* _error;
-
-//============= C => Lua functions =============//
+//============= C# => C functions =============//
 
 >for _, func in ipairs(script_funcs) do
->local lua_ret_type = lua_types[func.ret.type]
->local c_ret_type = c_types[func.ret.type]
->local arg_specs = {}
+>local cpp_ret_type = cpp_types[func.ret.type]
+>local arg_spec = {}
+>local arg_impl = {}
 >for _, arg in ipairs(func.args or {}) do
->table.insert(arg_specs, c_types[arg.type].." "..arg.name)
+>table.insert(arg_spec, cpp_types[arg.type].." "..arg.name)
+>table.insert(arg_impl, arg.name)
 >end -- func.args
->sargs = sx.strjoin(", ", arg_specs)
+>sarg_spec = sx.strjoin(", ", arg_spec)
+>sarg_impl = sx.strjoin(", ", arg_impl)
 //--------------------------------------------------------//
->if #sargs > 0 then
-$(c_ret_type) $(config.lua_lib_name)_$(func.host_func_name)(lua_State* l, $(sargs))
+>if #sarg_spec > 0 then
+$(c_ret_type) $(config.host_lib_name)::$(func.host_func_name)(lua_State* l, $(sarg_spec))
 >else
-$(c_ret_type) $(config.lua_lib_name)_$(func.host_func_name)(lua_State* l)
->end -- #sargs
+$(c_ret_type) $(config.host_lib_name)::$(func.host_func_name)(lua_State* l)
+>end -- #sarg_spec
 {
-    _error = NULL;
-    int stat = LUA_OK;
-    int num_args = 0;
-    int num_ret = 1;
-    $(c_ret_type) ret = 0;
-
-    // Get function.
-    int ltype = lua_getglobal(l, "$(func.lua_func_name)");
-    if (ltype != LUA_TFUNCTION)
-    {
-        if ($(func.required)) { _error = "Bad function name: $(func.lua_func_name)()"; }
-        return ret;
-    }
-
-    // Push arguments. No error checking required.
->for _, arg in ipairs(func.args or {}) do
->local lua_arg_type = lua_types[arg.type]
-    lua_push$(lua_arg_type)(l, $(arg.name));
-    num_args++;
->end -- func.args
-
-    // Do the protected call.
-    stat = luaex_docall(l, num_args, num_ret);
-    if (stat == LUA_OK)
-    {
-        // Get the results from the stack.
-        if (lua_is$(lua_ret_type)(l, -1)) { ret = lua_to$(lua_ret_type)(l, -1); }
-        else { _error = "Bad return type for $(func.lua_func_name)(): should be $(lua_ret_type)"; }
-    }
-    else { _error = lua_tostring(l, -1); }
-    lua_pop(l, num_ret); // Clean up results.
+    LOCK();
+    $(cpp_ret_type) ret = $(config.lua_lib_name)_$(func.host_func_name)(_l, $(sarg_impl));
+    _EvalLuaInteropStatus("$(func.host_func_name)()");
     return ret;
 }
 
 >end -- script_funcs
 
-//============= Lua => C callback functions =============//
+
+//============= C => C# callback functions =============//
 
 >for _, func in ipairs(host_funcs) do
->local lua_ret_type = lua_types[func.ret.type]
->local c_ret_type = c_types[func.ret.type]
-//--------------------------------------------------------//
-// $(func.description or "")
-// @param[in] l Internal lua state.
-// @return Number of lua return values.
+>local arg_spec = {}
+>local arg_impl = {}
 >for _, arg in ipairs(func.args or {}) do
-// Lua arg: $(arg.name) $(arg.description or "")
+>table.insert(arg_spec, cpp_types[arg.type].." "..arg.name)
+>table.insert(arg_impl, arg.name)
 >end -- func.args
-// Lua return: $(c_ret_type) $(func.ret.description or "")
-static int $(config.lua_lib_name)_$(func.host_func_name)(lua_State* l)
+>sarg_spec = sx.strjoin(", ", arg_spec)
+>sarg_impl = sx.strjoin(", ", arg_impl)
+
+//--------------------------------------------------------//
+
+int $(config.lua_lib_name)cb_$(func.host_func_name)(lua_State* l, $(sarg_spec))
 {
     // Get arguments
 >for i, arg in ipairs(func.args or {}) do
->local lua_arg_type = lua_types[arg.type]
 >local c_arg_type = c_types[arg.type]
     $(c_arg_type) $(arg.name);
     if (lua_is$(lua_arg_type)(l, $(i))) { $(arg.name) = lua_to$(lua_arg_type)(l, $(i)); }
     else { luaL_error(l, "Bad arg type for: $(arg.name)"); }
 >end -- func.args
-
-    // Do the work. One result.
->local arg_specs = { }
->for _, arg in ipairs(func.args or {}) do
->local c_ret_type = c_types[func.ret.type]
->table.insert(arg_specs, arg.name)
->end -- func.args
->sargs = sx.strjoin(", ", arg_specs)
->if #sargs > 0 then
-    $(c_ret_type) ret = $(config.lua_lib_name)cb_$(func.host_func_name)(l, $(sargs));
->else
-    $(c_ret_type) ret = $(config.lua_lib_name)cb_$(func.host_func_name)(l);
->end -- #sargs
-    lua_push$(lua_ret_type)(l, ret);
-    return 1;
+{
+    LOCK();
+    $(func.host_func_name)Args^ args = gcnew $(func.host_func_name)Args($(sarg_impl));
+    $(config.host_lib_name)::Notify(args);
+    return 0;
 }
 
 >end -- host_funcs
+
 
 //============= Infrastructure =============//
 
-static const luaL_Reg function_map[] =
+//--------------------------------------------------------//
+void $(config.host_lib_name)::Run(String^ scriptFn, List<String^>^ luaPath)
 {
->for _, func in ipairs(host_funcs) do
-    { "$(func.lua_func_name)", $(config.lua_lib_name)_$(func.host_func_name) },
->end -- host_funcs
-    { NULL, NULL }
-};
-
-static int $(config.lua_lib_name)_Open(lua_State* l)
-{
-    luaL_newlib(l, function_map);
-    return 1;
+    InitLua(luaPath);
+    // Load C host funcs into lua space.
+    $(config.lua_lib_name)_Load(_l);
+    // Clean up stack.
+    lua_pop(_l, 1);
+    OpenScript(scriptFn);
 }
-
-void $(config.lua_lib_name)_Load(lua_State* l)
-{
-    luaL_requiref(l, "$(config.lua_lib_name)", $(config.lua_lib_name)_Open, true);
-}
-
-const char* $(config.lua_lib_name)_Error()
-{
-    return _error;
+    // Load C host funcs into lua space.
+    luainterop_Load(_l);
+    // Clean up stack.
+    lua_pop(_l, 1);
+    OpenScript(scriptFn);
 }
 ]]
 
@@ -154,83 +113,88 @@ const char* $(config.lua_lib_name)_Error()
 ---------------------------- Gen H file ----------------------------------------
 local tmpl_interop_h =
 [[
-#pragma once
-
-///// Warning - this file is created by gen_interop.lua, do not edit. /////
 >local ut = require('lbot_utils')
 >local sx = require("stringex")
 
-#include <stdbool.h>
+///// Warning - this file is created by gen_interop.lua, do not edit. /////
 
-#ifdef __cplusplus
-#include "lua.hpp"
-extern "C" {
-#include "luaex.h"
-};
-#else
-#include "lua.h"
-#include "luaex.h"
-#endif
+#pragma once
+#include "Core.h"
 
-//============= C => Lua functions =============//
+using namespace System;
+using namespace System::Collections::Generic;
 
->for _, func in ipairs(script_funcs) do
->local lua_ret_type = lua_types[func.ret.type]
->local c_ret_type = c_types[func.ret.type]
-// $(func.description or "")
-// @param[in] l Internal lua state.
->for _, arg in ipairs(func.args or {}) do
-// @param[in] $(arg.name) $(arg.description or "")
->end -- func.args
-// @return $(c_ret_type) $(func.ret.description or "")
->local arg_specs = {}
->for _, arg in ipairs(func.args or {}) do
->table.insert(arg_specs, c_types[arg.type].." "..arg.name)
->end -- func.args
->sargs = sx.strjoin(", ", arg_specs)
->if #sargs > 0 then
-$(c_ret_type) $(config.lua_lib_name)_$(func.host_func_name)(lua_State* l, $(sargs));
->else
-$(c_ret_type) $(config.lua_lib_name)_$(func.host_func_name)(lua_State* l);
->end -- #sargs
+namespace $(config.host_lib_name)
+{
 
->end -- script_funcs
+//============= C => C# callback payload =============//
 
-//============= Lua => C callback functions =============//
 >for _, func in ipairs(host_funcs) do
+//--------------------------------------------------------//
 
-// $(func.description or "")
-// @param[in] l Internal lua state.
+public ref class $(func.host_func_name)Args : public EventArgs
+{
+public:
+>local arg_spec = {}
 >for _, arg in ipairs(func.args or {}) do
-// @param[in] $(arg.name) $(arg.description or "")
+>table.insert(arg_spec, cpp_types[arg.type].." "..arg.name)
+    /// <summary>$(arg.description)</summary>
+    property $(cpp_types[arg.type]) $(arg.name);
 >end -- func.args
-// @return $(func.ret.description)
->local arg_specs = { }
+
+>sarg_spec = sx.strjoin(", ", arg_spec)
+    /// <summary>Constructor.</summary>
+    $(func.host_func_name)Args($(sarg_spec))
+    {
 >for _, arg in ipairs(func.args or {}) do
->table.insert(arg_specs, c_types[arg.type].." "..arg.name)
+        arg.name = arg.name;
 >end -- func.args
->sargs = sx.strjoin(", ", arg_specs)
->if #sargs > 0 then
-$(c_types[func.ret.type]) $(config.lua_lib_name)cb_$(func.host_func_name)(lua_State* l, $(sargs));
->else
-$(c_types[func.ret.type]) $(config.lua_lib_name)cb_$(func.host_func_name)(lua_State* l);
->end -- #sargs
+>end -- host_funcs
+    }
+
+
+//----------------------------------------------------//
+public ref class $(config.host_lib_name) : Core
+{
+
+//============= C# => C functions =============//
+public:
+
+>for _, func in ipairs(host_funcs) do
+    /// <summary>$(func.host_func_name)</summary>
+>for _, arg in ipairs(func.args or {}) do
+>table.insert(arg_spec, cpp_types[arg.type].." "..arg.name)
+    /// <param name="$(arg.name)">$(arg.description)</param>
+>end -- func.args
+>sarg_spec = sx.strjoin(", ", arg_spec)
+    /// <returns>Script return</returns>
+    $(cpp_types[func.ret.type]) $(func.host_func_name)($(sarg_spec));
+>end -- host_funcs
+
+
+//============= C => C# callback functions =============//
+public:
+>for _, func in ipairs(host_funcs) do
+    static event EventHandler<$(func.host_func_name)Args^>^ $(func.host_func_name);
+    static void Notify($(func.host_func_name)Args^ args) { $(func.host_func_name)(nullptr, args); }
 >end -- host_funcs
 
 //============= Infrastructure =============//
-
-/// Load Lua C lib.
-void $(config.lua_lib_name)_Load(lua_State* l);
-
-/// Return operation error or NULL if ok.
-const char* $(config.lua_lib_name)_Error();
+public:
+    /// <summary>Initialize and execute.</summary>
+    /// <param name="scriptFn">The script to load.</param>
+    /// <param name="luaPath">LUA_PATH components</param>
+    void Run(String^ scriptFn, List<String^>^ luaPath);
+};
+}
 ]]
 
 
 ----------------------------------------------------------------------------
 -- Type name conversions.
-local lua_types = { B = "boolean", I = "integer", N = "number", S ="string" }
+-- local lua_types = { B = "boolean", I = "integer", N = "number", S ="string" }
 local c_types = { B = "bool", I = "int", N = "double", S = "const char*" }
+local cpp_types = { B = "bool", I = "int", N = "double", S = "String^" }
 
 -- Make the output content.
 local tmpl_env =
@@ -241,16 +205,17 @@ local tmpl_env =
     config=spec.config,
     script_funcs=spec.script_funcs,
     host_funcs=spec.host_funcs, 
-    lua_types=lua_types,
-    c_types=c_types
+    -- lua_types=lua_types,
+    c_types=c_types,
+    cpp_types=cpp_types
 }
 
 local ret = {}
 
--- c interop part
+-- cpp interop part
 local rendered, err, dcode = tmpl.substitute(tmpl_interop_cpp, tmpl_env)
 if not err then -- ok
-    ret[spec.config.lua_lib_name..".c"] = rendered
+    ret[spec.config.lua_lib_name..".cpp"] = rendered
 else -- failed, look at intermediary code
     ret.err = err
     ret.dcode = dcode

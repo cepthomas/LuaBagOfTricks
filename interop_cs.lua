@@ -147,7 +147,7 @@ namespace $(config.namespace)
 
 
 -- Type name conversions.
-local klex_types = { B = "Boolean", I = "Integer", N = "Number", S ="String", T = "TableEx" }
+local klex_types = { B = "Boolean", I = "Integer", N = "Number", S = "String", T = "TableEx" }
 local cs_types = { B = "bool", I = "int", N = "double", S = "string", T = "TableEx" }
 
 -- Make the output content. 
