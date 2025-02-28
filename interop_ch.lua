@@ -8,7 +8,9 @@ local args = {...}
 local spec = args[1]
 
 
+--------------------------------------------------------------------------------
 ---------------------------- Gen C file ----------------------------------------
+--------------------------------------------------------------------------------
 local tmpl_interop_c =
 [[
 ///// Warning - this file is created by gen_interop.lua, do not edit. /////
@@ -28,7 +30,7 @@ local tmpl_interop_c =
 
 static const char* _error;
 
-//============= C => Lua functions =============//
+//============= C => Lua functions .c =============//
 
 >for _, func in ipairs(script_funcs) do
 >local lua_ret_type = lua_types[func.ret.type]
@@ -81,7 +83,7 @@ $(c_ret_type) $(config.lua_lib_name)_$(func.host_func_name)(lua_State* l)
 
 >end -- script_funcs
 
-//============= Lua => C callback functions =============//
+//============= Lua => C callback functions .c =============//
 
 >for _, func in ipairs(host_funcs) do
 >local lua_ret_type = lua_types[func.ret.type]
@@ -123,7 +125,7 @@ static int $(config.lua_lib_name)_$(func.host_func_name)(lua_State* l)
 
 >end -- host_funcs
 
-//============= Infrastructure =============//
+//============= Infrastructure .c =============//
 
 static const luaL_Reg function_map[] =
 {
@@ -151,7 +153,9 @@ const char* $(config.lua_lib_name)_Error()
 ]]
 
 
+--------------------------------------------------------------------------------
 ---------------------------- Gen H file ----------------------------------------
+--------------------------------------------------------------------------------
 local tmpl_interop_h =
 [[
 #pragma once
@@ -172,7 +176,7 @@ extern "C" {
 #include "luaex.h"
 #endif
 
-//============= C => Lua functions =============//
+//============= C => Lua functions .h =============//
 
 >for _, func in ipairs(script_funcs) do
 >local lua_ret_type = lua_types[func.ret.type]
@@ -196,7 +200,7 @@ $(c_ret_type) $(config.lua_lib_name)_$(func.host_func_name)(lua_State* l);
 
 >end -- script_funcs
 
-//============= Lua => C callback functions =============//
+//============= Lua => C callback functions .h =============//
 >for _, func in ipairs(host_funcs) do
 
 // $(func.description or "")
@@ -217,7 +221,7 @@ $(c_types[func.ret.type]) $(config.lua_lib_name)cb_$(func.host_func_name)(lua_St
 >end -- #sargs
 >end -- host_funcs
 
-//============= Infrastructure =============//
+//============= Infrastructure .h =============//
 
 /// Load Lua C lib.
 void $(config.lua_lib_name)_Load(lua_State* l);
@@ -248,6 +252,7 @@ local tmpl_env =
 local ret = {}
 
 -- c interop part
+print('Generating c file')
 local rendered, err, dcode = tmpl.substitute(tmpl_interop_c, tmpl_env)
 if not err then -- ok
     ret[spec.config.lua_lib_name..".c"] = rendered
@@ -257,6 +262,7 @@ else -- failed, look at intermediary code
 end
 
 -- h interop part
+print('Generating h file')
 rendered, err, dcode = tmpl.substitute(tmpl_interop_h, tmpl_env)
 if not err then -- ok
     ret[spec.config.lua_lib_name..".h"] = rendered

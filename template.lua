@@ -42,35 +42,35 @@ A slightly modified version of the penlight module from https://github.com/lunar
 --- escape any Lua 'magic' characters in a string.
 -- @param s The input string
 function escape(s)
-    -- utils.assert_string(1,s)
-    return (s:gsub('[%-%.%+%[%]%(%)%$%^%%%?%*]','%%%1'))
+    -- utils.assert_string(1, s)
+    return (s:gsub('[%-%.%+%[%]%(%)%$%^%%%?%*]', '%%%1'))
 end
 
 
-local append,format,strsub,strfind,strgsub = table.insert,string.format,string.sub,string.find,string.gsub
+local append, format, strsub, strfind, strgsub = table.insert, string.format, string.sub, string.find, string.gsub
 
 local APPENDER = "\n__R_size = __R_size + 1; __R_table[__R_size] = "
 
 local function parseDollarParen(pieces, chunk, exec_pat, newline)
     local s = 1
     for term, executed, e in chunk:gmatch(exec_pat) do
-        executed = '('..strsub(executed,2,-2)..')'
-        append(pieces, APPENDER..format("%q", strsub(chunk,s, term - 1)))
+        executed = '('..strsub(executed, 2, -2)..')'
+        append(pieces, APPENDER..format("%q", strsub(chunk, s, term - 1)))
         append(pieces, APPENDER..format("__tostring(%s or '')", executed))
         s = e
     end
     local r
     if newline then
-        r = format("%q", strgsub(strsub(chunk,s),"\n",""))
+        r = format("%q", strgsub(strsub(chunk, s), "\n", ""))
     else
-        r = format("%q", strsub(chunk,s))
+        r = format("%q", strsub(chunk, s))
     end
     if r ~= '""' then
         append(pieces, APPENDER..r)
     end
 end
 
-local function parseHashLines(chunk,inline_escape,brackets,esc,newline)
+local function parseHashLines(chunk, inline_escape, brackets, esc, newline)
     -- Escape special characters to avoid invalid expressions
     inline_escape = escape(inline_escape)
     esc = escape(esc)
@@ -81,11 +81,11 @@ local function parseHashLines(chunk,inline_escape,brackets,esc,newline)
     local esc_pat1, esc_pat2 = "^"..esc_pat, "\n"..esc_pat
     local  pieces, s = {"return function()\nlocal __R_size, __R_table, __tostring = 0, {}, __tostring", n = 1}, 1
     while true do
-        local _, e, lua = strfind(chunk,esc_pat1, s)
+        local _, e, lua = strfind(chunk, esc_pat1, s)
         if not e then
             local ss
-            ss, e, lua = strfind(chunk,esc_pat2, s)
-            parseDollarParen(pieces, strsub(chunk,s, ss), exec_pat, newline)
+            ss, e, lua = strfind(chunk, esc_pat2, s)
+            parseDollarParen(pieces, strsub(chunk, s, ss), exec_pat, newline)
             if not e then break end
         end
         if strsub(lua, -1, -1) == "\n" then lua = strsub(lua, 1, -2) end
@@ -98,7 +98,7 @@ local function parseHashLines(chunk,inline_escape,brackets,esc,newline)
     -- just a single static string
     local short = false
     if (#pieces == 3) and (pieces[2]:find(APPENDER, 1, true) == 1) then
-        pieces = { "return " .. pieces[2]:sub(#APPENDER+1,-1) }
+        pieces = { "return " .. pieces[2]:sub(#APPENDER + 1, -1) }
         short = true
     end
     -- if short == true, the generated function will not return a table of strings,
@@ -127,6 +127,7 @@ local template = {}
 -- return value (`source_code`) is only returned if the debug option is used.
 function template.substitute(str, env)
     env = env or {}
+
     local t, err, code = template.compile(str, {
         chunk_name = rawget(env, "_chunk_name"),
         escape = rawget(env, "_escape"),
@@ -192,10 +193,10 @@ function template.compile(str, opts)
     local inline_escape = opts.inline_escape or '$'
     local inline_brackets = opts.inline_brackets or '()'
 
-    local code, short = parseHashLines(str,inline_escape,inline_brackets,escape,opts.newline)
+    local code, short = parseHashLines(str, inline_escape, inline_brackets, escape, opts.newline)
     local env = { __tostring = tostring }
     -- was local fn, err = utils.load(code, chunk_name, 't', env)
-    local fn, err = load(code, chunk_name,'t', env)
+    local fn, err = load(code, chunk_name, 't', env)
     if not fn then return nil, err, code end
 
     if short then

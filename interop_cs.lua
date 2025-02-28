@@ -8,6 +8,9 @@ local args = {...}
 local spec = args[1]
 
 
+--------------------------------------------------------------------------------
+---------------------------- Gen C# file ---------------------------------------
+--------------------------------------------------------------------------------
 local tmpl_src =
 [[
 ///// Warning - this file is created by gen_interop.lua, do not edit. /////
@@ -164,6 +167,7 @@ local tmpl_env =
 }
 
 local ret = {} -- { "gensrc1.cs"=rendered, "gensrc2.cs"=rendered, err, dcode }
+print('Generating cs file')
 
 local rendered, err, dcode = tmpl.substitute(tmpl_src, tmpl_env)
 

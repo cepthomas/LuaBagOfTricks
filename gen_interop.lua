@@ -97,18 +97,22 @@ if not ok then error("Syntax in spec file: "..spec) end
 local ok, result = pcall(syntax_chunk, spec)
 -- local ok, result = xpcall(syntax_chunk, debug.traceback, spec)
 
+local save_error = true
+
 -- What happened?
 if ok then
     -- pcall ok, examine the result.
     sep = package.config:sub(1, 1)
     for k, v in pairs(result) do
         if k == "err" then
-            -- Compile error, save the intermediate code.
-            err_fn = sx.strjoin(sep, { out_path, "err_dcode.lua" } )
-            write_output(err_fn, result.dcode)
-            error("Error in TMP file "..err_fn..": "..v)
+            if save_error then
+                -- Compile error, save the intermediate code. Needs template _debug = true.
+                err_fn = sx.strjoin(sep, { out_path, "err_dcode.lua" } )
+                write_output(err_fn, result.dcode)
+                error("Error in TMP file "..err_fn..": "..v)
+            end
         elseif k == "dcode" then
-            -- covered above.
+            -- Covered above.
         else
             -- Ok, save the generated code.
             if out_path:match"9$" then
