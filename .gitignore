@@ -41,8 +41,8 @@ luac.out
 
 # VS ignores
 .vs/
-*.obj
-*.bin
+obj/
+bin/
 
 # My adds.
 *.sublime-*
