@@ -39,7 +39,7 @@ A slightly modified version of the penlight module from https://github.com/lunar
 -- local utils = require 'pl.utils'
 
 
---- escape any Lua 'magic' characters in a string.
+--- escape any Lua 'magic' characters in a string.w
 -- @param s The input string
 function escape(s)
     -- utils.assert_string(1, s)
