@@ -15,3 +15,14 @@ String functions. Some pieces-parts lifted from  [Penlight](https://github.com/l
 
 ## debugger
 Slightly modified version of the nifty [debugger.lua](https://github.com/slembcke/debugger.lua).
+
+
+## template
+Slightly modified version of [template.lua](https://github.com/lunarmodules/Penlight).
+Removed dependencies on other penlight components including `LuaFileSystem` so it's standalone now.
+Used for generating language specific interop.
+
+## C Code
+Several functions to support the C side of lua applications:
+- luaex: hardened call mechanism
+- luautils: handy stuff
