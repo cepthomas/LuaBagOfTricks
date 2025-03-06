@@ -17,7 +17,7 @@ local tmpl_interop_c =
 >local sx = require("stringex")
 >local os = require("os")
 >local snow = os.date('%Y-%m-%d %H:%M:%S')
-///// Warning - this file is created by gen_interop.lua - do not edit. $(snow) /////
+///// Warning - this file is created by gen_interop.lua - do not edit. /////
 
 #include "$(config.lua_lib_name).h"
 >if config.add_refs ~= nil then

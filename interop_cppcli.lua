@@ -17,7 +17,7 @@ local tmpl_interop_cpp =
 >local sx = require("stringex")
 >local os = require("os")
 >local snow = os.date('%Y-%m-%d %H:%M:%S')
-///// Warning - this file is created by gen_interop.lua - do not edit. $(snow) /////
+///// Warning - this file is created by gen_interop.lua - do not edit. /////
 
 #include <windows.h>
 #include "$(config.lua_lib_name).h"
