@@ -1,5 +1,5 @@
 # LuaBagOfTricks
-- Making lua life easier (for me).
+- Making Lua life easier (for me).
 - Pure Lua so far so *should* work anywhere.
 - Uses 64 bit Lua 5.4.2 (\lua54) from https://luabinaries.sourceforge.net/download.html.
 
@@ -22,6 +22,15 @@ Removed dependencies on other penlight components including `LuaFileSystem` so i
 Used for generating language specific interop.
 
 ## luaex.c/h
-Several functions to support the C side of lua applications:
+Several functions to support the C side of Lua applications:
 - hardened call mechanism
-- misc handy utils
+- misc utils
+
+## interop
+Tools to generate interop glue code for various host types.
+See [Implementation](https://github.com/cepthomas/LbotImpl.git) for usage.
+- gen_interop.lua - the driver
+- interop_c.lua - C flavor
+- interop_cppcli.lua - C++/CLI flavor
+- interop_csh.lua - C# flavor
+
