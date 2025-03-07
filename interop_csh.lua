@@ -56,7 +56,7 @@ namespace $(config.host_namespace)
 
             // Get function.
             LuaType ltype = _l.GetGlobal("$(func.lua_func_name)");
-            if (ltype != LuaType.Function) { throw new SyntaxException($"Invalid lua function: $(func.lua_func_name)"); }
+            if (ltype != LuaType.Function) { throw new SyntaxException("", -1, $"Invalid lua function: $(func.lua_func_name)"); }
 
             // Push arguments.
 >for _, arg in ipairs(func.args or {}) do
@@ -67,11 +67,11 @@ namespace $(config.host_namespace)
 
             // Do the actual call.
             LuaStatus lstat = _l.DoCall(numArgs, numRet);
-            if (lstat >= LuaStatus.ErrRun) { throw new LuaException("DoCall() failed"); }
+            if (lstat >= LuaStatus.ErrRun) { throw new LuaException("", -1, lstat, "DoCall() failed"); }
 
             // Get the results from the stack.
             $(cs_ret_type)? ret = _l.To$(klex_ret_type)(-1);
-            if (ret is null) { throw new SyntaxException("Return value is not a $(cs_ret_type)"); }
+            if (ret is null) { throw new SyntaxException("", -1, "Return value is not a $(cs_ret_type)"); }
             _l.Pop(1);
             return ret;
         }
@@ -102,7 +102,7 @@ namespace $(config.host_namespace)
 >local cs_arg_type = cs_types(arg.type)
             $(cs_arg_type)? $(arg.name) = null;
             if (l.Is$(klex_arg_type)($(i))) { $(arg.name) = l.To$(klex_arg_type)($(i)); }
-            else { throw new SyntaxException($"Invalid arg type for {$(arg.name)}"); }
+            else { throw new SyntaxException("", -1, $"Invalid arg type for {$(arg.name)}"); }
 >end -- func.args
 
             // Do the work. One result.
