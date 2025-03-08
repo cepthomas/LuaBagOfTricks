@@ -105,7 +105,7 @@ namespace $(config.host_namespace)
             else { throw new SyntaxException("", -1, $"Invalid arg type for {$(arg.name)}"); }
 >end -- func.args
 
-            // Do the work. One result.
+            // Do the work. Always one result.
 >local arg_specs = {}
 >for _, arg in ipairs(func.args or {}) do
 >table.insert(arg_specs, arg.name)
