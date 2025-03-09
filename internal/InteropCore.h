@@ -4,7 +4,7 @@ using namespace System;
 using namespace System::Collections::Generic;
 
 
-namespace Interop
+namespace InteropCore
 {
 
 //------ Utilities ------//

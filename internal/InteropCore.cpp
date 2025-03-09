@@ -17,21 +17,21 @@ struct lua_State {};
 
 //=============== Critical section ====================
 static CRITICAL_SECTION _critsect;
-Interop::ContextLock::ContextLock() { EnterCriticalSection(&_critsect); }
-Interop::ContextLock::~ContextLock() { LeaveCriticalSection(&_critsect); }
+InteropCore::ContextLock::ContextLock() { EnterCriticalSection(&_critsect); }
+InteropCore::ContextLock::~ContextLock() { LeaveCriticalSection(&_critsect); }
 
 
 //=============== Main class ==========================
 
 //--------------------------------------------------------//
-Interop::Core::Core()
+InteropCore::Core::Core()
 {
     InitializeCriticalSection(&_critsect);
     _Debug("Core()");
 }
 
 //--------------------------------------------------------//
-Interop::Core::~Core()
+InteropCore::Core::~Core()
 {
     _Debug("~Core()");
 
@@ -46,7 +46,7 @@ Interop::Core::~Core()
 }
 
 //--------------------------------------------------------//
-void Interop::Core::InitLua(List<String^>^ luaPath)
+void InteropCore::Core::InitLua(List<String^>^ luaPath)
 {
     // Init lua. Maybe clean up first.
     if (_l != nullptr)
@@ -82,7 +82,7 @@ void Interop::Core::InitLua(List<String^>^ luaPath)
 }
 
 //--------------------------------------------------------//
-void Interop::Core::OpenScript(String^ fn)
+void InteropCore::Core::OpenScript(String^ fn)
 {
     int lstat = LUA_OK;
     int ret = 0;
@@ -109,7 +109,7 @@ void Interop::Core::OpenScript(String^ fn)
 //------------------- Privates ---------------------------//
 
 //--------------------------------------------------------//
-void Interop::Core::_EvalLuaStatus(int lstat, String^ info)
+void InteropCore::Core::_EvalLuaStatus(int lstat, String^ info)
 {
     if (lstat == LUA_OK)
     {
@@ -145,7 +145,7 @@ void Interop::Core::_EvalLuaStatus(int lstat, String^ info)
 }
 
 //--------------------------------------------------------//
-void Interop::Core::_EvalLuaInteropStatus(const char* err, const char* info)
+void InteropCore::Core::_EvalLuaInteropStatus(const char* err, const char* info)
 {
     if (err != NULL)
     {
@@ -155,7 +155,7 @@ void Interop::Core::_EvalLuaInteropStatus(const char* err, const char* info)
 }
 
 //--------------------------------------------------------//
-void Interop::Core::_Debug(String^ msg)
+void InteropCore::Core::_Debug(String^ msg)
 {
     // TODOF hook into app logging system.
     Console::WriteLine("COR: " + msg);
@@ -166,7 +166,7 @@ void Interop::Core::_Debug(String^ msg)
 
 
 //--------------------------------------------------------//
-const char* Interop::ToCString(String^ input)
+const char* InteropCore::ToCString(String^ input)
 {
     // https://learn.microsoft.com/en-us/cpp/dotnet/how-to-access-characters-in-a-system-string?view=msvc-170
     // not! const char* str4 = context->marshal_as<const char*>(input);
@@ -200,7 +200,7 @@ const char* Interop::ToCString(String^ input)
 }
 
 ////--------------------------------------------------------//
-//String^ Interop::ToManagedString(const char* input)
+//String^ InteropCore::ToManagedString(const char* input)
 //{
 //    return gcnew String(input);
 //}

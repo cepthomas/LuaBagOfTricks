@@ -5,7 +5,6 @@ Making Lua life easier (for me).
 It's really only meant for Windows but could be coerced to other platforms.
 
 # Lua
-
 Pure Lua modules so *should* work anywhere.
 
 ## pnut
@@ -35,12 +34,7 @@ See [Implementation](https://github.com/cepthomas/LbotImpl.git) for usage.
 - interop_csh.lua - C# flavor (uses KeraLuaEx)
 
 # Internal
-Several functions to support the C/C++ side of Lua applications:
-
-## luaex.c/h
-- hardened call mechanism
-- misc utils
+Several components to support the C/C++ side of Lua applications.
 
 # lua54
-
-Reference for all Lua projects.  64 bit Lua 5.4.2 from https://luabinaries.sourceforge.net/download.html.
+Lua integration reference for all Lua projects. 64 bit Lua 5.4.2 from https://luabinaries.sourceforge.net/download.html.

@@ -21,7 +21,7 @@ local tmpl_interop_cpp =
 
 #include <windows.h>
 #include "$(config.lua_lib_name).h"
-#include "$(config.host_lib_name).h"
+#include "$(config.class_name).h"
 >if config.add_refs ~= nil then
 >  for _, inc in ipairs(config.add_refs) do
 #include $(inc)
@@ -30,7 +30,9 @@ local tmpl_interop_cpp =
 
 using namespace System;
 using namespace System::Collections::Generic;
-using namespace Interop;
+using namespace InteropCore;
+using namespace $(config.namespace);
+
 
 //============= C# => C functions .cpp =============//
 
@@ -49,18 +51,18 @@ using namespace Interop;
 >  sarg_impl = sx.strjoin(", ", arg_impl)
 //--------------------------------------------------------//
 >  if #sarg_spec > 0 then
-$(cpp_types(func.ret.type)) $(config.host_lib_name)::$(func.host_func_name)($(sarg_spec))
+$(cpp_types(func.ret.type)) $(config.class_name)::$(func.host_func_name)($(sarg_spec))
 >  else
-$(cpp_types(func.ret.type)) $(config.host_lib_name)::$(func.host_func_name)()
+$(cpp_types(func.ret.type)) $(config.class_name)::$(func.host_func_name)()
 >  end -- #sarg_spec
 {
     LOCK();
 >    if func.ret.type == 'S' then
-    $(cpp_types(func.ret.type)) ret = ToManagedString($(config.lua_lib_name)_$(func.host_func_name)(_l, $(sarg_impl)));
+    $(cpp_types(func.ret.type)) ret = gcnew String($(config.lua_lib_name)_$(func.host_func_name)(_l, $(sarg_impl)));
 >    else
     $(cpp_types(func.ret.type)) ret = $(config.lua_lib_name)_$(func.host_func_name)(_l, $(sarg_impl));
 >    end
-    _EvalLuaInteropStatus("$(func.host_func_name)()");
+    _EvalLuaInteropStatus(luainterop_Error(), "$(func.host_func_name)()");
     return ret;
 }
 
@@ -84,7 +86,7 @@ int $(config.lua_lib_name)cb_$(func.host_func_name)(lua_State* l, $(sarg_spec))
 {
     LOCK();
     $(func.host_func_name)Args^ args = gcnew $(func.host_func_name)Args($(sarg_impl));
-    $(config.host_lib_name)::Notify(args);
+    $(config.class_name)::Notify(args);
     return 0;
 }
 
@@ -93,7 +95,7 @@ int $(config.lua_lib_name)cb_$(func.host_func_name)(lua_State* l, $(sarg_spec))
 //============= Infrastructure .cpp =============//
 
 //--------------------------------------------------------//
-void $(config.host_lib_name)::Run(String^ scriptFn, List<String^>^ luaPath)
+void $(config.class_name)::Run(String^ scriptFn, List<String^>^ luaPath)
 {
     InitLua(luaPath);
     // Load C host funcs into lua space.
@@ -117,12 +119,12 @@ local tmpl_interop_h =
 ///// Warning - this file is created by gen_interop.lua - do not edit. $(snow) /////
 
 #pragma once
-#include "Core.h"
+#include "InteropCore.h"
 
 using namespace System;
 using namespace System::Collections::Generic;
 
-namespace $(config.host_namespace)
+namespace $(config.namespace)
 {
 
 //============= C => C# callback payload .h =============//
@@ -155,7 +157,7 @@ public:
 >end -- host_funcs
 
 //----------------------------------------------------//
-public ref class $(config.host_lib_name) : Core
+public ref class $(config.class_name) : InteropCore::Core
 {
 
 //============= C# => C functions .h =============//
@@ -229,7 +231,7 @@ local ret = {}
 print('Generating cpp file')
 local rendered, err, dcode = tmpl.substitute(tmpl_interop_cpp, tmpl_env)
 if not err then -- ok
-    ret[spec.config.host_lib_name..".cpp"] = rendered
+    ret[spec.config.class_name..".cpp"] = rendered
 else -- failed, look at intermediary code
     ret.err = err
     ret.dcode = dcode
@@ -239,7 +241,7 @@ end
 print('Generating h file')
 rendered, err, dcode = tmpl.substitute(tmpl_interop_h, tmpl_env)
 if not err then -- ok
-    ret[spec.config.host_lib_name..".h"] = rendered
+    ret[spec.config.class_name..".h"] = rendered
 else -- failed, look at intermediary code
     ret.err = err
     ret.dcode = dcode

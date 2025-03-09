@@ -30,9 +30,9 @@ using $(us);
 >end
 >end
 
-namespace $(config.host_namespace)
+namespace $(config.namespace)
 {
-    public partial class $(config.host_lib_name)
+    public partial class $(config.class_name)
     {
         #region ============= C# => KeraLuaEx functions =============
 
@@ -71,7 +71,7 @@ namespace $(config.host_namespace)
 
             // Get the results from the stack.
             $(cs_ret_type)? ret = _l.To$(klex_ret_type)(-1);
-            if (ret is null) { throw new SyntaxException("", -1, "Return value is not a $(cs_ret_type)"); }
+            if (ret is null) { throw new SyntaxException("", -1, "$(func.host_func_name) return value is not a $(cs_ret_type)"); }
             _l.Pop(1);
             return ret;
         }
@@ -86,9 +86,9 @@ namespace $(config.host_namespace)
 >local cs_ret_type = cs_types(func.ret.type)
         /// <summary>Host export function: $(func.description or "")
 >for _, arg in ipairs(func.args or {}) do
-        /// Lua arg: "$(arg.name)">$(arg.description or "")
+        /// Lua arg: "$(arg.name)" $(arg.description or "")
 >end -- func.args
-        /// Lua return: $(cs_ret_type) $(func.ret.description or "")>
+        /// Lua return: $(cs_ret_type) $(func.ret.description or "")
         /// </summary>
         /// <param name="p">Internal lua state</param>
         /// <returns>Number of lua return values></returns>
@@ -102,7 +102,7 @@ namespace $(config.host_namespace)
 >local cs_arg_type = cs_types(arg.type)
             $(cs_arg_type)? $(arg.name) = null;
             if (l.Is$(klex_arg_type)($(i))) { $(arg.name) = l.To$(klex_arg_type)($(i)); }
-            else { throw new SyntaxException("", -1, $"Invalid arg type for {$(arg.name)}"); }
+            else { throw new SyntaxException("", -1, "Invalid arg type: $(func.lua_func_name)($(arg.name))"); }
 >end -- func.args
 
             // Do the work. Always one result.
@@ -120,13 +120,9 @@ namespace $(config.host_namespace)
         #endregion
 
         #region ============= Infrastructure =============
-        // Bind functions to static instance.
-        static $(config.host_lib_name)? _instance;
-        // Bound functions.
->for _, func in ipairs(host_funcs) do
-        static LuaFunction? _$(func.host_func_name);
->end -- host_funcs
+
         readonly List<LuaRegister> _libFuncs = new();
+        readonly Lua _l = new ();
 
         int OpenInterop(IntPtr p)
         {
@@ -137,14 +133,22 @@ namespace $(config.host_namespace)
 
         void LoadInterop()
         {
-            _instance = this;
 >for _, func in ipairs(host_funcs) do
-            _$(func.host_func_name) = _instance!.$(func.host_func_name);
-            _libFuncs.Add(new LuaRegister("$(func.lua_func_name)", _$(func.host_func_name)));
+            _libFuncs.Add(new LuaRegister("$(func.lua_func_name)", $(func.host_func_name)));
 >end -- host_funcs
-
             _libFuncs.Add(new LuaRegister(null, null));
             _l.RequireF("$(config.lua_lib_name)", OpenInterop, true);
+        }
+
+        void LoadScript(string scriptFn, List<string> lbotDirs)
+        {
+            _l.SetLuaPath(lbotDirs);
+            LuaStatus lstat = _l.LoadFile(scriptFn);
+            if (lstat >= LuaStatus.ErrRun) { throw new LuaException("", -1, lstat, "LoadScript() failed"); }
+            // Run it.
+            _l.PCall(0, Lua.LUA_MULTRET, 0);
+            // Reset stack.
+            _l.SetTop(0);
         }
         #endregion
     }
@@ -183,13 +187,13 @@ local tmpl_env =
 }
 
 
-local ret = {} -- { "gensrc1.cs"=rendered, "gensrc2.cs"=rendered, err, dcode }
+local ret = {}
 print('Generating cs file')
 
 local rendered, err, dcode = tmpl.substitute(tmpl_src, tmpl_env)
 
 if not err then -- ok
-    ret[spec.config.host_lib_name..".cs"] = rendered
+    ret[spec.config.file_name..".cs"] = rendered
 else -- failed, look at intermediary code
     ret.err = err
     ret.dcode = dcode
