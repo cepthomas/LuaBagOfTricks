@@ -95,7 +95,7 @@ int $(config.lua_lib_name)cb_$(func.host_func_name)(lua_State* l, $(sarg_spec))
 //============= Infrastructure .cpp =============//
 
 //--------------------------------------------------------//
-void $(config.class_name)::Run(String^ scriptFn, List<String^>^ luaPath)
+void $(config.class_name)::Run(String^ scriptFn, String^ luaPath)
 {
     InitLua(luaPath);
     // Load C host funcs into lua space.
@@ -188,7 +188,7 @@ public:
     /// <summary>Initialize and execute.</summary>
     /// <param name="scriptFn">The script to load.</param>
     /// <param name="luaPath">LUA_PATH components</param>
-    void Run(String^ scriptFn, List<String^>^ luaPath);
+    void Run(String^ scriptFn, String^ luaPath);
 };
 
 }

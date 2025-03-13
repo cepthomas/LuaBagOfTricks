@@ -46,7 +46,7 @@ InteropCore::Core::~Core()
 }
 
 //--------------------------------------------------------//
-void InteropCore::Core::InitLua(List<String^>^ luaPath)
+void InteropCore::Core::InitLua(String^ luaPath)
 {
     // Init lua. Maybe clean up first.
     if (_l != nullptr)
@@ -58,27 +58,36 @@ void InteropCore::Core::InitLua(List<String^>^ luaPath)
     // Load std libraries.
     luaL_openlibs(_l);
 
-    // Fix lua path.
-    if (luaPath->Count > 0)
-    {
-        // https://stackoverflow.com/a/4156038
-        lua_getglobal(_l, "package");
-        lua_getfield(_l, -1, "path");
-        String^ currentPath = gcnew String(lua_tostring(_l, -1));
+    // Fix lua path. https://stackoverflow.com/a/4156038
+    lua_getglobal(_l, "package");
+    lua_getfield(_l, -1, "path");
+    //String^ currentPath = gcnew String(lua_tostring(_l, -1));
+    lua_pop(_l, 1);
+    lua_pushstring(_l, ToCString(luaPath));
+    lua_setfield(_l, -2, "path");
+    lua_pop(_l, 1);
 
-        StringBuilder^ sb = gcnew StringBuilder(currentPath);
-        sb->Append(";"); // default lua path doesn't have this.
-        for each (String^ lp in luaPath) // add app specific.
-        {
-            sb->Append(String::Format("{0}\\?.lua;", lp));
-        }
-        String^ newPath = sb->ToString();
+    // // From list of strings:
+    // if (luaPath->Count > 0)
+    // {
+    //     // https://stackoverflow.com/a/4156038
+    //     lua_getglobal(_l, "package");
+    //     lua_getfield(_l, -1, "path");
+    //     String^ currentPath = gcnew String(lua_tostring(_l, -1));
 
-        lua_pop(_l, 1);
-        lua_pushstring(_l, ToCString(newPath));
-        lua_setfield(_l, -2, "path");
-        lua_pop(_l, 1);
-    }
+    //     StringBuilder^ sb = gcnew StringBuilder(currentPath);
+    //     sb->Append(";"); // default lua path doesn't have this.
+    //     for each (String^ lp in luaPath) // add app specific.
+    //     {
+    //         sb->Append(String::Format("{0}\\?.lua;", lp));
+    //     }
+    //     String^ newPath = sb->ToString();
+
+    //     lua_pop(_l, 1);
+    //     lua_pushstring(_l, ToCString(newPath));
+    //     lua_setfield(_l, -2, "path");
+    //     lua_pop(_l, 1);
+    // }
 }
 
 //--------------------------------------------------------//

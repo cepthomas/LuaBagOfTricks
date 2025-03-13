@@ -47,7 +47,7 @@ protected:
 
     /// <summary>Initialize everything lua.</summary>
     /// <param name="luaPath">LUA_PATH components</param>
-    void InitLua(List<String^>^ luaPath);
+    void InitLua(String^ luaPath);
 
     /// <summary>Load and process.</summary>
     /// <param name="fn">Full file path</param>
