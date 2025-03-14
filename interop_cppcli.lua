@@ -49,6 +49,7 @@ using namespace $(config.namespace);
 >  end -- func.args
 >  sarg_spec = sx.strjoin(", ", arg_spec)
 >  sarg_impl = sx.strjoin(", ", arg_impl)
+>  if #sarg_impl > 0 then sarg_impl = ", "..sarg_impl end
 //--------------------------------------------------------//
 >  if #sarg_spec > 0 then
 $(cpp_types(func.ret.type)) $(config.class_name)::$(func.host_func_name)($(sarg_spec))
@@ -58,12 +59,12 @@ $(cpp_types(func.ret.type)) $(config.class_name)::$(func.host_func_name)()
 {
     LOCK();
 >    if func.ret.type == 'S' then
-    $(cpp_types(func.ret.type)) ret = gcnew String($(config.lua_lib_name)_$(func.host_func_name)(_l, $(sarg_impl)));
+    $(cpp_types(func.ret.type)) ret = gcnew String($(config.lua_lib_name)_$(func.host_func_name)(_l$(sarg_impl)));
 >    else
-    $(cpp_types(func.ret.type)) ret = $(config.lua_lib_name)_$(func.host_func_name)(_l, $(sarg_impl));
+    $(cpp_types(func.ret.type)) ret = $(config.lua_lib_name)_$(func.host_func_name)(_l$(sarg_impl));
 >    end
     _EvalLuaInteropStatus(luainterop_Error(), "$(func.host_func_name)()");
-    return ret;
+    return ret; 
 }
 
 >end -- script_funcs
