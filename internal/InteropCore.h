@@ -12,7 +12,7 @@ namespace InteropCore
 /// <summary>Convert managed string to unmanaged. Warning! Returns static buffer which must be consumed immediately.</summary>
 const char* ToCString(String^ input);
 
-/// <summary>Exceptions used for all interop errors.</summary>
+/// <summary>Exception used for all interop errors.</summary>
 public ref struct InteropException : public System::Exception
 {
 public:

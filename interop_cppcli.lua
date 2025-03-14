@@ -88,7 +88,7 @@ int $(config.lua_lib_name)cb_$(func.host_func_name)(lua_State* l, $(sarg_spec))
     LOCK();
     $(func.host_func_name)Args^ args = gcnew $(func.host_func_name)Args($(sarg_impl));
     $(config.class_name)::Notify(args);
-    return 0;
+    return args->ret;
 }
 
 >end -- host_funcs
@@ -117,7 +117,7 @@ local tmpl_interop_h =
 >local sx = require("stringex")
 >local os = require("os")
 >local snow = os.date('%Y-%m-%d %H:%M:%S')
-///// Warning - this file is created by gen_interop.lua - do not edit. $(snow) /////
+///// Warning - this file is created by gen_interop.lua - do not edit. /////
 
 #pragma once
 #include "InteropCore.h"
@@ -141,6 +141,8 @@ public:
     /// <summary>$(arg.description)</summary>
     property $(cpp_types(arg.type)) $(arg.name);
 >  end -- func.args
+    /// <summary>$(func.ret.description)</summary>
+    property $(cpp_types(func.ret.type)) ret;
 >  sarg_spec = sx.strjoin(", ", arg_spec)
     /// <summary>Constructor.</summary>
     $(func.host_func_name)Args($(sarg_spec))
