@@ -13,10 +13,10 @@ namespace InteropCore
 const char* ToCString(String^ input);
 
 /// <summary>Exception used for all interop errors.</summary>
-public ref struct InteropException : public System::Exception
+public ref struct LuaException : public System::Exception
 {
 public:
-    InteropException(String^ message) : Exception(message) {}
+    LuaException(String^ message) : Exception(message) {}
 };
 
 

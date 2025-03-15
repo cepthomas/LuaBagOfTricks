@@ -145,11 +145,11 @@ void InteropCore::Core::_EvalLuaStatus(int lstat, String^ info)
         array<wchar_t>^ delims = { '\r', '\n' };
         array<String^>^ parts = mmsg->Split(delims);
         String^ s = String::Format(gcnew String("{0}: {1} [{2}]"), stat, info, parts[0]);
-        throw(gcnew InteropException(s));
+        throw(gcnew LuaException(s));
     }
     else // simple
     {
-        throw(gcnew InteropException(String::Format(gcnew String("{0}: {1}"), stat, info)));
+        throw(gcnew LuaException(String::Format(gcnew String("{0}: {1}"), stat, info)));
     }
 }
 
@@ -159,7 +159,7 @@ void InteropCore::Core::_EvalLuaInteropStatus(const char* err, const char* info)
     if (err != NULL)
     {
         String^ s = String::Format(gcnew String("LuaInteropError: {0} [{1}]"), gcnew String(info), gcnew String(err));
-        throw(gcnew InteropException(s));
+        throw(gcnew LuaException(s));
     }
 }
 
