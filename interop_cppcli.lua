@@ -63,7 +63,7 @@ $(cpp_types(func.ret.type)) $(config.class_name)::$(func.host_func_name)()
 >    else
     $(cpp_types(func.ret.type)) ret = $(config.lua_lib_name)_$(func.host_func_name)(_l$(sarg_impl));
 >    end
-    _EvalLuaInteropStatus(luainterop_Error(), "$(func.host_func_name)()");
+    EvalLuaInteropStatus(luainterop_Error(), "$(func.host_func_name)()");
     return ret; 
 }
 
