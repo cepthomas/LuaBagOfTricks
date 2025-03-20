@@ -55,6 +55,12 @@ InteropCore::Core::~Core()
 }
 
 //--------------------------------------------------------//
+bool InteropCore::Core::ScriptLoaded()
+{
+    return _l != nullptr;
+}
+
+//--------------------------------------------------------//
 void InteropCore::Core::InitLua(String^ luaPath)
 {
     // Init lua. Maybe clean up first.
@@ -76,28 +82,6 @@ void InteropCore::Core::InitLua(String^ luaPath)
     lua_pop(_l, 1);
 
     Collect();
-
-    // From list of strings:
-    // if (luaPath->Count > 0)
-    // {
-    //     // https://stackoverflow.com/a/4156038
-    //     lua_getglobal(_l, "package");
-    //     lua_getfield(_l, -1, "path");
-    //     String^ currentPath = gcnew String(lua_tostring(_l, -1));
-
-    //     StringBuilder^ sb = gcnew StringBuilder(currentPath);
-    //     sb->Append(";"); // default lua path doesn't have this.
-    //     for each (String^ lp in luaPath) // add app specific.
-    //     {
-    //         sb->Append(String::Format("{0}\\?.lua;", lp));
-    //     }
-    //     String^ newPath = sb->ToString();
-
-    //     lua_pop(_l, 1);
-    //     lua_pushstring(_l, ToCString(newPath));
-    //     lua_setfield(_l, -2, "path");
-    //     lua_pop(_l, 1);
-    // }
 }
 
 //--------------------------------------------------------//
@@ -182,30 +166,6 @@ void InteropCore::Core::Debug(String^ msg)
 }
 
 
-
-    // From list of strings:
-    // if (luaPath->Count > 0)
-    // {
-    //     // https://stackoverflow.com/a/4156038
-    //     lua_getglobal(_l, "package");
-    //     lua_getfield(_l, -1, "path");
-    //     String^ currentPath = gcnew String(lua_tostring(_l, -1));
-
-    //     StringBuilder^ sb = gcnew StringBuilder(currentPath);
-    //     sb->Append(";"); // default lua path doesn't have this.
-    //     for each (String^ lp in luaPath) // add app specific.
-    //     {
-    //         sb->Append(String::Format("{0}\\?.lua;", lp));
-    //     }
-    //     String^ newPath = sb->ToString();
-
-    //     lua_pop(_l, 1);
-    //     lua_pushstring(_l, ToCString(newPath));
-    //     lua_setfield(_l, -2, "path");
-    //     lua_pop(_l, 1);
-    // }
-
-
 //=============== Utilities ===========================
 
 
@@ -230,35 +190,4 @@ const char* InteropCore::ToCString(String^ input)
         _allocations.push_back(buff);
     }
     return buff;
-
-
-    // Using client supplied buffer/length. Returns pointer to the string.
-    // interior_ptr<const wchar_t> ppchar = PtrToStringChars(input);
-    // if (input->Length > len - 1)
-    // {
-    //     String^ s = String::Format(gcnew String("ScriptRunError: String too long"));
-    //     throw(gcnew LuaException(s));
-    // }
-    // int i = 0;
-    // for (; *ppchar != L'\0' && i < len - 1; ++ppchar, i++)
-    // {
-    //     int c = wctob(*ppchar);
-    //     buff[i] = c != -1 ? c : '?';
-    // }
-    // buff[i] = 0;
-    // return buff;
-
-
-    // Dirty static way:
-    // int inlen = input->Length;
-    // static char buff[1000];
-    // interior_ptr<const wchar_t> ppchar = PtrToStringChars(input);
-    // int i = 0;
-    // for (; *ppchar != L'\0' && i < inlen && i < sizeof(buff) - 1; ++ppchar, i++)
-    // {
-    //     int c = wctob(*ppchar);
-    //     buff[i] = c != -1 ? c : '?';
-    // }
-    // buff[i] = 0;
-    // return buff;
 }

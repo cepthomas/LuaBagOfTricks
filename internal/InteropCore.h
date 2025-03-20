@@ -35,6 +35,11 @@ public:
 
 public ref class Core
 {
+public:
+    /// <summary>Query for validity.</summary>
+    /// <return>True if loaded</return>
+    bool ScriptLoaded();
+
 protected:
     /// <summary>The lua thread.</summary>
     lua_State* _l = nullptr;
