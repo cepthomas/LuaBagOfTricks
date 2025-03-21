@@ -161,7 +161,7 @@ void InteropCore::Core::EvalLuaInteropStatus(const char* err, const char* info)
 //--------------------------------------------------------//
 void InteropCore::Core::Debug(String^ msg)
 {
-    // TODOF hook into app logging system.
+    // TODO1 hook into app logging system.
     Console::WriteLine("COR: " + msg);
 }
 

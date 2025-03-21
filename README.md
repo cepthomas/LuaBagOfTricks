@@ -4,7 +4,7 @@ Making Lua life easier (for me).
 
 It's really only meant for Windows but could be coerced to other platforms.
 
-# Lua
+# Other Lua Modules
 Pure Lua modules so *should* work anywhere.
 
 ## pnut
