@@ -94,13 +94,12 @@ void InteropCore::Core::OpenScript(String^ fn)
 
     if (_l == nullptr)
     {
-        EvalLuaStatus(-1, "You forgot to call Init().");
+        EvalLuaStatus(-1, "You forgot to call InitLua().");
     }
 
     // Load the script into memory.
     // Pushes the compiled chunk as a lua function on top of the stack or pushes an error message.
     lstat = luaL_loadfile(_l, ToCString(fn));
-    Collect();
     EvalLuaStatus(lstat, "Load script file failed.");
 
     // Execute the script to initialize it. This reports runtime syntax errors.
