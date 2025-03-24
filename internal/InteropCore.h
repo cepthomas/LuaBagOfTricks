@@ -67,9 +67,6 @@ protected:
     /// <param name="err">Error message or NULL if ok</param>
     /// <param name="info">Extra info</param>
     void EvalLuaInteropStatus(const char* err, const char* info);
-
-    /// <summary> Log from here.</summary>
-    void Debug(String^ msg);
 };
 
 }

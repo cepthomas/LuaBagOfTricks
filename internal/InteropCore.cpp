@@ -15,7 +15,7 @@ using namespace System::Text;
 // This struct decl makes a vestigial warning go away per https://github.com/openssl/openssl/issues/6166.
 struct lua_State {};
 
-// Poor man's garbage collection.
+// Poor man's garbage collection. Mainly to auto-clean up allocs by ToCString()
 std::vector<void*> _allocations = {};
 static void Collect()
 {
@@ -36,14 +36,12 @@ InteropCore::ContextLock::~ContextLock() { Collect(); LeaveCriticalSection(&_cri
 InteropCore::Core::Core()
 {
     InitializeCriticalSection(&_critsect);
-    Debug("Core()");
+    //Console::WriteLine("Core()");
 }
 
 //--------------------------------------------------------//
 InteropCore::Core::~Core()
 {
-    Debug("~Core()");
-
     // Finished. Clean up resources and go home.
     DeleteCriticalSection(&_critsect);
 
@@ -63,6 +61,8 @@ bool InteropCore::Core::ScriptLoaded()
 //--------------------------------------------------------//
 void InteropCore::Core::InitLua(String^ luaPath)
 {
+    LOCK();
+
     // Init lua. Maybe clean up first.
     if (_l != nullptr)
     {
@@ -80,17 +80,15 @@ void InteropCore::Core::InitLua(String^ luaPath)
     lua_pushstring(_l, ToCString(luaPath));
     lua_setfield(_l, -2, "path");
     lua_pop(_l, 1);
-
-    Collect();
 }
 
 //--------------------------------------------------------//
 void InteropCore::Core::OpenScript(String^ fn)
 {
+    LOCK();
+
     int lstat = LUA_OK;
     int ret = 0;
-
-    LOCK();
 
     if (_l == nullptr)
     {
@@ -155,13 +153,6 @@ void InteropCore::Core::EvalLuaInteropStatus(const char* err, const char* info)
         String^ s = String::Format(gcnew String("LuaInteropError: {0} [{1}]"), gcnew String(info), gcnew String(err));
         throw(gcnew LuaException(s));
     }
-}
-
-//--------------------------------------------------------//
-void InteropCore::Core::Debug(String^ msg)
-{
-    // TODO1 hook into app logging system.
-    Console::WriteLine("COR: " + msg);
 }
 
 
