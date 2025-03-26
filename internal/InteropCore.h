@@ -4,9 +4,6 @@ using namespace System;
 using namespace System::Collections::Generic;
 
 
-namespace InteropCore
-{
-
 //------ Utilities ------//
 
 /// <summary>Convert managed string to unmanaged.</summary>
@@ -33,7 +30,7 @@ public:
 
 //------ Main class -------//
 
-public ref class Core
+public ref class InteropCore
 {
 public:
     /// <summary>Query for validity.</summary>
@@ -45,10 +42,10 @@ protected:
     lua_State* _l = nullptr;
 
     /// <summary>Construct.</summary>
-    Core();
+    InteropCore();
 
     /// <summary>Clean up resources.</summary>
-    ~Core();
+    ~InteropCore();
 
     /// <summary>Initialize everything lua.</summary>
     /// <param name="luaPath">LUA_PATH components</param>
@@ -68,5 +65,3 @@ protected:
     /// <param name="info">Extra info</param>
     void EvalLuaInteropStatus(const char* err, const char* info);
 };
-
-}

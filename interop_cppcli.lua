@@ -30,8 +30,6 @@ local tmpl_interop_cpp =
 
 using namespace System;
 using namespace System::Collections::Generic;
-using namespace InteropCore;
-using namespace $(config.namespace);
 
 
 //============= C# => C functions .cpp =============//
@@ -125,9 +123,6 @@ local tmpl_interop_h =
 using namespace System;
 using namespace System::Collections::Generic;
 
-namespace $(config.namespace)
-{
-
 //============= C => C# callback payload .h =============//
 
 >for _, func in ipairs(host_funcs) do
@@ -160,7 +155,7 @@ public:
 >end -- host_funcs
 
 //----------------------------------------------------//
-public ref class $(config.class_name) : InteropCore::Core
+public ref class $(config.class_name) : InteropCore
 {
 
 //============= C# => C functions .h =============//
@@ -193,8 +188,6 @@ public:
     /// <param name="luaPath">LUA_PATH components</param>
     void Run(String^ scriptFn, String^ luaPath);
 };
-
-}
 ]]
 
 

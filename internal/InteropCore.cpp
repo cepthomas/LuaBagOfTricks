@@ -26,21 +26,21 @@ static void Collect()
 
 //=============== Critical section ====================
 static CRITICAL_SECTION _critsect;
-InteropCore::ContextLock::ContextLock() { EnterCriticalSection(&_critsect); }
-InteropCore::ContextLock::~ContextLock() { Collect(); LeaveCriticalSection(&_critsect); }
+ContextLock::ContextLock() { EnterCriticalSection(&_critsect); }
+ContextLock::~ContextLock() { Collect(); LeaveCriticalSection(&_critsect); }
 
 
 //=============== Main class ==========================
 
 //--------------------------------------------------------//
-InteropCore::Core::Core()
+InteropCore::InteropCore()
 {
     InitializeCriticalSection(&_critsect);
     //Console::WriteLine("Core()");
 }
 
 //--------------------------------------------------------//
-InteropCore::Core::~Core()
+InteropCore::~InteropCore()
 {
     // Finished. Clean up resources and go home.
     DeleteCriticalSection(&_critsect);
@@ -53,13 +53,13 @@ InteropCore::Core::~Core()
 }
 
 //--------------------------------------------------------//
-bool InteropCore::Core::ScriptLoaded()
+bool InteropCore::ScriptLoaded()
 {
     return _l != nullptr;
 }
 
 //--------------------------------------------------------//
-void InteropCore::Core::InitLua(String^ luaPath)
+void InteropCore::InitLua(String^ luaPath)
 {
     LOCK();
 
@@ -83,7 +83,7 @@ void InteropCore::Core::InitLua(String^ luaPath)
 }
 
 //--------------------------------------------------------//
-void InteropCore::Core::OpenScript(String^ fn)
+void InteropCore::OpenScript(String^ fn)
 {
     LOCK();
 
@@ -110,7 +110,7 @@ void InteropCore::Core::OpenScript(String^ fn)
 //------------------- Privates ---------------------------//
 
 //--------------------------------------------------------//
-void InteropCore::Core::EvalLuaStatus(int lstat, String^ info)
+void InteropCore::EvalLuaStatus(int lstat, String^ info)
 {
     if (lstat == LUA_OK)
     {
@@ -146,7 +146,7 @@ void InteropCore::Core::EvalLuaStatus(int lstat, String^ info)
 }
 
 //--------------------------------------------------------//
-void InteropCore::Core::EvalLuaInteropStatus(const char* err, const char* info)
+void InteropCore::EvalLuaInteropStatus(const char* err, const char* info)
 {
     if (err != NULL)
     {
@@ -160,7 +160,7 @@ void InteropCore::Core::EvalLuaInteropStatus(const char* err, const char* info)
 
 
 //--------------------------------------------------------//
-const char* InteropCore::ToCString(String^ input)
+const char* ToCString(String^ input)
 {
     // https://learn.microsoft.com/en-us/cpp/dotnet/how-to-access-characters-in-a-system-string?view=msvc-170
     // not! const char* str4 = context->marshal_as<const char*>(input);
