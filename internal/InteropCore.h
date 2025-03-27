@@ -6,9 +6,6 @@ using namespace System::Collections::Generic;
 
 //------ Utilities ------//
 
-/// <summary>Convert managed string to unmanaged.</summary>
-const char* ToCString(String^ input);
-
 /// <summary>Exception used for all interop errors.</summary>
 public ref struct LuaException : public System::Exception
 {
@@ -17,26 +14,20 @@ public:
 };
 
 
-//------ Critical section -------//
-
-public class ContextLock
+/// <summary>Critical section guard for interop functions. Also automatically frees any contained ToCstring() returns.</summary>
+public class Scope
 {
 public:
-    ContextLock();
-    virtual ~ContextLock();
+    Scope();
+    virtual ~Scope();
 };
-#define LOCK() ContextLock clock;
+#define SCOPE() Scope _scope;
 
 
 //------ Main class -------//
 
 public ref class InteropCore
 {
-public:
-    /// <summary>Query for validity.</summary>
-    /// <return>True if loaded</return>
-    bool ScriptLoaded();
-
 protected:
     /// <summary>The lua thread.</summary>
     lua_State* _l = nullptr;
@@ -64,4 +55,7 @@ protected:
     /// <param name="err">Error message or NULL if ok</param>
     /// <param name="info">Extra info</param>
     void EvalLuaInteropStatus(const char* err, const char* info);
+
+    /// <summary>Convert managed string to unmanaged. Only use within a SCOPE() context.</summary>
+    const char* ToCString(String^ input);
 };

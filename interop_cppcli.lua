@@ -55,7 +55,7 @@ $(cpp_types(func.ret.type)) $(config.class_name)::$(func.host_func_name)($(sarg_
 $(cpp_types(func.ret.type)) $(config.class_name)::$(func.host_func_name)()
 >  end -- #sarg_spec
 {
-    LOCK();
+    SCOPE();
 >    if func.ret.type == 'S' then
     $(cpp_types(func.ret.type)) ret = gcnew String($(config.lua_lib_name)_$(func.host_func_name)(_l$(sarg_impl)));
 >    else
@@ -83,7 +83,7 @@ $(cpp_types(func.ret.type)) $(config.class_name)::$(func.host_func_name)()
 
 int $(config.lua_lib_name)cb_$(func.host_func_name)(lua_State* l, $(sarg_spec))
 {
-    LOCK();
+    SCOPE();
     $(func.host_func_name)Args^ args = gcnew $(func.host_func_name)Args($(sarg_impl));
     $(config.class_name)::Notify(args);
     return args->ret;

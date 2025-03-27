@@ -15,7 +15,7 @@ using namespace System::Text;
 // This struct decl makes a vestigial warning go away per https://github.com/openssl/openssl/issues/6166.
 struct lua_State {};
 
-// Poor man's garbage collection. Mainly to auto-clean up allocs by ToCString()
+// Poor man's garbage collection.
 std::vector<void*> _allocations = {};
 static void Collect()
 {
@@ -26,8 +26,8 @@ static void Collect()
 
 //=============== Critical section ====================
 static CRITICAL_SECTION _critsect;
-ContextLock::ContextLock() { EnterCriticalSection(&_critsect); }
-ContextLock::~ContextLock() { Collect(); LeaveCriticalSection(&_critsect); }
+Scope::Scope() { EnterCriticalSection(&_critsect); }
+Scope::~Scope() { Collect(); LeaveCriticalSection(&_critsect); }
 
 
 //=============== Main class ==========================
@@ -53,15 +53,15 @@ InteropCore::~InteropCore()
 }
 
 //--------------------------------------------------------//
-bool InteropCore::ScriptLoaded()
-{
-    return _l != nullptr;
-}
+//bool InteropCore::ScriptLoaded()
+//{
+//    return _l != nullptr;
+//}
 
 //--------------------------------------------------------//
 void InteropCore::InitLua(String^ luaPath)
 {
-    LOCK();
+    SCOPE();
 
     // Init lua. Maybe clean up first.
     if (_l != nullptr)
@@ -85,7 +85,7 @@ void InteropCore::InitLua(String^ luaPath)
 //--------------------------------------------------------//
 void InteropCore::OpenScript(String^ fn)
 {
-    LOCK();
+    SCOPE();
 
     int lstat = LUA_OK;
     int ret = 0;
@@ -155,12 +155,8 @@ void InteropCore::EvalLuaInteropStatus(const char* err, const char* info)
     }
 }
 
-
-//=============== Utilities ===========================
-
-
 //--------------------------------------------------------//
-const char* ToCString(String^ input)
+const char* InteropCore::ToCString(String^ input)
 {
     // https://learn.microsoft.com/en-us/cpp/dotnet/how-to-access-characters-in-a-system-string?view=msvc-170
     // not! const char* str4 = context->marshal_as<const char*>(input);
