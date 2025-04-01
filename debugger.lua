@@ -22,18 +22,15 @@
 
     ***1 indicates -> Removed some support for older lua versions.
     
-    TODOF l cmd gets noisy with large tables.
-    TODOF harmonize with sbot pdb: commands, colors, etc.
     TODOF from original: Print short function arguments as part of stack location.
     TODOF from original: Properly handle being reentrant due to coroutines.
-
 ]]
 
 local dbg
 
 
 
--- Use ANSI color codes in the prompt by default.
+-- Use ANSI color codes in the prompt by default. TODOF harmonize with sbot pdb: commands, colors, etc.
 local COLOR_GRAY = ""
 local COLOR_RED = ""
 local COLOR_BLUE = ""
@@ -397,7 +394,7 @@ end
 local function cmd_locals()
     local bindings = local_bindings(1, false)
 
-    -- Get all the variable binding names and sort them
+    -- Get all the variable binding names and sort them. TODOF gets noisy with large tables.
     local keys = {}
     for k, _ in pairs(bindings) do table.insert(keys, k) end
     table.sort(keys)

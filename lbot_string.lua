@@ -1,4 +1,60 @@
--- String utilities. ...
+-- String utilities.
+
+-- TODOL Add some from https://lunarmodules.github.io/Penlight/libraries/pl.stringx.html
+--[[
+Dependencies: pl.utils, pl.types
+
+String Predicates
+isalpha (s)     does s only contain alphabetic characters?
+isdigit (s)     does s only contain digits?
+isalnum (s)     does s only contain alphanumeric characters?
+isspace (s)     does s only contain whitespace?
+islower (s)     does s only contain lower case characters?
+isupper (s)     does s only contain upper case characters?
+startswith (s, prefix)  does s start with prefix or one of prefixes?
+endswith (s, suffix)    does s end with suffix or one of suffixes?
+
+Strings and Lists
+join (s, seq)   concatenate the strings using this string as a delimiter.
+splitlines (s[, keep_ends])     Split a string into a list of lines.
+split (s[, re[, n] ])    split a string into a list of strings using a delimiter.
+expandtabs (s, tabsize)     replace all tabs in s with tabsize spaces.
+
+Finding and Replacing
+lfind (s, sub[, first[, last] ])     find index of first instance of sub in s from the left.
+rfind (s, sub[, first[, last] ])     find index of first instance of sub in s from the right.
+replace (s, old, new[, n])  replace up to n instances of old by new in the string s.
+count (s, sub[, allow_overlap])     count all instances of substring in string.
+
+Stripping and Justifying
+ljust (s, w[, ch=' '])  left-justify s with width w.
+rjust (s, w[, ch=' '])  right-justify s with width w.
+center (s, w[, ch=' '])     center-justify s with width w.
+lstrip (s[, chrs='%s'])     trim any characters on the left of s.
+rstrip (s[, chrs='%s'])     trim any characters on the right of s.
+strip (s[, chrs='%s'])  trim any characters on both left and right of s.
+
+Partitioning Strings
+splitv (s[, re='%s'])   split a string using a pattern.
+partition (s, ch)   partition the string using first occurrence of a delimiter
+rpartition (s, ch)  partition the string p using last occurrence of a delimiter
+at (s, idx)     return the 'character' at the index.
+
+Text handling
+indent (s, n[, ch=' '])     indent a multiline string.
+dedent (s)  dedent a multiline string by removing any initial indent.
+wrap (s[, width=70[, breaklong=false] ])     format a paragraph into lines so that they fit into a line width.
+fill (s[, width=70[, breaklong=false] ])     format a paragraph so that it fits into a line width.
+
+Miscellaneous
+lines (s)   return an iterator over all lines in a string
+title (s)   initial word letters uppercase ('title case').
+shorten (s, w, tail)    Return a shortened version of a string.
+quote_string (s)    Quote the given string and preserve any control or escape characters, such that reloading the string in Lua returns the same result.
+format_operator ()  Python-style formatting operator.
+import ()   import the stringx functions into the global string (meta)table
+
+]]
 
 local M = {}
 

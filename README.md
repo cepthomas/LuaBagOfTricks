@@ -7,8 +7,8 @@ The `*.lua` are pure Lua modules so *should* work anywhere.
 
 This is intended to be used in client projects by one of several means:
   - git submodule
-  - symlink: `mklink /d some_path\Nebulua\LBOT other_path\LuaBagOfTricks`
-  - copy of pertinent parts
+  - symlink: `mklink /d host_app\LBOT install_path\LuaBagOfTricks`
+  - or just copy parts of interest
 
 Tests and examples are found in a separate repo [LbotImpl](https://github.com/cepthomas/LbotImpl.git).
 

@@ -42,7 +42,7 @@ static int _handler(lua_State* l)
 
 
 //--------------------------------------------------------//
-int luaex_docall(lua_State* l, int narg, int nres)
+int luaex_docall(lua_State* l, int narg, int nres) //TODOL only one actually used
 {
     int lstat = LUA_OK;
     int fbase = lua_gettop(l) - narg;  // function index
