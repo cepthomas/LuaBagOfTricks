@@ -13,6 +13,7 @@ Extended operations on Lua tables.
 See the Guide
 
 Dependencies: pl.utils, pl.types
+
 Functions
 size (t)    total number of elements in this table.
 index_by (tbl, idx)     return a list of all values in a table indexed by another list.
@@ -29,6 +30,7 @@ new (n, val)    create a new array of specified size with initial value.
 clear (t, istart)   clear out the contents of a table.
 removevalues (t, i1, i2)    remove a range of values from a table.
 readonly (t)    modifies a table to be read only.
+
 Copying
 update (t1, t2)     copy a table into another, in-place.
 copy (t)    make a shallow copy of a table
@@ -36,15 +38,18 @@ deepcopy (t)    make a deep copy of a table, recursively copying all the keys an
 icopy (dest, src[, idest=1[, isrc=1[, nsrc=#src] ] ])     copy an array into another one, clearing dest after idest+nsrc, if necessary.
 move (dest, src[, idest=1[, isrc=1[, nsrc=#src] ] ])  copy an array into another one.
 insertvalues (t[, position], values)    insert values into a table.
+
 Comparing
 deepcompare (t1, t2[, ignore_mt[, eps] ])    compare two values.
 compare (t1, t2, cmp)   compare two arrays using a predicate.
 compare_no_order (t1, t2, cmp)  compare two list-like tables using an optional predicate, without regard for element order.
+
 Finding
 find (t, val, idx)  return the index of a value in a list.
 rfind (t, val, idx)     return the index of a value in a list, searching from the end.
 find_if (t, cmp, arg)   return the index (or key) of a value in a table using a comparison function.
 search (t, value[, exclude])    find a value in a table by recursive search.
+
 MappingAndFiltering
 map (fun, t, ...)   apply a function to all values of a table.
 imap (fun, t, ...)  apply a function to all values of a list.
@@ -54,15 +59,18 @@ imap2 (fun, t1, t2, ...)    apply a function to values from two arrays.
 mapn (fun, ..., fun)    Apply a function to a number of tables.
 pairmap (fun, t, ...)   call the function with the key and value pairs from a table.
 filter (t, pred, arg)   filter an array's values using a predicate function
+
 Iterating
 foreach (t, fun, ...)   apply a function to all elements of a table.
 foreachi (t, fun, ...)  apply a function to all elements of a list-like table in order.
 sort (t, f)     return an iterator to a table sorted by its keys
 sortv (t, f)    return an iterator to a table sorted by its values
+
 Extraction
 keys (t)    return all the keys of a table in arbitrary order.
 values (t)  return all the values of the table in arbitrary order
 sub (t, first, last)    Extract a range from a table, like 'string.sub'.
+
 Merging
 merge (t1, t2, dup)     combine two tables, either as union or intersection.
 difference (s1, s2, symm)   a new table which is the difference of two tables.
@@ -79,16 +87,16 @@ zip (...)   return a table where each element is a table of the ith values of an
 -- set
 
 
-for i = 0, 9 do table.insert(elist, string.format("%.2f", func(i)))  end
-print(sx.strjoin(', ', elist))
+-- for i = 0, 9 do table.insert(elist, string.format("%.2f", func(i)))  end
+-- print(sx.strjoin(', ', elist))
 
-for i, v in ipairs(rep) do
-    _output_text(v)
-end
+-- for i, v in ipairs(rep) do
+--     _output_text(v)
+-- end
 
-for k, v in pairs(rep) do
-    _output_text(k, v)
-end
+-- for k, v in pairs(rep) do
+--     _output_text(k, v)
+-- end
 
 
 
@@ -96,6 +104,7 @@ end
 ------------------------- Tables --------------------------------------------
 -----------------------------------------------------------------------------
 
+local M = {}
 
 -- For table dumping.
 local _dump_level = 0
@@ -232,3 +241,7 @@ function M.dump_list(lst)
     end
     return sx.strjoin(',', res)
 end
+
+-----------------------------------------------------------------------------
+-- Return the module.
+return M

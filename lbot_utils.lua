@@ -18,7 +18,7 @@ local M = {}
 --         return nil, msg
 --     end
 -- end
--- -- TODOL this put in _G
+-- -- this put in _G
 -- raise = _raise
 
 
@@ -70,7 +70,7 @@ function M.read_all(fn)
         f:close()
         return s
     else
-        error('TODOL', 2)
+        error('read file failed: '..fn, 2)
     end
 end
 
@@ -81,7 +81,7 @@ function M.write_all(fn, s)
         local s = f:write(s)
         f:close()
     else
-        error('TODOL', 2)
+        error('write file failed: '..fn, 2)
     end
 end
 
@@ -92,7 +92,7 @@ function M.append(fn, s)
         local s = f:write(s)
         f:close()
     else
-        error('TODOL', 2)
+        error('append file failed: '..fn, 2)
     end
 
 end
