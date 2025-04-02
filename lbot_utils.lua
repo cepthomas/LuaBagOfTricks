@@ -6,18 +6,104 @@ local sx = require("stringex")
 local M = {}
 
 
+--------- new ------------
+-- local _err_raise = true
+-- -- Similar to Penlight function.
+-- -- Use in conjunction with return since it might return nil + error.
+-- -- @param msg the string.
+-- local function _raise (msg)
+--     if _err_raise then
+--         error(msg, 2)
+--     else
+--         return nil, msg
+--     end
+-- end
+-- -- TODOL this put in _G
+-- raise = _raise
+
+
+-- error (message [, level])
+-- Raises an error (see §2.3) with message as the error object. This function never returns.
+-- Usually, error adds some information about the error position at the beginning of the message, if the message is a string.
+-- The level argument specifies how to get the error position. With level 1 (the default), the error position is where the
+-- error function was called. Level 2 points the error to where the function that called error was called; and so on.
+-- Passing a level 0 avoids the addition of error position information to the message.
+
+-- warn (msg1, ···)
+-- Emits a warning with a message composed by the concatenation of all its arguments (which should be strings).
+-- By convention, a one-piece message starting with '@' is intended to be a control message, which is a message to the warning
+-- system itself. In particular, the standard warning function in Lua recognizes the control messages "@off", to stop the emission
+-- of warnings, and "@on", to (re)start the emission; it ignores unknown control messages. 
+
+-- assert (v [, message])
+-- Raises an error if the value of its argument v is false (i.e., nil or false); otherwise, returns all its arguments. In case of error,
+-- message is the error object; when absent, it defaults to "assertion failed!"
+
+
+-- If you are afraid of name clashes when opening a package, you can check the name before the assignment:
+function M.open_package (ns)
+    for n, v in pairs(ns) do
+        if _G[n] ~= nil then
+            raise("name clash: " .. n .. " is already defined")
+        end
+        _G[n] = v
+    end
+end
+
+
+-- Use arbitrary lua files. require needs path fixup.
+function M.fix_lua_path(s)
+    local _, _, dir = ut.get_caller_info(3)
+    if not sx.contains(package.path, dir) then -- already there?
+        package.path = dir..s..';'..package.path
+        -- package.path = './lua/?.lua;./test/lua/?.lua;'..package.path
+    end
+end
+
+
+function M.read_all(fn)
+    f = io.open(fn, 'r')
+    -- f = io.open('docs/music_defs.md', 'w')
+
+    if f ~= nil then
+        local s = f:read()
+        f:close()
+        return s
+    else
+        error('TODOL', 2)
+    end
+end
+
+function M.write_all(fn, s)
+    f = io.open(fn, 'w')
+
+    if f ~= nil then
+        local s = f:write(s)
+        f:close()
+    else
+        error('TODOL', 2)
+    end
+end
+
+function M.append(fn, s)
+    f = io.open(fn, 'w+')
+
+    if f ~= nil then
+        local s = f:write(s)
+        f:close()
+    else
+        error('TODOL', 2)
+    end
+
+end
+
+
+
+
 -----------------------------------------------------------------------------
 ------------------------------ Fields ---------------------------------------
 -----------------------------------------------------------------------------
 
--- For table dumping.
-local _dump_level = 0
-
--- Text to colorize.
-local _colorize_map = {}
-
--- ANSI colors.
-local _colors = { ['red']=91, ['green']=92, ['blue']=94, ['yellow']=33, ['gray']=95, ['bred']=41 }
 
 
 -----------------------------------------------------------------------------
@@ -90,7 +176,7 @@ function M.get_caller_info(level)
 end
 
 -----------------------------------------------------------------------------
---- Emulation of C ternary operator.
+--- Emulation of C ternary operator. TODOL improve?
 -- @param cond to test
 -- @param tval if cond is true
 -- @param fval if cond is false
@@ -160,6 +246,12 @@ function M.colorize_text(text)
     end
     return res
 end
+
+-- Text to colorize.
+local _colorize_map = {}
+
+-- ANSI colors.
+local _colors = { ['red']=91, ['green']=92, ['blue']=94, ['yellow']=33, ['gray']=95, ['bred']=41 }
 
 function M.set_colorize(map)
     _colorize_map = map

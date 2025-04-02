@@ -1,100 +1,46 @@
 
--- Dev area.
+--[[
+! organize modules/globals: https://www.lua.org/pil/15.4.html
 
--- _G - basic:
---   _G, _VERSION, assert, collectgarbage, dofile, error, getmetatable, ipairs, load, loadfile, next, pairs, pcall, print,
---   rawequal, rawget, rawlen, rawset, require, select, setmetatable, tonumber, tostring, type, warn, xpcall
+add init.lua file? see http://www.playwithlua.com/?p=64
 
 
--- TODOL want/like:
--- - using/with
--- - improved M.tern(cond, tval, fval)
--- - match see lab.lua
-
---------- TODOL error model?
-local function ll_error(msg)
-
--- error (message [, level])
--- Raises an error (see §2.3) with message as the error object. This function never returns.
--- Usually, error adds some information about the error position at the beginning of the message, if the message is a string.
--- The level argument specifies how to get the error position. With level 1 (the default), the error position is where the
--- error function was called. Level 2 points the error to where the function that called error was called; and so on.
--- Passing a level 0 avoids the addition of error position information to the message.
-
--- warn (msg1, ···)
--- Emits a warning with a message composed by the concatenation of all its arguments (which should be strings).
--- By convention, a one-piece message starting with '@' is intended to be a control message, which is a message to the warning
--- system itself. In particular, the standard warning function in Lua recognizes the control messages "@off", to stop the emission
--- of warnings, and "@on", to (re)start the emission; it ignores unknown control messages. 
-
--- assert (v [, message])
--- Raises an error if the value of its argument v is false (i.e., nil or false); otherwise, returns all its arguments. In case of error,
--- message is the error object; when absent, it defaults to "assertion failed!"
-
-end
+_G stuff to add?
+---------------------
+- basic: _G, _VERSION, assert, collectgarbage, dofile, error, getmetatable, ipairs, load, loadfile, next, pairs, pcall, print,
+    rawequal, rawget, rawlen, rawset, require, select, setmetatable, tonumber, tostring, type, warn, xpcall
+- modules: coroutine, debug, io, math, os, package, string, table, utf8, 
+- metamethods: __add, __band, __bnot, __bor, __bxor, __call, __close, __concat, __div, __eq, __gc, __idiv, __index, 
+    __le, __len, __lt, __metatable, __mod, __mode, __mul, __name, __newindex, __pairs, __pow, __shl, __shr, __sub,
+    __tostring, __unm
 
 
 
-local ut  = require('lbot_utils')
-local sx  = require("stringex")
+? args can be
+  - utils.on_error 'quit'
+  - utils.on_error('quit')
+  - utils.on_error'quit'  ??
 
--- https://lunarmodules.github.io/Penlight/
 
+-- pl import/require
+require 'pl' -- calls Penlight\lua\pl\init.lua
+utils.import 'pl.func' -- take a table/module and 'inject' it into the local namespace.
+local ops = require 'pl.operator' -- normal import
+local List = require 'pl.List' -- class
+local append, concat = table.insert, table.concat -- aliases
+local optable = ops.optable -- alias
 
-------------------------- misc ----------------------------
-
--- https://lunarmodules.github.io/Penlight/libraries/pl.utils.html
--- Dependencies: pl.utils, pl.types
-
--- Use arbitrary lua files. require needs path fixup.
-function ll_fix_lua_path(s)
-    local _, _, dir = ut.get_caller_info(3)
-    if not sx.contains(package.path, dir) then -- already there?
-        package.path = dir..s..';'..package.path
-        -- package.path = './lua/?.lua;./test/lua/?.lua;'..package.path
-    end
-end
-
--- function ll_exist(fn)
---     -- if not - error
--- end
-
-------------------------- files ----------------------------
-
-function ll_read_all(fn)
-    f = io.open(fn, 'r')
-    -- f = io.open('docs/music_defs.md', 'w')
-
-    if f ~= nil then
-        local s = f:read()
-        f:close()
-        return s
-    else
-        error('bla', 2)
-    end
-end
-
-function ll_write_all(fn, s)
-    f = io.open(fn, 'w')
-
-    if f ~= nil then
-        local s = f:write(s)
-        f:close()
-    else
-        error('bla', 2)
-    end
-end
-
-function ll_append(fn, s)
-
-end
+]]
 
 
 
+-----------  ----------------------
 
------------ TODO1 std cli interpreter ----------------------
+--[[
 
---[[ TODOL cmd things like:
+TODOL scripting - For things like C:\Dev\Apps\Nebulua\builder.lua
+
+>>> cmd things like:
 echo off
 cls
 set "ODIR=%cd%"
@@ -108,65 +54,33 @@ call "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\Tools\VsDe
 :: Build it.
 msbuild CppCli.sln /p:Configuration=Debug /t:Build -v:n
 pause
+
+
+
+>>> py things like:
+with open(log_fn, "w") as f:
+    print('!!!! Totally fake !!!!', file=f)
+
+cmd = sys.argv[1] if len(sys.argv) >= 2 else None
+
+match cmd:
+    case 'commit_all':
+        for dirpath, dirnames, filenames in os.walk(repo_path):
+            if '.git' in dirnames:
+                commit_one(dirpath, arg1)
+    case _:
+        log('error: Bad command line', True)
+        usage()
+        code = 1
 ]]
 
---[[ TODOL py things like:
-    with open(log_fn, "w") as f:
-        print('!!!! Totally fake !!!!', file=f)
 
-    cmd = sys.argv[1] if len(sys.argv) >= 2 else None
 
-    match cmd:
-        case 'commit_all':
-            for dirpath, dirnames, filenames in os.walk(repo_path):
-                if '.git' in dirnames:
-                    commit_one(dirpath, arg1)
-        case _:
-            log('error: Bad command line', True)
-            usage()
-            code = 1
-]]
+--[[ 
 
--- lua:  (C:\Dev\Apps\Nebulua\builder.lua)
-
-package.path = './lua/?.lua;./test/lua/?.lua;'..package.path
-local current_dir = io.popen("cd"):read()
-local opt = arg[1]
-local cmd = sx.strjoin(' ', { bld_exe, vrb, 'test/NebuluaTest.sln' } )
-local res = ut.execute_and_capture(cmd)
-_output_text(res)
-
--- ????
--- a dictionary
-local colors = { ['Build: ']='green', ['! ']='red', ['): error ']='red', ['): warning ']='yellow' }
-ut.set_colorize(colors)
-local function _output_text(text)
-    local ct = ut.colorize_text(text)
-    for _, v in ipairs(ct) do print(v) end
-end
-
--- a list
-local exp_neb = {'luainterop', 'setup', 'step', 'receive_midi_note', 'receive_midi_controller' }
-local extra, missing = ut.check_globals(exp_neb)
-res = ut.dump_list(extra)
-
--- empty list
-local elist = {}
-table.insert(elist, name)
-for i = 0, 9 do table.insert(elist, string.format("%.2f", func(i)))  end
-print(sx.strjoin(', ', elist))
-
-for i, v in ipairs(rep) do
-    _output_text(v)
-end
-
-for k, v in pairs(rep) do
-    _output_text(k, v)
-end
-
------------ TODOL switch/pattern matching ----------------------
--- https://stackoverflow.com/questions/37447704
--- http://lua-users.org/wiki/SwitchStatement
+- TODOL switch/pattern matching ----------------------
+- https://stackoverflow.com/questions/37447704
+- http://lua-users.org/wiki/SwitchStatement
 
 function switch(what)
     if what == 'build_app' then
@@ -196,7 +110,7 @@ function pattern(bar, beat, sub)
 end
 
 
---[[ C# Patterns and Switch
+>>> C# Patterns and Switch
 
 string ret = which switch
 {
