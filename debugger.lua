@@ -22,15 +22,16 @@
 
     ***1 indicates -> Removed some support for older lua versions.
     
-    TODOF from original: Print short function arguments as part of stack location.
-    TODOF from original: Properly handle being reentrant due to coroutines.
+    TODOF from original:
+      - Print short function arguments as part of stack location.
+      - Properly handle being reentrant due to coroutines.
 ]]
 
 local dbg
 
 
 
--- Use ANSI color codes in the prompt by default. TODOF harmonize with sbot pdb: commands, colors, etc.
+-- Use ANSI color codes in the prompt by default. TODOF harmonize with sbot pdb: commands, colors, etc?
 local COLOR_GRAY = ""
 local COLOR_RED = ""
 local COLOR_BLUE = ""
