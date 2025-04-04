@@ -1,17 +1,13 @@
 ------------------------- table ----------------------------
 
---[[
-also: http://www.playwithlua.com/?p=64
 
+
+-- table builtin: .concat, .insert, .move, .pack, .remove, .sort, .unpack
+
+
+--[[
 
 https://lunarmodules.github.io/Penlight/libraries/pl.tablex.html
-
-Module pl.tablex
-
-Extended operations on Lua tables.
-
-See the Guide
-
 Dependencies: pl.utils, pl.types
 
 Functions
@@ -100,9 +96,7 @@ zip (...)   return a table where each element is a table of the ith values of an
 
 
 
------------------------------------------------------------------------------
-------------------------- Tables --------------------------------------------
------------------------------------------------------------------------------
+local sx = require("stringex")
 
 local M = {}
 

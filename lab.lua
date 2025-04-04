@@ -2,19 +2,14 @@
 --[[
 ! organize modules/globals: https://www.lua.org/pil/15.4.html
 
-add init.lua file? see http://www.playwithlua.com/?p=64
 
-
-_G stuff to add?
----------------------
+globals:
 - basic: _G, _VERSION, assert, collectgarbage, dofile, error, getmetatable, ipairs, load, loadfile, next, pairs, pcall, print,
     rawequal, rawget, rawlen, rawset, require, select, setmetatable, tonumber, tostring, type, warn, xpcall
 - modules: coroutine, debug, io, math, os, package, string, table, utf8, 
 - metamethods: __add, __band, __bnot, __bor, __bxor, __call, __close, __concat, __div, __eq, __gc, __idiv, __index, 
     __le, __len, __lt, __metatable, __mod, __mode, __mul, __name, __newindex, __pairs, __pow, __shl, __shr, __sub,
     __tostring, __unm
-
-
 
 ? args can be
   - utils.on_error 'quit'
@@ -29,52 +24,13 @@ local ops = require 'pl.operator' -- normal import
 local List = require 'pl.List' -- class
 local append, concat = table.insert, table.concat -- aliases
 local optable = ops.optable -- alias
+?? add init.lua file? see http://www.playwithlua.com/?p=64
 
 ]]
 
 
 
 -----------  ----------------------
-
---[[
-
-TODOL scripting - For things like C:\Dev\Apps\Nebulua\builder.lua
-
->>> cmd things like:
-echo off
-cls
-set "ODIR=%cd%"
-pushd ..\LBOT
-set LUA_PATH="%ODIR%\?.lua";?.lua;;
-lua gen_interop.lua -cppcli "%ODIR%\interop_spec.lua" "%ODIR%\Interop"
-> exe fn arg1 arg2 ...
-popd
-call "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\Tools\VsDevCmd.bat"
-> call fn
-:: Build it.
-msbuild CppCli.sln /p:Configuration=Debug /t:Build -v:n
-pause
-
-
-
->>> py things like:
-with open(log_fn, "w") as f:
-    print('!!!! Totally fake !!!!', file=f)
-
-cmd = sys.argv[1] if len(sys.argv) >= 2 else None
-
-match cmd:
-    case 'commit_all':
-        for dirpath, dirnames, filenames in os.walk(repo_path):
-            if '.git' in dirnames:
-                commit_one(dirpath, arg1)
-    case _:
-        log('error: Bad command line', True)
-        usage()
-        code = 1
-]]
-
-
 
 --[[ 
 

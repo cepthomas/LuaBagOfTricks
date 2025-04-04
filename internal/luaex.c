@@ -42,15 +42,15 @@ static int _handler(lua_State* l)
 
 
 //--------------------------------------------------------//
-int luaex_docall(lua_State* l, int narg, int nres) //TODOL only one actually used
+int luaex_docall(lua_State* l, int narg, int nres)
 {
     int lstat = LUA_OK;
     int fbase = lua_gettop(l) - narg;  // function index
     lua_pushcfunction(l, _handler);  // push message handler
     // put it under function and args  Insert(fbase);
     lua_rotate(l, fbase, 1);
-    lstat = lua_pcall(l, narg, nres, fbase);
-    // remove message handler from the stack NativeMethods.  Remove(fbase);
+    lstat = lua_pcall(l, narg, nres, fbase); // nres always 1
+    // remove message handler from the stack NativeMethods. Remove(fbase);
     lua_rotate(l, fbase, -1);
     lua_pop(l, 1);
     return lstat;
