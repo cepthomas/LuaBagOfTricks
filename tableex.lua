@@ -1,11 +1,8 @@
 ------------------------- table ----------------------------
 
-
-
--- table builtin: .concat, .insert, .move, .pack, .remove, .sort, .unpack
-
-
 --[[
+
+table builtin: .concat, .insert, .move, .pack, .remove, .sort, .unpack
 
 https://lunarmodules.github.io/Penlight/libraries/pl.tablex.html
 Dependencies: pl.utils, pl.types
@@ -74,25 +71,6 @@ zip (...)   return a table where each element is a table of the ith values of an
 
 ]]
 
--- ll_table.insert(xxx)
--- delete()
--- reverse
--- sort(how)
--- print
--- get(index or key)
--- set
-
-
--- for i = 0, 9 do table.insert(elist, string.format("%.2f", func(i)))  end
--- print(sx.strjoin(', ', elist))
-
--- for i, v in ipairs(rep) do
---     _output_text(v)
--- end
-
--- for k, v in pairs(rep) do
---     _output_text(k, v)
--- end
 
 
 
@@ -235,6 +213,36 @@ function M.dump_list(lst)
     end
     return sx.strjoin(',', res)
 end
+
+
+
+
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+---------------------------- added ------------------------------------------
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+
+--- return the index of a value in a list.
+-- Like string.find, there is an optional index to start searching,
+-- which can be negative.
+-- @within Finding
+-- @array t A list-like table
+-- @param val A value
+-- @int idx index to start; -1 means last element,etc (default 1)
+-- @return index of value or nil if not found
+-- @usage find({10,20,30},20) == 2
+-- @usage find({'a','b','a','c'},'a',2) == 3
+function M.find(t,val,idx)
+    -- assert_arg_indexable(1,t)
+    idx = idx or 1
+    if idx < 0 then idx = #t + idx + 1 end
+    for i = idx,#t do
+        if t[i] == val then return i end
+    end
+    return nil
+end
+
 
 -----------------------------------------------------------------------------
 -- Return the module.
