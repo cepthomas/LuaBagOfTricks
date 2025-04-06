@@ -214,36 +214,6 @@ function M.dump_list(lst)
     return sx.strjoin(',', res)
 end
 
-
-
-
------------------------------------------------------------------------------
------------------------------------------------------------------------------
----------------------------- added ------------------------------------------
------------------------------------------------------------------------------
------------------------------------------------------------------------------
-
---- return the index of a value in a list.
--- Like string.find, there is an optional index to start searching,
--- which can be negative.
--- @within Finding
--- @array t A list-like table
--- @param val A value
--- @int idx index to start; -1 means last element,etc (default 1)
--- @return index of value or nil if not found
--- @usage find({10,20,30},20) == 2
--- @usage find({'a','b','a','c'},'a',2) == 3
-function M.find(t,val,idx)
-    -- assert_arg_indexable(1,t)
-    idx = idx or 1
-    if idx < 0 then idx = #t + idx + 1 end
-    for i = idx,#t do
-        if t[i] == val then return i end
-    end
-    return nil
-end
-
-
 -----------------------------------------------------------------------------
 -- Return the module.
 return M
