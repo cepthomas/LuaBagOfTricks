@@ -11,7 +11,7 @@ local M = {}
 -----------------------------------------------------------------------------
 
 -----------------------------------------------------------------------------
---------- TODOL error handling ------------
+--------- TODOE error handling ------------
 -- local _err_raise = true
 -- -- Similar to Penlight function.
 -- -- Use in conjunction with return since it might return nil + error.
@@ -35,7 +35,7 @@ M.raise = true
 
 
 -----------------------------------------------------------------------------
--- TODOL If you are afraid of name clashes when opening a package, you can check the name before the assignment.
+-- TODOE If you are afraid of name clashes when opening a package, you can check the name before the assignment.
 function M.check_open_package (name) -->> check_global_name?
     for n, v in pairs(name) do
         if _G[n] ~= nil then
@@ -46,7 +46,7 @@ function M.check_open_package (name) -->> check_global_name?
 end
 
 -----------------------------------------------------------------------------
---- TODOL Checks global space for intruders aka you-forgot-local-again.
+--- TODOE Checks global space for intruders aka you-forgot-local-again.
 -- @param app_exp list of app specific globals
 -- @return list of extraneous globals, list of missing expected
 function M.check_globals(app_exp)
@@ -117,7 +117,7 @@ end
 -- @param use_dbgr Use debugger.
 function M.config_debug(use_dbgr)
     local have_dbgr = false
-    local orig_error = error -- save original error function
+    local orig_error = error -- save original error function TODOE
     local use_term = true -- Use terminal for debugger.
 
     if use_dbgr then
@@ -273,7 +273,7 @@ end
 -- end
 
 -- -----------------------------------------------------------------------------
--- --- Is an object 'array-like'? TODOL need version for pure indexable
+-- --- Is an object 'array-like'?
 -- -- @param obj what to check
 -- -- @return T/F
 -- function M.is_indexable(obj)

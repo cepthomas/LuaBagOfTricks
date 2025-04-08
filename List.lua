@@ -1,7 +1,7 @@
 --[[
 Borrowed simple subset from penlight. Names are modelled after C# instead of python.
 
-TODOL maybe some of these:
+TODOF maybe some of these:
 int LastIndexOf(T item, int index)
 void InsertRange(int index, IEnumerable<T> collection)
 void RemoveRange(int index, int count)
@@ -20,6 +20,14 @@ ut = require 'lbot_utils'
 tx = require 'tableex'
 
 
+-- Meta stuff. TODOL play with. https://www.lua.org/manual/5.4/manual.html#2.4
+mt = {
+        __tostring = function(self) return 'List:['..self.name..'] type:'..self.value_type..' len:'..tostring(self:count()) end,
+        -- __index = function(self, ...) end,
+        -- __newindex = function(self, ...) end,
+        -- __call = function(self, ...) end
+     }
+
 -----------------------------------------------------------------------------
 --- Create a typed list.
 -- @param init a not-empty table, or a type name: "number", "string", "boolean", "table", "function".
@@ -37,46 +45,30 @@ function List(init, name)
         -- Check for empty - can't determine type.
         if #init == 0 then error('Can\'t create a List from empty table') end
 
-        -- Check for pure index type - keys are sequential ints.
-
-        -- Check that values are all the same type.
-
+        -- Check for pure array type.
+        local ok, val_type = ut.is_array(init)
+        if not ok == 0 then error('Not an array') end
+        if val_type == nil == 0 then error('Not homogenous values') end
         _o = init
         _o.value_type = type(_o[1])
     else
-        print('...', stype)
-        error('TODOL')
+        error('Invalid value type: '..stype)
     end
 
+    -- Good to go.
     _o.name = name or 'no-name'
-
-    -- Meta stuff. TODOL play with. https://www.lua.org/manual/5.4/manual.html#2.4
-    local m = getmetatable(_o)
-    mt = {
-            __tostring = function(self) return 'List:['..self.name..'] type:'..self.value_type..' len:'..tostring(self:count()) end,
-            -- __index = function(self, ...) end,
-            -- __newindex = function(self, ...) end,
-            -- __call = function(self, ...) end
-         }
     setmetatable(_o, mt)
 
 
-    --- Diagnostic.
-    -- @return a list of values
-    function _o:dump()
-        local res = {}
-        for _, v in ipairs(tbl) do
-            table.insert(res, v)
-        end
-        return res
-    end
-
-
-
-
-
-
-
+    -- --- Diagnostic.
+    -- -- @return a list of values
+    -- function _o:dump()
+    --     local res = {}
+    --     for _, v in ipairs(tbl) do
+    --         table.insert(res, v)
+    --     end
+    --     return res
+    -- end
 
     --- How many.
     -- @return the count
@@ -101,7 +93,7 @@ function List(init, name)
             last = #_o
         else
             first = i
-            last = first + count
+            last = first + count - 1
         end
 
         for ind = first, last do

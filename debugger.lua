@@ -25,13 +25,14 @@
     TODOF from original:
       - Print short function arguments as part of stack location.
       - Properly handle being reentrant due to coroutines.
+      - You can't add breakpoints to a running program or remove them - must use dbg().
 ]]
 
 local dbg
 
 
 
--- Use ANSI color codes in the prompt by default. TODOF harmonize with sbot pdb: commands, colors, etc?
+-- Use ANSI color codes in the prompt by default.
 local COLOR_GRAY = ""
 local COLOR_RED = ""
 local COLOR_BLUE = ""
