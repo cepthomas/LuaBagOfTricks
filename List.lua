@@ -5,15 +5,14 @@ TODOL maybe some of these:
 int LastIndexOf(T item, int index)
 void InsertRange(int index, IEnumerable<T> collection)
 void RemoveRange(int index, int count)
-List:minmax ()  Return the minimum and the maximum value of the list.
-List:splice (idx, list)     Insert a sublist into a list equivalent to 's[idx:idx] = list' in Python
-List:map (fun, ...)     Apply a function to all elements.
-List:transform (fun, ...)   Apply a function to all elements, in-place.
-List:reduce (fun)   'reduce' a list using a binary function.
-List:partition (fun, ...)   Partition a list using a classifier function.
-List:__concat (L)   Concatenation operator.
-List:__eq (L)   Equality operator ==.
-List:__tostring ()  How our list should be rendered as a string.
+minmax ()  Return the minimum and the maximum value of the list.
+splice (idx, list)     Insert a sublist into a list equivalent to 's[idx:idx] = list' in Python
+map (fun, ...)     Apply a function to all elements.
+transform (fun, ...)   Apply a function to all elements, in-place.
+reduce (fun)   'reduce' a list using a binary function.
+partition (fun, ...)   Partition a list using a classifier function.
+__concat (L)   Concatenation operator.
+__eq (L)   Equality operator ==.
 ]]
 
 
@@ -36,7 +35,7 @@ function List(init, name)
         _o.value_type = stype
     elseif stype == 'table' then
         -- Check for empty - can't determine type.
-        if #init = 0 then error ('Can\'t create a List from empty table') end
+        if #init == 0 then error('Can\'t create a List from empty table') end
 
         -- Check for pure index type - keys are sequential ints.
 
@@ -51,34 +50,15 @@ function List(init, name)
 
     _o.name = name or 'no-name'
 
-    -- Meta stuff.
+    -- Meta stuff. TODOL play with. https://www.lua.org/manual/5.4/manual.html#2.4
     local m = getmetatable(_o)
-    mt = { __tostring = function(self) return 'List:'..self.name..' type:'..self.value_type..' len:'..tostring(self:count()) end }
-    -- __call = function(self) end
+    mt = {
+            __tostring = function(self) return 'List:['..self.name..'] type:'..self.value_type..' len:'..tostring(self:count()) end,
+            -- __index = function(self, ...) end,
+            -- __newindex = function(self, ...) end,
+            -- __call = function(self, ...) end
+         }
     setmetatable(_o, mt)
-
---[[
-__index: The indexing access operation table[key]. This event happens when table is not a table or when key is not present in table. 
-The metavalue is looked up in the metatable of table.
-The metavalue for this event can be either a function, a table, or any value with an __index metavalue. 
-If it is a function, it is called with table and key as arguments, and the result of the call (adjusted to one value) 
-is the result of the operation. Otherwise, the final result is the result of indexing this metavalue with key. This indexing 
-is regular, not raw, and therefore can trigger another __index metavalue.
-
-__newindex: The indexing assignment table[key] = value. Like the index event, this event happens when table is not a table or when 
-key is not present in table. The metavalue is looked up in the metatable of table.
-Like with indexing, the metavalue for this event can be either a function, a table, or any value with an __newindex metavalue. 
-If it is a function, it is called with table, key, and value as arguments. Otherwise, Lua repeats the indexing assignment over 
-this metavalue with the same key and value. This assignment is regular, not raw, and therefore can trigger another __newindex metavalue.
-Whenever a __newindex metavalue is invoked, Lua does not perform the primitive assignment. If needed, the metamethod itself can call 
-rawset to do the assignment.
-
-__call: The call operation func(args). This event happens when Lua tries to call a non-function value (that is, func is not a function). 
-The metamethod is looked up in func. If present, the metamethod is called with func as its first argument, followed by the arguments 
-of the original call (args). All results of the call are the results of the operation. This is the only metamethod that allows multiple results.
-]]
-
-
 
 
     --- Diagnostic.

@@ -168,23 +168,59 @@ end
 ------------------------- Types TODOL all ---------------------------------------------
 -----------------------------------------------------------------------------
 
----Checks if a table is used as an array. That is: the keys start with one and are sequential numbers
+--- Checks if a table is a pure array.
+-- @param t the table
+-- @return T/F, value data type if homogenous
+function M.is_array(t)
+    local val_type = nil
+    local ok = t ~= nil and type(t) == 'table'
+    local num = 0
+
+    if ok then
+        -- Check if all keys are indexes.
+        for k, v in pairs(t) do
+            if type(k) ~= 'number' then ok = false end
+            num = num + 1
+        end
+    end
+
+    if ok then
+        -- Check sequential from 1.
+        for i = 1, num do
+            if t[i] == nil then ok = false end
+
+            if i == 1 then val_type = type(t[i])
+            elseif type(t[i]) ~= val_type then val_type = nil
+            end
+        end
+    end
+
+    return ok, val_type
+end
+
+
+
+
+--[[-Checks if a table is used as an array. That is: the keys start with one and are sequential numbers
 -- @param t table
 -- @return nil,error string if t is not a table
 -- @return true/false if t is an array/isn't an array
 -- NOTE: it returns true for an empty table
 function M.is_array(t)
     if type(t) ~= "table" then return nil, "Argument is not a table! It is: "..type(t) end
+
     --check if all the table keys are numerical and count their number
     local count = 0
     for k, v in pairs(t) do
         if type(k) ~= "number" then return false else count = count + 1 end
     end
+
     --all keys are numerical. now let's see if they are sequential and start with 1
-    for i = 1,count do
+    for i = 1, count do
         --Hint: the VALUE might be "nil", in that case "not t[i]" isn't enough, that's why we check the type
         if not t[i] and type(t[i]) ~= "nil" then return false end
     end
+
     return true
 end
 
@@ -217,15 +253,16 @@ function is_array(table)
   -- if no elements it can be array and not at same time
   return true
 end
+]]
 
 -----------------------------------------------------------------------------
--- --- Is this number an integer?
--- -- @param x a number
--- -- @raise error if x is not a number
--- -- @return boolean
--- function M.is_integer(x)
---     return math.type(v) == "integer"
--- end
+--- Is this number an integer?
+-- @param x a number
+-- @raise error if x is not a number
+-- @return boolean
+function M.is_integer(x)
+    return math.type(v) == "integer"
+end
 
 -- -----------------------------------------------------------------------------
 -- --- Is the object either a function or a callable object?.
@@ -315,8 +352,6 @@ end
 --     end
 -- end
 
-
------------------------------------------------------------------------------
 
 -----------------------------------------------------------------------------
 --- Validate a number value.
