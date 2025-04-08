@@ -1,68 +1,120 @@
+--[[
+Borrowed simple subset from penlight. Names are modelled after C# instead of python.
 
--- Borrowed simple subset from penlight. Names are modelled after C# instead of python.
+TODOL maybe some of these:
+int LastIndexOf(T item, int index)
+void InsertRange(int index, IEnumerable<T> collection)
+void RemoveRange(int index, int count)
+List:minmax ()  Return the minimum and the maximum value of the list.
+List:splice (idx, list)     Insert a sublist into a list equivalent to 's[idx:idx] = list' in Python
+List:map (fun, ...)     Apply a function to all elements.
+List:transform (fun, ...)   Apply a function to all elements, in-place.
+List:reduce (fun)   'reduce' a list using a binary function.
+List:partition (fun, ...)   Partition a list using a classifier function.
+List:__concat (L)   Concatenation operator.
+List:__eq (L)   Equality operator ==.
+List:__tostring ()  How our list should be rendered as a string.
+]]
 
 
--- local iter
-local tinsert, tremove, concat, tsort = table.insert, table.remove, table.concat, table.sort
--- local setmetatable, getmetatable, type, tostring, string = setmetatable, getmetatable, type, tostring, string
-
--- local List = {}
 ut = require 'lbot_utils'
 tx = require 'tableex'
 
 
+-----------------------------------------------------------------------------
 --- Create a typed list.
--- @param init a table or type name ("number", "string", "boolean", "table", "function")
+-- @param init a not-empty table, or a type name: "number", "string", "boolean", "table", "function".
 -- @param name optional name
 -- @return a new list
 function List(init, name)
     local _o = {} -- our storage
-    -- _o.value_type = nil -- "number", "string", "boolean", "table", "function", "thread", "userdata".
 
-    print('>>>', name, _o.name)
-
-    -- Test init for
-    local stype = type(init)
-
+    -- Determine flavor.
     local valid_types = { "number", "string", "boolean", "table", "function" }
-
-
+    local stype = type(init)
     if stype == 'string' and _valid_types:contains(stype) then
         _o.value_type = stype
     elseif stype == 'table' then
-        -- TODOL check:
-        --   - more than 0
-        --   - only indexed types - keys are int
-        --   - values arre all the same
+        -- Check for empty - can't determine type.
+        if #init = 0 then error ('Can\'t create a List from empty table') end
+
+        -- Check for pure index type - keys are sequential ints.
+
+        -- Check that values are all the same type.
+
         _o = init
         _o.value_type = type(_o[1])
     else
+        print('...', stype)
         error('TODOL')
     end
 
     _o.name = name or 'no-name'
 
+    -- Meta stuff.
     local m = getmetatable(_o)
-    add __tostring  setmetatable
+    mt = { __tostring = function(self) return 'List:'..self.name..' type:'..self.value_type..' len:'..tostring(self:count()) end }
+    -- __call = function(self) end
+    setmetatable(_o, mt)
+
+--[[
+__index: The indexing access operation table[key]. This event happens when table is not a table or when key is not present in table. 
+The metavalue is looked up in the metatable of table.
+The metavalue for this event can be either a function, a table, or any value with an __index metavalue. 
+If it is a function, it is called with table and key as arguments, and the result of the call (adjusted to one value) 
+is the result of the operation. Otherwise, the final result is the result of indexing this metavalue with key. This indexing 
+is regular, not raw, and therefore can trigger another __index metavalue.
+
+__newindex: The indexing assignment table[key] = value. Like the index event, this event happens when table is not a table or when 
+key is not present in table. The metavalue is looked up in the metatable of table.
+Like with indexing, the metavalue for this event can be either a function, a table, or any value with an __newindex metavalue. 
+If it is a function, it is called with table, key, and value as arguments. Otherwise, Lua repeats the indexing assignment over 
+this metavalue with the same key and value. This assignment is regular, not raw, and therefore can trigger another __newindex metavalue.
+Whenever a __newindex metavalue is invoked, Lua does not perform the primitive assignment. If needed, the metamethod itself can call 
+rawset to do the assignment.
+
+__call: The call operation func(args). This event happens when Lua tries to call a non-function value (that is, func is not a function). 
+The metamethod is looked up in func. If present, the metamethod is called with func as its first argument, followed by the arguments 
+of the original call (args). All results of the call are the results of the operation. This is the only metamethod that allows multiple results.
+]]
+
+
+
+
+    --- Diagnostic.
+    -- @return a list of values
+    function _o:dump()
+        local res = {}
+        for _, v in ipairs(tbl) do
+            table.insert(res, v)
+        end
+        return res
+    end
+
+
+
+
+
+
+
 
     --- How many.
     -- @return the count
     function _o:count()
-        print('>>>', _o.name, _o.value_type)
         return #_o
     end
 
     --- Copy from an existing list.
-    -- @param i index of start element - nil means all aka clone
-    -- @param count how many - nil means end
+    -- @param i index of start element, or nil means all aka clone
+    -- @param count how many, or nil means end
     -- @return the new List
     function _o:get_range(i, count)
-        local ls = {} -- was makelist({}, self)
+        local ls = {}
 
         local first
         local last
         if i == nil then
-            first = 0
+            first = 1
             last = #_o
         elseif count == nil then
             first = i
@@ -73,7 +125,7 @@ function List(init, name)
         end
 
         for ind = first, last do
-            tinsert(ls, _o[ind])
+            table.insert(ls, _o[ind])
         end
 
         return List(ls)
@@ -83,20 +135,19 @@ function List(init, name)
     -- @param v An item/value
     -- @return the list
     function _o:add(v)
-        tinsert(_o, v)
-        return self
+        ut.val_type(v, _o.value_type)
+        table.insert(_o, v)
+        return _o
     end
-
-    -- _o.push = tinsert
 
     --- Extend the list by appending all the items in the given list.
     -- equivalent to 'a[len(a):] = other'.
-    -- @tparam List other Another List
+    -- @tparam other List to append
     -- @return the list
     function _o:add_range(other)
-        ut.assert_arg(1, other, 'table')
-        for i = 1, #other do tinsert(self, other[i]) end
-        return self
+        ut.val_table(other, 0)
+        for i = 1, #other do table.insert(_o, other[i]) end
+        return _o
     end
 
     --- Insert an item at a given position. i is the index of the element before which to insert.
@@ -104,125 +155,111 @@ function List(init, name)
     -- @param x A data item
     -- @return the list
     function _o:insert(i, x)
-        ut.assert_arg(1, i, 'number')
-        tinsert(self, i, x)
-        return self
+        ut.val_integer(i, 1, #_o)
+        table.insert(_o, i, x)
+        return _o
     end
-
-    -- --- Insert an item at the begining of the list.
-    -- -- @param x a data item
-    -- -- @return the list
-    -- function _o:put(x) no
-    --     return self:insert(1, x)
-    -- end
 
     --- Remove an element given its index.
     -- (equivalent of Python's del s[i])
     -- @int i the index
     -- @return the list
-    function _o:remove_at (i)
-        ut.assert_arg(1, i, 'number')
-        tremove(self, i)
-        return self
+    function _o:remove_at(i)
+        ut.val_integer(i, 1, #_o)
+        table.remove(_o, i)
+        return _o
     end
-
-    --- Remove the first item from the list whose value is given.
-    -- (This is called 'remove' in Python; renamed to avoid confusion with table.remove)
-    -- Return nil if there is no such item.
-    -- @param v A data value
+--
+    --- Remove the first value from the list.
+    -- @param v data value
     -- @return the list
     function _o:remove(v)
-        for i = 1, #self do
-            if self[i] == v then tremove(self, i) return self end
+        ut.val_not_nil(v)
+        for i = 1, #_o do
+            if _o[i] == v then table.remove(_o, i) return _o end
         end
-        return self
+        return _o
      end
-
-    -- --- Remove the item at the given position in the list, and return it.
-    -- -- If no index is specified, a:pop() returns the last item in the list.
-    -- -- The item is also removed from the list.
-    -- -- @int[opt] i An index
-    -- -- @return the item
-    -- function _o:pop(i)
-    --     if not i then i = #self end
-    --     ut.assert_arg(1, i, 'number')
-    --     return tremove(self,i)
-    -- end
-
-    -- _o.get = _o.pop
 
     --- Return the index in the list of the first item whose value is given.
     -- @paramtion _o:index
-    -- @param v A data value
-    -- @int[opt=1] i where to start search
-    -- @return the index, or nil if not found.
+    -- @param v data value
+    -- @int i where to start search, nil means beginning
+    -- @return the index, or nil if not found
     function _o:index_of(v, i)
+        ut.val_not_nil(v)
         i = i or 1
-        if i < 0 then i = #t + i + 1 end
-        for ind = i, #t do
-            if t[ind] == val then return ind end
+        if i < 0 then i = #_o + i + 1 end
+        for ind = i, #_o do
+            if _o[ind] == v then return ind end
         end
         return nil
     end
 
-
-    --- Does this list contain the value?
-    -- @param v A data value
-    -- @return true or false
+    --- Does list contain value.
+    -- @param v data value
+    -- @return bool
     function _o:contains(v)
-        return tfind(self, v) and true or false
+        ut.val_not_nil(v)
+        local res = _o:find(v)
+        return res ~= nil
+        -- return _o:find(v) ~= nil or false
+        -- return _o:find(v) ~= nil  --and true or false
     end
 
-    -- --- Return the number of times value appears in the list.
-    -- -- @param v A data value
-    -- -- @return number of times v appears
-    -- function _o:count(v)
-    --     local cnt=0
-    --     for i = 1, #self do
-    --         if self[i] == v then cnt = cnt + 1 end
-    --     end
-    --     return cnt
-    -- end
-
-    --- Sort the items of the list, in place.
-    -- @param[opt='<'] cmp an optional comparison function
+    --- Sort the items of the list in place.
+    -- @param cmp comparison function, or simple ascending if nil
     -- @return the list
     function _o:sort(cmp)
-        if cmp then cmp = function_arg(1, cmp) end
-        tsort(self, cmp)
-        return self
+        ut.val_func(cmp)
+        if not cmp then cmp = function(a, b) return b < a end end
+        table.sort(_o, cmp)
+        return _o
     end
 
     --- Reverse the elements of the list, in place.
     -- @return the list
     function _o:reverse()
-        local t = self
+        local t = _o
         local n = #t
-        for i = 1, n/2 do
+        for i = 1, n / 2 do
             t[i], t[n] = t[n], t[i]
             n = n - 1
         end
-        return self
+        return _o
     end
 
     --- Empty the list.
     -- @return the list
     function _o:clear()
-        for i = 1,#self do tremove(self) end
-        return self
+        for i = 1, #_o do table.remove(_o) end
+        return _o
     end
 
-    -------------- Extended operations ------------------
+    --- Return the index of a value in a list.
+    -- @param v the value
+    -- @param start where to start
+    -- @return index of value, or nil if not found
+    function _o:find(v, start)
+        ut.val_type(v, _o.value_type)
+        -- ut.val_integer(start)
+        local res = nil
+
+        local i = start or 1
+        for idx = i, #_o do
+            if _o[idx] == v then res = idx end
+        end
+        return res
+    end
 
     --- Create a list of all elements which match a function.
     -- @param func a boolean function
-    -- @param[opt] arg optional argument to be passed as second argument of the predicate
-    -- @return a new filtered list.
-    function _o:find_all(func, arg) -- TODOL
-
+    -- @param arg optional argument to be passed as second argument of the predicate
+    -- @return new filtered list
+    function _o:find_all(func, arg)
+        ut.val_func(func)
         local ls = {}
-
-        local res = filter(self, func, arg)
+        -- local res = filter(_o, func, arg)
 
         for i = 1, #_o do
             local v = _o[i]
@@ -232,19 +269,6 @@ function List(init, name)
             end
         end
 
-        -- function tablex.filter (t, pred, arg)
-        --     assert_arg_indexable(1, t)
-        --     pred = function_arg(2, pred) ok!
-        --     local res,k = {},1
-        --     for i = 1, #t do
-        --         local v = t[i]
-        --         if pred(v, arg) then
-        --             res[k] = v
-        --             k = k + 1
-        --         end
-        --     end
-        --     return setmeta(res, t, 'List')
-
         return List(res)
     end
 
@@ -252,116 +276,11 @@ function List(init, name)
     -- @param func a function or callable object
     -- @param ... optional values to pass to function
     function _o:foreach(func, ...)
-        func = function_arg(1, func)
-        for i = 1, #self do
-            func(self[i], ...)
+        ut.val_func(func)
+        for i = 1, #_o do
+            func(_o[i], ...)
         end
     end
-
-    --- return a list of string contents.
-    function _o:dump()
-        local res = {}
-        for _, v in ipairs(tbl) do
-            table.insert(res, v)
-        end
-        return res
-    end
-
-    --- How our list should be rendered as a string.
-    -- @within metamethods
-    function _o:__tostring()
-        return 'List:'.._o.name..' type:'.._o.value_type..' len:'..tostring(_o:count())
-    end
-
-    -------------- Internal operations ------------------
-
-    -- -- we want the result to be _covariant_, i.e. t must have type of obj if possible
-    -- local function makelist(t, obj)
-    --     local klass = List
-    --     if obj then
-    --         klass = getmetatable(obj)
-    --     end
-    --     return setmetatable(t, klass)
-    -- end
-
-    -- --- return an iterator over all values.
-    -- function _o:iter()-- TODOL local?
-    --     return ut.iter(self)
-    -- end
-    -- iter = iterate
-
--- --- TODOL?? Create an iterator over a seqence. This captures the Python concept of 'sequence'.
--- -- For tables, iterates over all values with integer indices.
--- -- @param seq a sequence; a string (over characters), a table, a file object (over lines) or an iterator function
--- -- @usage for x in iterate {1,10,22,55} do io.write(x,',') end ==> 1,10,22,55
--- -- @usage for ch in iterate 'help' do do io.write(ch,' ') end ==> h e l p
--- function iterate(seq)
---     if type(seq) == 'string' then
---         local idx = 0
---         local n = #seq
---         local sub = string.sub
---         return function ()
---             idx = idx + 1
---             if idx > n then return nil
---             else
---                 return sub(seq, idx, idx)
---             end
---         end
---     elseif type(seq) == 'table' then
---         local idx = 0
---         local n = #seq
---         return function()
---             idx = idx + 1
---             if idx > n then return nil
---             else
---                 return seq[idx]
---             end
---         end
---     elseif type(seq) == 'function' then
---         return seq
---     elseif type(seq) == 'userdata' and io.type(seq) == 'file' then
---         return seq:lines()
---     end
--- end
-
-
 
     return _o
 end
-
-
-
-
---[[
-TODOL maybe some of these:
-int LastIndexOf(T item, int index)
-void InsertRange(int index, IEnumerable<T> collection)
-void RemoveRange(int index, int count)
-void Sort(IComparer<T>? comparer)
-
-https://lunarmodules.github.io/Penlight/classes/pl.List.html
-Dependencies: pl.utils, pl.tablex, pl.class
-List.new ([t])  Create a new list.
-List:clone ()   Make a copy of an existing list.
-List:minmax ()  Return the minimum and the maximum value of the list.
-List:sorted ([cmp='<'])     Return a sorted copy of this list.
-List:slice (first, last)    Emulate list slicing.
-List:clear ()   Empty the list.
-List.range (start[, finish[, incr=1] ])  Emulate Python range(x)
-List:chop (i1, i2)  Remove a subrange of elements.
-List:splice (idx, list)     Insert a sublist into a list equivalent to 's[idx:idx] = list' in Python
-List:slice_assign (i1, i2, seq)     General slice assignment s[i1:i2] = seq.
-List:join ([delim=''])  Join the elements of a list using a delimiter.
-List:concat ([delim=''])    Join a list of strings.
-List.split (s[, delim])     Split a string using a delimiter.
-List:foreachm (name, ...)   Call the named method on each element of the list.
-List:map (fun, ...)     Apply a function to all elements.
-List:transform (fun, ...)   Apply a function to all elements, in-place.
-List:map2 (fun, ls, ...)    Apply a function to elements of two lists.
-List:mapm (name, ...)   apply a named method to all elements.
-List:reduce (fun)   'reduce' a list using a binary function.
-List:partition (fun, ...)   Partition a list using a classifier function.
-List:__concat (L)   Concatenation operator.
-List:__eq (L)   Equality operator ==.
-List:__tostring ()  How our list should be rendered as a string.
-]]

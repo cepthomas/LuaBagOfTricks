@@ -6,95 +6,6 @@ local sx = require("stringex")
 local M = {}
 
 
-
------------------------------------------------------------------------------
------------------------------- Files ----------------------------------------
------------------------------------------------------------------------------
-
------------------------------------------------------------------------------
-function M.file_read_all(fn)
-    f = io.open(fn, 'r')
-
-    if f ~= nil then
-        local s = f:read()
-        f:close()
-        return s
-    else
-        error('read file failed: '..fn, 2)
-    end
-end
-
------------------------------------------------------------------------------
-function M.file_write_all(fn, s)
-    f = io.open(fn, 'w')
-
-    if f ~= nil then
-        local s = f:write(s)
-        f:close()
-    else
-        error('write file failed: '..fn, 2)
-    end
-end
-
------------------------------------------------------------------------------
-function M.file_append_all(fn, s)
-    f = io.open(fn, 'w+')
-
-    if f ~= nil then
-        local s = f:write(s)
-        f:close()
-    else
-        error('append file failed: '..fn, 2)
-    end
-
-end
-
------------------------------------------------------------------------------
------------------------------- Types ----------------------------------------
------------------------------------------------------------------------------
-
------------------------------------------------------------------------------
---- is this number an integer?
--- @param x a number
--- @raise error if x is not a number
--- @return boolean
-function M.is_integer(x)
-    return math_ceil(x) == x
-end
-
------------------------------------------------------------------------------
---- Is the object either a function or a callable object?.
--- @param obj what to check
--- @return T/F
-function M.is_callable(obj)
-    return (type(obj) == 'function') or (getmetatable(obj) ~= nil and getmetatable(obj).__call ~= nil) -- and true
-end
-
------------------------------------------------------------------------------
---- Is an object 'array-like'?
--- @param obj what to check
--- @return T/F
-function M.is_indexable(obj)
-    return (type(obj) == 'table') or (getmetatable(obj) ~= nil and getmetatable(obj).__len ~= nil and getmetatable(obj).__index ~= nil) -- and true
-end
-
------------------------------------------------------------------------------
---- Can an object be iterated over with `pairs`?
--- @param obj what to check
--- @return T/F
-function M.is_iterable(obj)
-    return (type(obj) == 'table') or (getmetatable(obj) ~= nil and getmetatable(obj).__pairs ~= nil) -- and true
-end
-
------------------------------------------------------------------------------
---- Can an object accept new key/pair values?
--- @param obj any value.
--- @return T/F
-function M.is_writeable(obj)
-    return (type(obj) == 'table') or (getmetatable(obj) ~= nil and getmetatable(obj).__newindex ~= nil) -- and true
-end
-
-
 -----------------------------------------------------------------------------
 ------------------------------ System ---------------------------------------
 -----------------------------------------------------------------------------
@@ -114,6 +25,13 @@ end
 -- end
 -- -- this put in _G
 -- raise = _raise
+
+M.raise = true
+-- local function _error(msg, lev)
+--     if M.raise then error(msg, lev or 3)
+--     else return true, msg
+--     end
+-- end
 
 
 -----------------------------------------------------------------------------
@@ -247,6 +165,254 @@ end
 
 
 -----------------------------------------------------------------------------
+------------------------- Types TODOL all ---------------------------------------------
+-----------------------------------------------------------------------------
+
+---Checks if a table is used as an array. That is: the keys start with one and are sequential numbers
+-- @param t table
+-- @return nil,error string if t is not a table
+-- @return true/false if t is an array/isn't an array
+-- NOTE: it returns true for an empty table
+function M.is_array(t)
+    if type(t) ~= "table" then return nil, "Argument is not a table! It is: "..type(t) end
+    --check if all the table keys are numerical and count their number
+    local count = 0
+    for k, v in pairs(t) do
+        if type(k) ~= "number" then return false else count = count + 1 end
+    end
+    --all keys are numerical. now let's see if they are sequential and start with 1
+    for i = 1,count do
+        --Hint: the VALUE might be "nil", in that case "not t[i]" isn't enough, that's why we check the type
+        if not t[i] and type(t[i]) ~= "nil" then return false end
+    end
+    return true
+end
+
+
+local function is_array(t)
+  local i = 0
+  for _ in pairs(t) do
+      i = i + 1
+      if t[i] == nil then return false end
+  end
+  return true
+end
+
+
+function is_array(table)
+  if type(table) ~= 'table' then
+    return false
+  end
+
+  -- objects always return empty size
+  if #table > 0 then
+    return true
+  end
+
+  -- only object can have empty length with elements inside
+  for k, v in pairs(table) do
+    return false
+  end
+
+  -- if no elements it can be array and not at same time
+  return true
+end
+
+-----------------------------------------------------------------------------
+-- --- Is this number an integer?
+-- -- @param x a number
+-- -- @raise error if x is not a number
+-- -- @return boolean
+-- function M.is_integer(x)
+--     return math.type(v) == "integer"
+-- end
+
+-- -----------------------------------------------------------------------------
+-- --- Is the object either a function or a callable object?.
+-- -- @param obj what to check
+-- -- @return T/F
+-- function M.is_callable(obj)
+--     return (type(obj) == 'function') or (getmetatable(obj) ~= nil and getmetatable(obj).__call ~= nil) -- and true
+-- end
+
+-- -----------------------------------------------------------------------------
+-- --- Is an object 'array-like'? TODOL need version for pure indexable
+-- -- @param obj what to check
+-- -- @return T/F
+-- function M.is_indexable(obj)
+--     return (type(obj) == 'table') or (getmetatable(obj) ~= nil and getmetatable(obj).__len ~= nil and getmetatable(obj).__index ~= nil) -- and true
+-- end
+
+-- -----------------------------------------------------------------------------
+-- --- Can an object be iterated over with pairs?
+-- -- @param obj what to check
+-- -- @return T/F
+-- function M.is_iterable(obj)
+--     return (type(obj) == 'table') or (getmetatable(obj) ~= nil and getmetatable(obj).__pairs ~= nil) -- and true
+-- end
+
+-- -----------------------------------------------------------------------------
+-- --- Can an object accept new key/pair values?
+-- -- @param obj any value.
+-- -- @return T/F
+-- function M.is_writeable(obj)
+--     return (type(obj) == 'table') or (getmetatable(obj) ~= nil and getmetatable(obj).__newindex ~= nil) -- and true
+-- end
+
+
+-----------------------------------------------------------------------------
+------------------------- Value checking ------------------------------------
+-----------------------------------------------------------------------------
+
+-- assert (v [, message])
+-- Raises an error if the value of its argument v is false (i.e., nil or false); otherwise, returns all its arguments. In case of error,
+-- message is the error object; when absent, it defaults to "assertion failed!"
+
+-- --- Assert that the given argument is the correct type - raises error()
+-- -- @param n argument index
+-- -- @param val the value
+-- -- @param tp the type
+-- -- @param lev optional stack position for trace, default 3
+-- -- @return the validated value
+-- function M.assert_arg (n, val, tp, lev)
+--     if type(val) ~= tp then
+--         error(("argument %d expected a '%s', got a '%s'"):format(n, tp, type(val)), lev or 3)
+--     end
+--     return val
+-- end
+
+-- local function assert_string (n,s)
+--     assert_arg(n,s,'string')
+-- end
+
+-- local function non_empty(s)
+--     return #s > 0
+-- end
+
+-- local function assert_nonempty_string(n,s)
+--     assert_arg(n,s,'string',non_empty,'must be a non-empty string')
+-- end
+
+-- local function assert_dir (n,val)
+--     assert_arg(n,val,'string',path.isdir,'not a directory',4)
+-- end
+
+-- local function assert_arg_indexable (idx,val)
+--     if not M.is_indexable(val) then
+--         complain(idx,"indexable")
+--     end
+-- end
+
+-- local function assert_arg_iterable (idx,val)
+--     if not M.is_iterable(val) then
+--         complain(idx,"iterable")
+--     end
+-- end
+
+-- local function assert_arg_writeable (idx,val)
+--     if not M.is_writeable(val) then
+--         complain(idx,"writeable")
+--     end
+-- end
+
+
+-----------------------------------------------------------------------------
+
+-----------------------------------------------------------------------------
+--- Validate a number value.
+-- @param v which value
+-- @param min range inclusive, nil means no limit
+-- @param max range inclusive, nil means no limit
+-- @return return true if correct type and in range.
+function M.val_number(v, min, max)
+    local ok = v ~= nil and type(v) == 'number'
+    if ok and max ~= nil then ok = ok and v <= max end
+    if ok and min ~= nil then ok = ok and v >= min end
+
+    if ok then return ok end
+    local msg = 'Invalid number:'..tostring(v)
+    if M.raise then error(msg) end
+    return false, msg
+end
+
+
+-----------------------------------------------------------------------------
+--- Validate an integer value.
+-- @param v which value
+-- @param min range inclusive, nil means no limit
+-- @param max range inclusive, nil means no limit
+-- @return return true if correct type and in range.
+function M.val_integer(v, min, max)
+    local ok = v ~= nil and math.type(v) == 'integer'
+    if ok and max ~= nil then ok = ok and v <= max end
+    if ok and min ~= nil then ok = ok and v >= min end
+
+    if ok then return ok end
+    local msg = 'Invalid integer:'..tostring(v)
+    if M.raise then error(msg) end
+    return false, msg
+end
+
+
+-----------------------------------------------------------------------------
+function M.val_type(v, vt)
+    local ok = type(v) == vt
+
+    if ok then return ok end
+    local msg = 'Invalid type:'..type(v)
+    if M.raise then error(msg) end
+    return false, msg
+end
+
+
+-----------------------------------------------------------------------------
+function M.val_table(t, min_size)
+    local ok = t ~= nil and type(t) == 'table'
+    if ok and min_size ~= nil then ok = ok and #t >= min_size end
+
+    if ok then return ok end
+    local msg = 'Invalid table:'..tostring(min_size)
+    if M.raise then error(msg) end
+    return false, msg
+end
+
+
+-----------------------------------------------------------------------------
+function M.val_not_nil(v)
+    local ok = v ~= nil
+
+    if ok then return ok end
+    local msg = 'Value is nil'
+    if M.raise then error(msg) end
+    return false, msg
+end
+
+-----------------------------------------------------------------------------
+-- @param func a function or callable object - see function_arg
+function M.val_func(func)
+    local ok = func ~= nil and type(func) == 'function'
+
+    if ok then return ok end
+    local msg = 'Invalid function:'..type(func)
+    if M.raise then error(msg) end
+    return false, msg
+end
+
+
+-----------------------------------------------------------------------------
+--- Convert value to integer.
+-- @param v value to convert
+-- @return integer or nil if not convertible.
+function M.tointeger(v)
+    -- if type(v) == "number" and math.ceil(v) == v then return v
+    if math.type(v) == "integer" then return v
+    elseif type(v) == "string" then return tonumber(v, 10)
+    else return nil
+    end
+end
+
+
+-----------------------------------------------------------------------------
 ------------------------- Math ----------------------------------------------
 -----------------------------------------------------------------------------
 
@@ -288,52 +454,53 @@ end
 
 
 -----------------------------------------------------------------------------
-------------------------- Value checking ------------------------------------
+------------------------------ Files ----------------------------------------
 -----------------------------------------------------------------------------
 
--- assert (v [, message])
--- Raises an error if the value of its argument v is false (i.e., nil or false); otherwise, returns all its arguments. In case of error,
--- message is the error object; when absent, it defaults to "assertion failed!"
-
 -----------------------------------------------------------------------------
---- Assert that the given argument is the correct type - raises error()
--- @param n argument index
--- @param val the value
--- @param tp the type
--- @param lev optional stack position for trace, default 3
--- @return the validated value
-function M.assert_arg (n, val, tp, lev)
-    if type(val) ~= tp then
-        error(("argument %d expected a '%s', got a '%s'"):format(n, tp, type(val)), lev or 3)
+function M.file_read_all(fn)
+    f = io.open(fn, 'r')
+
+    if f ~= nil then
+        local s = f:read()
+        f:close()
+        return s
+    else
+        error('read file failed: '..fn, 2)
     end
-    return val
 end
 
 -----------------------------------------------------------------------------
---- Validate a number value - return T/F.
--- @param v which value
--- @param min range inclusive - nil means no limit
--- @param max range inclusive - nil means no limit
--- @return return true if correct type and in range.
-function M.val_number(v, min, max)
-    local ok = v ~= nil and type(v) == 'number'
-    if ok and max ~= nil then ok = ok and v <= max end
-    if ok and min ~= nil then ok = ok and v >= min end
-    return ok
+function M.file_write_all(fn, s)
+    f = io.open(fn, 'w')
+
+    if f ~= nil then
+        local s = f:write(s)
+        f:close()
+    else
+        error('write file failed: '..fn, 2)
+    end
 end
 
 -----------------------------------------------------------------------------
---- Validate an integer value - return T/F.
--- @param v which value
--- @param min range inclusive - nil means no limit
--- @param max range inclusive - nil means no limit
--- @return return true if correct type and in range.
-function M.val_integer(v, min, max)
-    local ok = v ~= nil and math.type(v) == 'integer'
-    if ok and max ~= nil then ok = ok and v <= max end
-    if ok and min ~= nil then ok = ok and v >= min end
-    return ok
+function M.file_append_all(fn, s)
+    f = io.open(fn, 'w+')
+
+    if f ~= nil then
+        local s = f:write(s)
+        f:close()
+    else
+        error('append file failed: '..fn, 2)
+    end
+
 end
+
+
+
+
+
+
+
 
 
 -----------------------------------------------------------------------------
@@ -379,19 +546,6 @@ local _colors = { ['red']=91, ['green']=92, ['blue']=94, ['yellow']=33, ['gray']
 -- Accessor.
 function M.set_colorize(map) _colorize_map = map end
 
-
-
------------------------------------------------------------------------------
---- Convert value to integer.
--- @param v value to convert
--- @return integer or nil if not convertible.
-function M.tointeger(v)
-    -- if type(v) == "number" and math.ceil(v) == v then return v
-    if math.type(v) == "integer" then return v
-    elseif type(v) == "string" then return tonumber(v, 10)
-    else return nil
-    end
-end
 
 
 -----------------------------------------------------------------------------
