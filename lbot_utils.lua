@@ -11,79 +11,32 @@ local M = {}
 -----------------------------------------------------------------------------
 
 -----------------------------------------------------------------------------
---------- TODOE error handling ------------
--- local _err_raise = true
--- -- Similar to Penlight function.
--- -- Use in conjunction with return since it might return nil + error.
--- -- @param msg the string.
--- local function _raise (msg)
---     if _err_raise then
---         error(msg, 2)
---     else
---         return nil, msg
---     end
--- end
--- -- this put in _G
--- raise = _raise
-
-M.raise = true
--- local function _error(msg, lev)
---     if M.raise then error(msg, lev or 3)
---     else return true, msg
---     end
--- end
-
-
------------------------------------------------------------------------------
--- TODOE If you are afraid of name clashes when opening a package, you can check the name before the assignment.
-function M.check_open_package (name) -->> check_global_name?
-    for n, v in pairs(name) do
-        if _G[n] ~= nil then
-            error("name clash: " .. n .. " is already defined")
-        end
-        _G[n] = v
-    end
-end
-
------------------------------------------------------------------------------
---- TODOE Checks global space for intruders aka you-forgot-local-again.
--- @param app_exp list of app specific globals
--- @return list of extraneous globals, list of missing expected
-function M.check_globals(app_exp)
-    -- Make copies as we destroy the tables - residual is considered missing.
-    local app_exp_c = M.copy(app_exp)
-
-    -- Expect to see these.
-    local sys_exp_c = {'_G', '_VERSION', 'assert', 'collectgarbage', 'coroutine', 'debug', 'dofile', 'error',
-        'getmetatable', 'io', 'ipairs', 'load', 'loadfile', 'math', 'next', 'os', 'package', 'pairs', 'pcall',
-        'print', 'rawequal', 'rawget', 'rawlen', 'rawset', 'require', 'select', 'setmetatable', 'string',
-        'table', 'tonumber', 'tostring', 'type', 'utf8', 'warn', 'xpcall' }
-
+--- Check global space for intruders aka you-forgot-local-again.
+-- @param app_glob list of app specific globals
+-- @return list of extraneous globals, list of unused globals
+function M.check_globals(app_glob)
+    M.val_table(app_glob, 0)
     local extra = {}
 
-    local global_names = M.keys(_G)
+    -- Expect to see these normal globals.
+    local exp = {'_G', '_VERSION', 'assert', 'collectgarbage', 'coroutine', 'debug', 'dofile', 'error',
+        'getmetatable', 'io', 'ipairs', 'load', 'loadfile', 'math', 'next', 'os', 'package', 'pairs', 'pcall',
+        'print', 'rawequal', 'rawget', 'rawlen', 'rawset', 'require', 'select', 'setmetatable', 'string',
+        'table', 'tonumber', 'tostring', 'type', 'utf8', 'warn', 'xpcall',
+        -- standard modules:
+        'coroutine', 'debug', 'io', 'math', 'os', 'package', 'string', 'table', 'utf8' }
+    exp:add_range(app_glob)    
 
-    for _, v in ipairs(global_names) do
-        local ind = M.contains(sys_exp_c, v)
-        if ind ~= nil then
-            table.remove(sys_exp_c, ind)
-        end
-
-        if ind == nil then
-            ind = M.contains(app_exp_c, v)
-            if ind ~= nil then
-                table.remove(app_exp_c, ind)
-            end
-        end
-
-        if ind == nil then
-            table.insert(extra, v)
+    for _, v in ipairs(_G) do
+        if exp:contains(v) then
+            exp:remove(v)
+        else
+            extra:add(v)
         end
     end
 
-    return extra, app_exp_c
+    return extra, exp
 end
-
 
 -----------------------------------------------------------------------------
 -- Add script file path to LUA_PATH. For require.
@@ -94,7 +47,6 @@ function M.fix_lua_path(s)
         -- package.path = './lua/?.lua;./test/lua/?.lua;'..package.path
     end
 end
-
 
 -----------------------------------------------------------------------------
 --- Execute a file and return the output.
@@ -111,46 +63,15 @@ function M.execute_and_capture(cmd)
     end
 end
 
-
------------------------------------------------------------------------------
---- If using debugger, bind lua error() function to it.
--- @param use_dbgr Use debugger.
-function M.config_debug(use_dbgr)
-    local have_dbgr = false
-    local orig_error = error -- save original error function TODOE
-    local use_term = true -- Use terminal for debugger.
-
-    if use_dbgr then
-        have_dbgr, dbg = pcall(require, "debugger")
-    end
-
-    if dbg then
-        -- sub debug handler
-        error = dbg.error
-        if use_term then
-            dbg.enable_color()
-            dbg.auto_where = 3
-        end
-    else
-        -- Not using debugger so make global stubs to keep breakpoints from yelling.
-        dbg =
-        {
-            error = function(error, level) end,
-            assert = function(error, message) end,
-            call = function(f, ...) end,
-        }
-        setmetatable(dbg, { __call = function(self) end })
-    end
-end
-
-
 -----------------------------------------------------------------------------
 --- Gets the file and line of the caller.
 -- @param level How deep to look:
---    0 is the getinfo() itself
---    1 is the function that called getinfo() - get_caller_info()
---    2 is the function that called get_caller_info() - usually the one of interest
--- @return filename, linenumber, directory - may be nil
+--    0 is the debug.getinfo() itself
+--    1 is the function that called debug.getinfo() - this function
+--    2 is the function that called this function - usually the one of interest
+--    3 is 2's caller
+--    etc...
+-- @return filepath, linenumber, directory - may be nil
 function M.get_caller_info(level)
     local fpath = debug.getinfo(level, 'S').short_src
     local line = debug.getinfo(level, 'l').currentline
@@ -165,12 +86,13 @@ end
 
 
 -----------------------------------------------------------------------------
-------------------------- Types TODOL all ---------------------------------------------
+------------------------- Types ---------------------------------------------
 -----------------------------------------------------------------------------
 
+-----------------------------------------------------------------------------
 --- Checks if a table is a pure array.
 -- @param t the table
--- @return T/F, value data type if homogenous
+-- @return T/F, value data type if homogenous - nil otherwise
 function M.is_array(t)
     local val_type = nil
     local ok = t ~= nil and type(t) == 'table'
@@ -198,63 +120,6 @@ function M.is_array(t)
     return ok, val_type
 end
 
-
-
-
---[[-Checks if a table is used as an array. That is: the keys start with one and are sequential numbers
--- @param t table
--- @return nil,error string if t is not a table
--- @return true/false if t is an array/isn't an array
--- NOTE: it returns true for an empty table
-function M.is_array(t)
-    if type(t) ~= "table" then return nil, "Argument is not a table! It is: "..type(t) end
-
-    --check if all the table keys are numerical and count their number
-    local count = 0
-    for k, v in pairs(t) do
-        if type(k) ~= "number" then return false else count = count + 1 end
-    end
-
-    --all keys are numerical. now let's see if they are sequential and start with 1
-    for i = 1, count do
-        --Hint: the VALUE might be "nil", in that case "not t[i]" isn't enough, that's why we check the type
-        if not t[i] and type(t[i]) ~= "nil" then return false end
-    end
-
-    return true
-end
-
-
-local function is_array(t)
-  local i = 0
-  for _ in pairs(t) do
-      i = i + 1
-      if t[i] == nil then return false end
-  end
-  return true
-end
-
-
-function is_array(table)
-  if type(table) ~= 'table' then
-    return false
-  end
-
-  -- objects always return empty size
-  if #table > 0 then
-    return true
-  end
-
-  -- only object can have empty length with elements inside
-  for k, v in pairs(table) do
-    return false
-  end
-
-  -- if no elements it can be array and not at same time
-  return true
-end
-]]
-
 -----------------------------------------------------------------------------
 --- Is this number an integer?
 -- @param x a number
@@ -263,176 +128,6 @@ end
 function M.is_integer(x)
     return math.type(v) == "integer"
 end
-
--- -----------------------------------------------------------------------------
--- --- Is the object either a function or a callable object?.
--- -- @param obj what to check
--- -- @return T/F
--- function M.is_callable(obj)
---     return (type(obj) == 'function') or (getmetatable(obj) ~= nil and getmetatable(obj).__call ~= nil) -- and true
--- end
-
--- -----------------------------------------------------------------------------
--- --- Is an object 'array-like'?
--- -- @param obj what to check
--- -- @return T/F
--- function M.is_indexable(obj)
---     return (type(obj) == 'table') or (getmetatable(obj) ~= nil and getmetatable(obj).__len ~= nil and getmetatable(obj).__index ~= nil) -- and true
--- end
-
--- -----------------------------------------------------------------------------
--- --- Can an object be iterated over with pairs?
--- -- @param obj what to check
--- -- @return T/F
--- function M.is_iterable(obj)
---     return (type(obj) == 'table') or (getmetatable(obj) ~= nil and getmetatable(obj).__pairs ~= nil) -- and true
--- end
-
--- -----------------------------------------------------------------------------
--- --- Can an object accept new key/pair values?
--- -- @param obj any value.
--- -- @return T/F
--- function M.is_writeable(obj)
---     return (type(obj) == 'table') or (getmetatable(obj) ~= nil and getmetatable(obj).__newindex ~= nil) -- and true
--- end
-
-
------------------------------------------------------------------------------
-------------------------- Value checking ------------------------------------
------------------------------------------------------------------------------
-
--- assert (v [, message])
--- Raises an error if the value of its argument v is false (i.e., nil or false); otherwise, returns all its arguments. In case of error,
--- message is the error object; when absent, it defaults to "assertion failed!"
-
--- --- Assert that the given argument is the correct type - raises error()
--- -- @param n argument index
--- -- @param val the value
--- -- @param tp the type
--- -- @param lev optional stack position for trace, default 3
--- -- @return the validated value
--- function M.assert_arg (n, val, tp, lev)
---     if type(val) ~= tp then
---         error(("argument %d expected a '%s', got a '%s'"):format(n, tp, type(val)), lev or 3)
---     end
---     return val
--- end
-
--- local function assert_string (n,s)
---     assert_arg(n,s,'string')
--- end
-
--- local function non_empty(s)
---     return #s > 0
--- end
-
--- local function assert_nonempty_string(n,s)
---     assert_arg(n,s,'string',non_empty,'must be a non-empty string')
--- end
-
--- local function assert_dir (n,val)
---     assert_arg(n,val,'string',path.isdir,'not a directory',4)
--- end
-
--- local function assert_arg_indexable (idx,val)
---     if not M.is_indexable(val) then
---         complain(idx,"indexable")
---     end
--- end
-
--- local function assert_arg_iterable (idx,val)
---     if not M.is_iterable(val) then
---         complain(idx,"iterable")
---     end
--- end
-
--- local function assert_arg_writeable (idx,val)
---     if not M.is_writeable(val) then
---         complain(idx,"writeable")
---     end
--- end
-
-
------------------------------------------------------------------------------
---- Validate a number value.
--- @param v which value
--- @param min range inclusive, nil means no limit
--- @param max range inclusive, nil means no limit
--- @return return true if correct type and in range.
-function M.val_number(v, min, max)
-    local ok = v ~= nil and type(v) == 'number'
-    if ok and max ~= nil then ok = ok and v <= max end
-    if ok and min ~= nil then ok = ok and v >= min end
-
-    if ok then return ok end
-    local msg = 'Invalid number:'..tostring(v)
-    if M.raise then error(msg) end
-    return false, msg
-end
-
-
------------------------------------------------------------------------------
---- Validate an integer value.
--- @param v which value
--- @param min range inclusive, nil means no limit
--- @param max range inclusive, nil means no limit
--- @return return true if correct type and in range.
-function M.val_integer(v, min, max)
-    local ok = v ~= nil and math.type(v) == 'integer'
-    if ok and max ~= nil then ok = ok and v <= max end
-    if ok and min ~= nil then ok = ok and v >= min end
-
-    if ok then return ok end
-    local msg = 'Invalid integer:'..tostring(v)
-    if M.raise then error(msg) end
-    return false, msg
-end
-
-
------------------------------------------------------------------------------
-function M.val_type(v, vt)
-    local ok = type(v) == vt
-
-    if ok then return ok end
-    local msg = 'Invalid type:'..type(v)
-    if M.raise then error(msg) end
-    return false, msg
-end
-
-
------------------------------------------------------------------------------
-function M.val_table(t, min_size)
-    local ok = t ~= nil and type(t) == 'table'
-    if ok and min_size ~= nil then ok = ok and #t >= min_size end
-
-    if ok then return ok end
-    local msg = 'Invalid table:'..tostring(min_size)
-    if M.raise then error(msg) end
-    return false, msg
-end
-
-
------------------------------------------------------------------------------
-function M.val_not_nil(v)
-    local ok = v ~= nil
-
-    if ok then return ok end
-    local msg = 'Value is nil'
-    if M.raise then error(msg) end
-    return false, msg
-end
-
------------------------------------------------------------------------------
--- @param func a function or callable object - see function_arg
-function M.val_func(func)
-    local ok = func ~= nil and type(func) == 'function'
-
-    if ok then return ok end
-    local msg = 'Invalid function:'..type(func)
-    if M.raise then error(msg) end
-    return false, msg
-end
-
 
 -----------------------------------------------------------------------------
 --- Convert value to integer.
@@ -444,6 +139,102 @@ function M.tointeger(v)
     elseif type(v) == "string" then return tonumber(v, 10)
     else return nil
     end
+end
+
+-----------------------------------------------------------------------------
+--- Is the object either a function or a callable object?.
+-- @param obj what to check
+-- @return T/F
+function M.is_callable(obj)
+    return (type(obj) == 'function') or (getmetatable(obj) ~= nil and getmetatable(obj).__call ~= nil) -- and true
+end
+
+-----------------------------------------------------------------------------
+--- Is an object 'array-like'?
+-- @param obj what to check
+-- @return T/F
+function M.is_indexable(obj)
+    return (type(obj) == 'table') or (getmetatable(obj) ~= nil and getmetatable(obj).__len ~= nil and getmetatable(obj).__index ~= nil) -- and true
+end
+
+-----------------------------------------------------------------------------
+--- Can an object be iterated over with pairs?
+-- @param obj what to check
+-- @return T/F
+function M.is_iterable(obj)
+    return (type(obj) == 'table') or (getmetatable(obj) ~= nil and getmetatable(obj).__pairs ~= nil) -- and true
+end
+
+-----------------------------------------------------------------------------
+--- Can an object accept new key/pair values?
+-- @param obj any value.
+-- @return T/F
+function M.is_writeable(obj)
+    return (type(obj) == 'table') or (getmetatable(obj) ~= nil and getmetatable(obj).__newindex ~= nil) -- and true
+end
+
+
+-----------------------------------------------------------------------------
+------------------------- Validation ----------------------------------------
+-----------------------------------------------------------------------------
+
+-----------------------------------------------------------------------------
+--- Validate a number value.
+-- @param v which value
+-- @param min range inclusive, nil means no limit
+-- @param max range inclusive, nil means no limit
+function M.val_number(v, min, max)
+    local ok = v ~= nil and type(v) == 'number'
+    if ok and max ~= nil then ok = ok and v <= max end
+    if ok and min ~= nil then ok = ok and v >= min end
+    if not ok then error('Invalid number:'..tostring(v)) end
+end
+
+-----------------------------------------------------------------------------
+--- Validate an integer value.
+-- @param v which value
+-- @param min range inclusive, nil means no limit
+-- @param max range inclusive, nil means no limit
+function M.val_integer(v, min, max)
+    local ok = v ~= nil and math.type(v) == 'integer'
+    if ok and max ~= nil then ok = ok and v <= max end
+    if ok and min ~= nil then ok = ok and v >= min end
+    if not ok then error('Invalid integer:'..tostring(v)) end
+end
+
+-----------------------------------------------------------------------------
+--- Validate a value type.
+-- @param v which value
+-- @param vt expected type
+function M.val_type(v, vt)
+    local ok = type(v) == vt
+    if not ok then error('Invalid type:'..type(v)) end
+end
+
+-----------------------------------------------------------------------------
+--- Validate a tabnle type.
+-- @param t the table
+-- @param min_size optional check
+function M.val_table(t, min_size)
+    local ok = t ~= nil and type(t) == 'table'
+    if ok and min_size ~= nil then ok = ok and #t >= min_size end
+    if not ok then error('Invalid table:'..tostring(min_size)) end
+end
+
+-----------------------------------------------------------------------------
+--- Check nilness.
+-- @param v which value
+function M.val_not_nil(v)
+    local ok = v ~= nil
+    if not ok then error('Value is nil') end
+end
+
+-----------------------------------------------------------------------------
+--- Validate a function type.
+-- @param func a function or callable object
+function M.val_func(func)
+    local ok = M.is_callable(func)
+    if not ok then error('Invalid function:'..type(func)) end
 end
 
 
@@ -493,6 +284,7 @@ end
 -----------------------------------------------------------------------------
 
 -----------------------------------------------------------------------------
+--- Text file helper.
 function M.file_read_all(fn)
     f = io.open(fn, 'r')
 
@@ -501,11 +293,12 @@ function M.file_read_all(fn)
         f:close()
         return s
     else
-        error('read file failed: '..fn, 2)
+        error('Read file failed: '..fn, 2)
     end
 end
 
 -----------------------------------------------------------------------------
+--- Text file helper.
 function M.file_write_all(fn, s)
     f = io.open(fn, 'w')
 
@@ -513,11 +306,12 @@ function M.file_write_all(fn, s)
         local s = f:write(s)
         f:close()
     else
-        error('write file failed: '..fn, 2)
+        error('Write file failed: '..fn, 2)
     end
 end
 
 -----------------------------------------------------------------------------
+--- Text file helper.
 function M.file_append_all(fn, s)
     f = io.open(fn, 'w+')
 
@@ -525,30 +319,22 @@ function M.file_append_all(fn, s)
         local s = f:write(s)
         f:close()
     else
-        error('append file failed: '..fn, 2)
+        error('Append file failed: '..fn, 2)
     end
-
 end
 
 
-
-
-
-
-
-
-
 -----------------------------------------------------------------------------
------------------------------- TODOL homes ---------------------------------------
+------------------------------ Odds and Ends --------------------------------
 -----------------------------------------------------------------------------
 
 -----------------------------------------------------------------------------
---- Emulation of C ternary operator. TODOL improve?
+--- Emulation of C ternary operator.
 -- @param cond to test
 -- @param tval if cond is true
 -- @param fval if cond is false
 -- @return tval or fval
-function M.tern(cond, tval, fval)
+function M.ternary(cond, tval, fval)
     if cond then return tval else return fval end
 end
 
@@ -574,13 +360,13 @@ function M.colorize_text(text)
     end
     return res
 end
+
 -- Text to colorize.
 local _colorize_map = {}
 -- ANSI colors.
 local _colors = { ['red']=91, ['green']=92, ['blue']=94, ['yellow']=33, ['gray']=95, ['bred']=41 }
 -- Accessor.
 function M.set_colorize(map) _colorize_map = map end
-
 
 
 -----------------------------------------------------------------------------

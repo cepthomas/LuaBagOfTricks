@@ -109,12 +109,8 @@ function M.strsplit(text, delimiter, trim)
     local list = {}
     local pos = 1
 
-    if text == nil then
+    if text == nil or delimiter == nil or delimiter == '' then
         return {}
-    end
-
-    if string.find("", delimiter, 1, true) then -- this would result in endless loops
-        error("Delimiter matches empty string.")
     end
 
     while 1 do

@@ -5,14 +5,10 @@ TODOF maybe some of these:
 int LastIndexOf(T item, int index)
 void InsertRange(int index, IEnumerable<T> collection)
 void RemoveRange(int index, int count)
-minmax ()  Return the minimum and the maximum value of the list.
-splice (idx, list)     Insert a sublist into a list equivalent to 's[idx:idx] = list' in Python
 map (fun, ...)     Apply a function to all elements.
 transform (fun, ...)   Apply a function to all elements, in-place.
 reduce (fun)   'reduce' a list using a binary function.
 partition (fun, ...)   Partition a list using a classifier function.
-__concat (L)   Concatenation operator.
-__eq (L)   Equality operator ==.
 ]]
 
 
@@ -39,16 +35,18 @@ function List(init, name)
     -- Determine flavor.
     local valid_types = { "number", "string", "boolean", "table", "function" }
     local stype = type(init)
+
     if stype == 'string' and _valid_types:contains(stype) then
         _o.value_type = stype
     elseif stype == 'table' then
         -- Check for empty - can't determine type.
-        if #init == 0 then error('Can\'t create a List from empty table') end
+        if #init == 0 then error('Can\'t create a Lis   t from empty table') end
 
         -- Check for pure array type.
         local ok, val_type = ut.is_array(init)
-        if not ok == 0 then error('Not an array') end
-        if val_type == nil == 0 then error('Not homogenous values') end
+        print('>>>', type(ok), ok, val_type)
+        if not ok then error('Not an array') end
+        if val_type == nil then error('Not homogenous values') end
         _o = init
         _o.value_type = type(_o[1])
     else
@@ -60,22 +58,25 @@ function List(init, name)
     setmetatable(_o, mt)
 
 
-    -- --- Diagnostic.
-    -- -- @return a list of values
-    -- function _o:dump()
-    --     local res = {}
-    --     for _, v in ipairs(tbl) do
-    --         table.insert(res, v)
-    --     end
-    --     return res
-    -- end
+    -------------------------------------------------------------------------
+    --- Diagnostic.
+    -- @return a list of values
+    function _o:dump()
+        local res = {}
+        for _, v in ipairs(tbl) do
+            table.insert(res, v)
+        end
+        return res
+    end
 
+    -------------------------------------------------------------------------
     --- How many.
     -- @return the count
     function _o:count()
         return #_o
     end
 
+    -------------------------------------------------------------------------
     --- Copy from an existing list.
     -- @param i index of start element, or nil means all aka clone
     -- @param count how many, or nil means end
@@ -103,6 +104,7 @@ function List(init, name)
         return List(ls)
     end
 
+    -------------------------------------------------------------------------
     --- Add an item to the end of the list.
     -- @param v An item/value
     -- @return the list
@@ -112,8 +114,8 @@ function List(init, name)
         return _o
     end
 
+    -------------------------------------------------------------------------
     --- Extend the list by appending all the items in the given list.
-    -- equivalent to 'a[len(a):] = other'.
     -- @tparam other List to append
     -- @return the list
     function _o:add_range(other)
@@ -122,6 +124,7 @@ function List(init, name)
         return _o
     end
 
+    -------------------------------------------------------------------------
     --- Insert an item at a given position. i is the index of the element before which to insert.
     -- @int i index of element before which to insert
     -- @param x A data item
@@ -132,8 +135,8 @@ function List(init, name)
         return _o
     end
 
+    -------------------------------------------------------------------------
     --- Remove an element given its index.
-    -- (equivalent of Python's del s[i])
     -- @int i the index
     -- @return the list
     function _o:remove_at(i)
@@ -141,7 +144,8 @@ function List(init, name)
         table.remove(_o, i)
         return _o
     end
---
+
+    -------------------------------------------------------------------------
     --- Remove the first value from the list.
     -- @param v data value
     -- @return the list
@@ -153,6 +157,7 @@ function List(init, name)
         return _o
      end
 
+    -------------------------------------------------------------------------
     --- Return the index in the list of the first item whose value is given.
     -- @paramtion _o:index
     -- @param v data value
@@ -168,6 +173,7 @@ function List(init, name)
         return nil
     end
 
+    -------------------------------------------------------------------------
     --- Does list contain value.
     -- @param v data value
     -- @return bool
@@ -179,6 +185,7 @@ function List(init, name)
         -- return _o:find(v) ~= nil  --and true or false
     end
 
+    -------------------------------------------------------------------------
     --- Sort the items of the list in place.
     -- @param cmp comparison function, or simple ascending if nil
     -- @return the list
@@ -189,6 +196,7 @@ function List(init, name)
         return _o
     end
 
+    -------------------------------------------------------------------------
     --- Reverse the elements of the list, in place.
     -- @return the list
     function _o:reverse()
@@ -201,6 +209,7 @@ function List(init, name)
         return _o
     end
 
+    -------------------------------------------------------------------------
     --- Empty the list.
     -- @return the list
     function _o:clear()
@@ -208,6 +217,7 @@ function List(init, name)
         return _o
     end
 
+    -------------------------------------------------------------------------
     --- Return the index of a value in a list.
     -- @param v the value
     -- @param start where to start
@@ -224,6 +234,7 @@ function List(init, name)
         return res
     end
 
+    -------------------------------------------------------------------------
     --- Create a list of all elements which match a function.
     -- @param func a boolean function
     -- @param arg optional argument to be passed as second argument of the predicate
@@ -244,6 +255,7 @@ function List(init, name)
         return List(res)
     end
 
+    -------------------------------------------------------------------------
     --- Call the function on each element of the list.
     -- @param func a function or callable object
     -- @param ... optional values to pass to function
@@ -254,5 +266,6 @@ function List(init, name)
         end
     end
 
+    -------------------------------------------------------------------------
     return _o
 end

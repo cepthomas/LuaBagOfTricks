@@ -13,7 +13,6 @@ local function usage()
     print("  -c - generate C/H files")
     print("  -cppcli - generate C++/CLI files")
     print("  -csh - generate C# file")
-    print("  -d - enable debugger if available")
     print("  sf - your_spec.lua")
     print("  op - your_outpath")
 end
@@ -78,9 +77,6 @@ end
 if not spec_fn then error("Missing spec file") end
 
 if not out_path then error("Missing output path") end
-
--- OK so far. Configure error function.
-ut.config_debug(use_dbgr)
 
 -- Load the specific flavor.
 local syntax_chunk, msg = loadfile(syntax_fn)
