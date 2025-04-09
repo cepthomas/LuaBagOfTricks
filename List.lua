@@ -16,6 +16,7 @@ ut = require 'lbot_utils'
 tx = require 'tableex'
 
 
+
 -- Meta stuff. TODOL play with. https://www.lua.org/manual/5.4/manual.html#2.4
 mt = {
         __tostring = function(self) return 'List:['..self.name..'] type:'..self.value_type..' len:'..tostring(self:count()) end,
@@ -40,12 +41,11 @@ function List(init, name)
         _o.value_type = stype
     elseif stype == 'table' then
         -- Check for empty - can't determine type.
-        if #init == 0 then error('Can\'t create a Lis   t from empty table') end
+        if #init == 0 then error('Can\'t create a List from empty table') end
 
         -- Check for pure array type.
         local ok, val_type = ut.is_array(init)
-        print('>>>', type(ok), ok, val_type)
-        if not ok then error('Not an array') end
+        if not ok then error('Not a List array') end
         if val_type == nil then error('Not homogenous values') end
         _o = init
         _o.value_type = type(_o[1])
