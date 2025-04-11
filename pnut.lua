@@ -6,6 +6,7 @@ Has all the assert functions - UT_XXX(info).
 ]]
 
 local ut = require('lbot_utils')
+local sx = require('stringex')
 
 local M = {}
 
@@ -339,6 +340,7 @@ function M.UT_CLOSE(val1, val2, tol, info)
     end
     return pass
 end
+
 
 -----------------------------------------------------------------------------
 -- Return the module.
