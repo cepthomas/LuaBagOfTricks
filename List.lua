@@ -1,15 +1,6 @@
---[[
-Borrowed simple subset from penlight. Names are modelled after C# instead of python.
-
-TODOF maybe some of these:
-int LastIndexOf(T item, int index)
-void InsertRange(int index, IEnumerable<T> collection)
-void RemoveRange(int index, int count)
-map (fun, ...)     Apply a function to all elements.
-transform (fun, ...)   Apply a function to all elements, in-place.
-reduce (fun)   'reduce' a list using a binary function.
-partition (fun, ...)   Partition a list using a classifier function.
-]]
+-- A typed list class in the lua prototype style with homogenous values.
+-- Parts are lifted from or inspired by https://github.com/lunarmodules/Penlight.
+-- API names are modelled after C# instead of python.
 
 
 ut = require 'lbot_utils'
@@ -20,37 +11,83 @@ tx = require 'tableex'
 -- Meta stuff. TODOL play with. https://www.lua.org/manual/5.4/manual.html#2.4
 mt = {
         __tostring = function(self) return 'List:['..self.name..'] type:'..self.value_type..' len:'..tostring(self:count()) end,
-        -- __index = function(self, ...) end,
-        -- __newindex = function(self, ...) end,
-        -- __call = function(self, ...) end
+        -- __index = function(self, ...) end, -- disallow direct
+        -- __newindex = function(self, ...) end, -- disallow add
+        -- __call = function(self, ...) end -- ??
      }
+
+
+-- __index: The indexing access operation table[key]. This event happens when table is not a table or when key is not present in table. 
+-- The metavalue is looked up in the metatable of table.
+-- The metavalue for this event can be either a function, a table, or any value with an __index metavalue. 
+-- If it is a function, it is called with table and key as arguments, and the result of the call (adjusted to one value) 
+-- is the result of the operation. Otherwise, the final result is the result of indexing this metavalue with key. This indexing 
+-- is regular, not raw, and therefore can trigger another __index metavalue.
+
+-- __newindex: The indexing assignment table[key] = value. Like the index event, this event happens when table is not a table or when 
+-- key is not present in table. The metavalue is looked up in the metatable of table.
+-- Like with indexing, the metavalue for this event can be either a function, a table, or any value with an __newindex metavalue. 
+-- If it is a function, it is called with table, key, and value as arguments. Otherwise, Lua repeats the indexing assignment over 
+-- this metavalue with the same key and value. This assignment is regular, not raw, and therefore can trigger another __newindex metavalue.
+-- Whenever a __newindex metavalue is invoked, Lua does not perform the primitive assignment. If needed, the metamethod itself can call 
+-- rawset to do the assignment.
+
+-- __call: The call operation func(args). This event happens when Lua tries to call a non-function value (that is, func is not a function). 
+-- The metamethod is looked up in func. If present, the metamethod is called with func as its first argument, followed by the arguments 
+-- of the original call (args). All results of the call are the results of the operation. This is the only metamethod that allows multiple results.
 
 -----------------------------------------------------------------------------
 --- Create a typed list.
--- @param init a not-empty table, or a type name: "number", "string", "boolean", "table", "function".
+-- @param init a not-empty table, or a type name: number, string, boolean, table, function.
 -- @param name optional name
 -- @return a new list
 function List(init, name)
     local _o = {} -- our storage
 
     -- Determine flavor.
-    local valid_types = { "number", "string", "boolean", "table", "function" }
+    local valid_types = { 'number', 'string', 'boolean', 'table', 'function' }
     local stype = type(init)
 
-    if stype == 'string' and _valid_types:contains(stype) then
-        _o.value_type = stype
+
+    local mt = getmetatable(_o)
+    print(mt, _o)
+    print(tx.dump_table_string(_o, 2, name))
+
+
+
+    if stype == 'string' and tx.contains(valid_types, init) then
+        _o.value_type = init
     elseif stype == 'table' then
+        -- Check that the table is correct.
+        local num = 0
+        local val_type = nil
+
         -- Check for empty - can't determine type.
         if #init == 0 then error('Can\'t create a List from empty table') end
 
-        -- Check for pure array type.
-        local ok, val_type = ut.is_array(init)
-        if not ok then error('Not a List array') end
-        if val_type == nil then error('Not homogenous values') end
+        -- Check if all keys are indexes.
+        for k, v in pairs(init) do
+            if type(k) ~= 'number' then error('Indexes must be number') end
+            num = num + 1
+        end
+
+        -- Check sequential from 1.
+        for i = 1, num do
+            if init[i] == nil then error('Indexes must be sequential') end
+        end
+
+        -- Check value type.
+        for i = 1, num do
+            if i == 1 then val_type = type(init[i]) -- init
+            elseif type(init[i]) ~= val_type then error('Values must be homogenous')
+            end
+        end
+
+        -- Must be ok then.
         _o = init
-        _o.value_type = type(_o[1])
+        _o.value_type = val_type
     else
-        error('Invalid value type: '..stype)
+        error('Invalid value type:'..stype)
     end
 
     -- Good to go.

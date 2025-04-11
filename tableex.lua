@@ -122,13 +122,12 @@ end
 --- Tests if the value is in the table.
 -- @param tbl the table
 -- @param val the value
--- @return corresponding key or nil if not in tbl
+-- @return T/F
 function M.contains(tbl, val)
-    local num = 0
     for k, v in pairs(tbl) do
-        if v == val then return k end
+        if v == val then return true end
     end
-    return nil
+    return false
 end
 
 -----------------------------------------------------------------------------

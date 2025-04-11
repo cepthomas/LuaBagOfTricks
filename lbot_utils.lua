@@ -1,4 +1,4 @@
---- GP utilities: tables, math, validation, errors, ...
+-- GP utilities: tables, math, validation, errors, ...
 -- Some parts are lifted from or inspired by https://github.com/lunarmodules/Penlight.
 
 local sx = require("stringex")
@@ -88,37 +88,6 @@ end
 -----------------------------------------------------------------------------
 ------------------------- Types ---------------------------------------------
 -----------------------------------------------------------------------------
-
------------------------------------------------------------------------------
---- Checks if a table is a pure array.
--- @param t the table
--- @return T/F, value data type if homogenous - nil otherwise
-function M.is_array(t)
-    local val_type = nil
-    local ok = t ~= nil and type(t) == 'table'
-    local num = 0
-
-    if ok then
-        -- Check if all keys are indexes.
-        for k, v in pairs(t) do
-            if type(k) ~= 'number' then ok = false end
-            num = num + 1
-        end
-    end
-
-    if ok then
-        -- Check sequential from 1.
-        for i = 1, num do
-            if t[i] == nil then ok = false end
-
-            if i == 1 then val_type = type(t[i])
-            elseif type(t[i]) ~= val_type then val_type = nil
-            end
-        end
-    end
-
-    return ok, val_type
-end
 
 -----------------------------------------------------------------------------
 --- Is this number an integer?
@@ -212,7 +181,7 @@ function M.val_type(v, vt)
 end
 
 -----------------------------------------------------------------------------
---- Validate a tabnle type.
+--- Validate a table type.
 -- @param t the table
 -- @param min_size optional check
 function M.val_table(t, min_size)
