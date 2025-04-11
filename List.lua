@@ -8,7 +8,7 @@ tx = require 'tableex'
 
 
 
--- Meta stuff. TODOL play with. https://www.lua.org/manual/5.4/manual.html#2.4
+-- Meta stuff.  play with. https://www.lua.org/manual/5.4/manual.html#2.4
 mt = {
         __tostring = function(self) return 'List:['..self.name..'] type:'..self.value_type..' len:'..tostring(self:count()) end,
         -- __index = function(self, ...) end, -- disallow direct
