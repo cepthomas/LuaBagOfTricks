@@ -51,7 +51,8 @@ for i = 1, #arg do
     -- flags
     if parg:sub(1, 1) == '-' then
         opt = parg:sub(2)
-        if opt == "d" then use_dbgr = true
+        if opt == "d" then
+            use_dbgr = true
         else
             syntax = opt
             syntax_fn = syntaxes[syntax]

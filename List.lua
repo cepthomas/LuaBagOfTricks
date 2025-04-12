@@ -3,8 +3,9 @@
 -- API names are modelled after C# instead of python.
 
 
-ut = require 'lbot_utils'
-tx = require 'tableex'
+local ut = require 'lbot_utils'
+local lt = require("lbot_types")
+local tx = require 'tableex'
 
 
 
@@ -47,7 +48,6 @@ function List(init, name)
     -- Determine flavor.
     local valid_types = { 'number', 'string', 'boolean', 'table', 'function' }
     local stype = type(init)
-
 
     local mt = getmetatable(_o)
     print(mt, _o)
@@ -134,10 +134,7 @@ function List(init, name)
             last = first + count - 1
         end
 
-        for ind = first, last do
-            table.insert(ls, _o[ind])
-        end
-
+c
         return List(ls)
     end
 
