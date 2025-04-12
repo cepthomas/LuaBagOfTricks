@@ -110,7 +110,7 @@ if #scrarg >= 1 then
         return M
     else
         -- From command line. Process all.
-        rep = M.do_tests(...)
+            rep = M.do_tests(...)
         for _, s in ipairs(rep) do
             print(s)
         end

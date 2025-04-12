@@ -2,40 +2,15 @@
 -- Parts are lifted from or inspired by https://github.com/lunarmodules/Penlight.
 -- API names are modelled after C# instead of python.
 
-
-local ut = require 'lbot_utils'
+local ut = require("lbot_utils")
 local lt = require("lbot_types")
-local tx = require 'tableex'
+local tx = require("tableex")
 
 
-
--- Meta stuff.  play with. https://www.lua.org/manual/5.4/manual.html#2.4
-mt = {
-        __tostring = function(self) return 'List:['..self.name..'] type:'..self.value_type..' len:'..tostring(self:count()) end,
-        -- __index = function(self, ...) end, -- disallow direct
-        -- __newindex = function(self, ...) end, -- disallow add
-        -- __call = function(self, ...) end -- ??
+-- Meta stuff.
+local mt = {
+        __tostring = function(self) return 'List:['..self.name..'] type:'..self.value_type..' len:'..tostring(self:count()) end
      }
-
-
--- __index: The indexing access operation table[key]. This event happens when table is not a table or when key is not present in table. 
--- The metavalue is looked up in the metatable of table.
--- The metavalue for this event can be either a function, a table, or any value with an __index metavalue. 
--- If it is a function, it is called with table and key as arguments, and the result of the call (adjusted to one value) 
--- is the result of the operation. Otherwise, the final result is the result of indexing this metavalue with key. This indexing 
--- is regular, not raw, and therefore can trigger another __index metavalue.
-
--- __newindex: The indexing assignment table[key] = value. Like the index event, this event happens when table is not a table or when 
--- key is not present in table. The metavalue is looked up in the metatable of table.
--- Like with indexing, the metavalue for this event can be either a function, a table, or any value with an __newindex metavalue. 
--- If it is a function, it is called with table, key, and value as arguments. Otherwise, Lua repeats the indexing assignment over 
--- this metavalue with the same key and value. This assignment is regular, not raw, and therefore can trigger another __newindex metavalue.
--- Whenever a __newindex metavalue is invoked, Lua does not perform the primitive assignment. If needed, the metamethod itself can call 
--- rawset to do the assignment.
-
--- __call: The call operation func(args). This event happens when Lua tries to call a non-function value (that is, func is not a function). 
--- The metamethod is looked up in func. If present, the metamethod is called with func as its first argument, followed by the arguments 
--- of the original call (args). All results of the call are the results of the operation. This is the only metamethod that allows multiple results.
 
 -----------------------------------------------------------------------------
 --- Create a typed list.
@@ -48,12 +23,6 @@ function List(init, name)
     -- Determine flavor.
     local valid_types = { 'number', 'string', 'boolean', 'table', 'function' }
     local stype = type(init)
-
-    local mt = getmetatable(_o)
-    print(mt, _o)
-    print(tx.dump_table_string(_o, 2, name))
-
-
 
     if stype == 'string' and tx.contains(valid_types, init) then
         _o.value_type = init
@@ -94,7 +63,6 @@ function List(init, name)
     _o.name = name or 'no-name'
     setmetatable(_o, mt)
 
-
     -------------------------------------------------------------------------
     --- Diagnostic.
     -- @return a list of values
@@ -134,7 +102,10 @@ function List(init, name)
             last = first + count - 1
         end
 
-c
+        for ind = first, last do
+            table.insert(ls, _o[ind])
+        end
+
         return List(ls)
     end
 
@@ -143,7 +114,7 @@ c
     -- @param v An item/value
     -- @return the list
     function _o:add(v)
-        ut.val_type(v, _o.value_type)
+        lt.val_type(v, _o.value_type)
         table.insert(_o, v)
         return _o
     end
@@ -153,7 +124,7 @@ c
     -- @tparam other List to append
     -- @return the list
     function _o:add_range(other)
-        ut.val_table(other, 0)
+        lt.val_table(other, 0)
         for i = 1, #other do table.insert(_o, other[i]) end
         return _o
     end
@@ -164,7 +135,7 @@ c
     -- @param x A data item
     -- @return the list
     function _o:insert(i, x)
-        ut.val_integer(i, 1, #_o)
+        lt.val_integer(i, 1, #_o)
         table.insert(_o, i, x)
         return _o
     end
@@ -174,7 +145,7 @@ c
     -- @int i the index
     -- @return the list
     function _o:remove_at(i)
-        ut.val_integer(i, 1, #_o)
+        lt.val_integer(i, 1, #_o)
         table.remove(_o, i)
         return _o
     end
@@ -184,7 +155,7 @@ c
     -- @param v data value
     -- @return the list
     function _o:remove(v)
-        ut.val_not_nil(v)
+        lt.val_not_nil(v)
         for i = 1, #_o do
             if _o[i] == v then table.remove(_o, i) return _o end
         end
@@ -198,7 +169,7 @@ c
     -- @int i where to start search, nil means beginning
     -- @return the index, or nil if not found
     function _o:index_of(v, i)
-        ut.val_not_nil(v)
+        lt.val_not_nil(v)
         i = i or 1
         if i < 0 then i = #_o + i + 1 end
         for ind = i, #_o do
@@ -212,7 +183,7 @@ c
     -- @param v data value
     -- @return bool
     function _o:contains(v)
-        ut.val_not_nil(v)
+        lt.val_not_nil(v)
         local res = _o:find(v)
         return res ~= nil
         -- return _o:find(v) ~= nil or false
@@ -224,7 +195,7 @@ c
     -- @param cmp comparison function, or simple ascending if nil
     -- @return the list
     function _o:sort(cmp)
-        ut.val_func(cmp)
+        lt.val_func(cmp)
         if not cmp then cmp = function(a, b) return b < a end end
         table.sort(_o, cmp)
         return _o
@@ -257,8 +228,8 @@ c
     -- @param start where to start
     -- @return index of value, or nil if not found
     function _o:find(v, start)
-        ut.val_type(v, _o.value_type)
-        -- ut.val_integer(start)
+        lt.val_type(v, _o.value_type)
+        -- lt.val_integer(start)
         local res = nil
 
         local i = start or 1
@@ -274,7 +245,7 @@ c
     -- @param arg optional argument to be passed as second argument of the predicate
     -- @return new filtered list
     function _o:find_all(func, arg)
-        ut.val_func(func)
+        lt.val_func(func)
         local ls = {}
         -- local res = filter(_o, func, arg)
 
@@ -294,7 +265,7 @@ c
     -- @param func a function or callable object
     -- @param ... optional values to pass to function
     function _o:foreach(func, ...)
-        ut.val_func(func)
+        lt.val_func(func)
         for i = 1, #_o do
             func(_o[i], ...)
         end
