@@ -34,10 +34,10 @@ function M.do_tests(...)
         local mod = scrfn:gsub('%.lua', '')
 
         -- Load file in protected mode.
-        local ok, test_mod = pcall(require, mod)
-        -- local ok, test_mod = xpcall(require, debug.traceback, mod)
+        local load_ok, test_mod = pcall(require, mod)
+        -- local load_ok, test_mod = xpcall(require, debug.traceback, mod)
 
-        if not ok then -- or type(test_mod) ~= "table" then
+        if not load_ok then -- or type(test_mod) ~= "table" then
             app_fail = true
             error(string.format("Failed to load file %s test_mod:%s ", scrfn, test_mod))
             -- goto done

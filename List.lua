@@ -68,7 +68,7 @@ function List(init, name)
     -- @return a list of values
     function _o:dump()
         local res = {}
-        for _, v in ipairs(tbl) do
+        for _, v in ipairs(_o) do
             table.insert(res, v)
         end
         return res
@@ -252,12 +252,12 @@ function List(init, name)
         for i = 1, #_o do
             local v = _o[i]
             if func(v, arg) then
-                res[k] = v
+                ls[k] = v
                 k = k + 1
             end
         end
 
-        return List(res)
+        return List(ls)
     end
 
     -------------------------------------------------------------------------

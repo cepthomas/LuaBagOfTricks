@@ -7,10 +7,10 @@ local M = {}
 
 -----------------------------------------------------------------------------
 --- Is this number an integer?
--- @param x a number
--- @raise error if x is not a number
+-- @param v a number
+-- @raise error if v is not a number
 -- @return boolean
-function M.is_integer(x)
+function M.is_integer(v)
     return math.type(v) == "integer"
 end
 
@@ -19,7 +19,6 @@ end
 -- @param v value to convert
 -- @return integer or nil if not convertible.
 function M.tointeger(v)
-    -- if type(v) == "number" and math.ceil(v) == v then return v
     if math.type(v) == "integer" then return v
     elseif type(v) == "string" then return tonumber(v, 10)
     else return nil
@@ -31,7 +30,7 @@ end
 -- @param obj what to check
 -- @return T/F
 function M.is_callable(obj)
-    return (type(obj) == 'function') or (getmetatable(obj) ~= nil and getmetatable(obj).__call ~= nil) -- and true
+    return (type(obj) == 'function') or (getmetatable(obj) ~= nil and getmetatable(obj).__call ~= nil) and true
 end
 
 -----------------------------------------------------------------------------
@@ -68,6 +67,7 @@ function M.val_number(v, min, max)
     if ok and max ~= nil then ok = ok and v <= max end
     if ok and min ~= nil then ok = ok and v >= min end
     if not ok then error('Invalid number:'..tostring(v)) end
+    return true
 end
 
 -----------------------------------------------------------------------------
@@ -80,6 +80,7 @@ function M.val_integer(v, min, max)
     if ok and max ~= nil then ok = ok and v <= max end
     if ok and min ~= nil then ok = ok and v >= min end
     if not ok then error('Invalid integer:'..tostring(v)) end
+    return true
 end
 
 -----------------------------------------------------------------------------
@@ -87,8 +88,10 @@ end
 -- @param v which value
 -- @param vt expected type
 function M.val_type(v, vt)
+    if vt == 'integer' and M.is_integer(v) then return true end
     local ok = type(v) == vt
     if not ok then error('Invalid type:'..type(v)) end
+    return true
 end
 
 -----------------------------------------------------------------------------
@@ -99,6 +102,7 @@ function M.val_table(t, min_size)
     local ok = t ~= nil and type(t) == 'table'
     if ok and min_size ~= nil then ok = ok and #t >= min_size end
     if not ok then error('Invalid table:'..tostring(min_size)) end
+    return true
 end
 
 -----------------------------------------------------------------------------
@@ -107,6 +111,7 @@ end
 function M.val_not_nil(v)
     local ok = v ~= nil
     if not ok then error('Value is nil') end
+    return true
 end
 
 -----------------------------------------------------------------------------
@@ -115,6 +120,7 @@ end
 function M.val_func(func)
     local ok = M.is_callable(func)
     if not ok then error('Invalid function:'..type(func)) end
+    return true
 end
 
 -----------------------------------------------------------------------------

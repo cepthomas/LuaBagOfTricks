@@ -1,5 +1,5 @@
 --[[
-A slightly modified version of the penlight module from https://github.com/lunarmodules/Penlight.
+A slightly modified version of the template module from https://github.com/lunarmodules/Penlight.
   - Removed dependencies on other penlight modules - it's standalone.
   - escape(s) snipped from pl.utils. 
   - Doesn't support nested expansions like: l.$(to_funcs[$(func.ret.type)]).

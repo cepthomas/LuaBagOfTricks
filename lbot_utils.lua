@@ -156,7 +156,7 @@ function M.file_write_all(fn, s)
     f = io.open(fn, 'w')
 
     if f ~= nil then
-        local s = f:write(s)
+        f:write(s)
         f:close()
     else
         error('Write file failed: '..fn, 2)
@@ -169,7 +169,7 @@ function M.file_append_all(fn, s)
     f = io.open(fn, 'a')
 
     if f ~= nil then
-        local s = f:write(s)
+        f:write(s)
         f:close()
     else
         error('Append file failed: '..fn, 2)
@@ -192,6 +192,13 @@ function M.ternary(cond, tval, fval)
 end
 
 -----------------------------------------------------------------------------
+-- Text to colorize.
+local _colorize_map = {}
+-- ANSI colors.
+local _colors = { ['red']=91, ['green']=92, ['blue']=94, ['yellow']=33, ['gray']=95, ['bred']=41 }
+-- Accessor.
+function M.set_colorize(map) _colorize_map = map end
+
 --- ANSI colorize lines of text if phrases are found. Also breaks at newlines.
 -- @param text to test
 -- @return list of text lines
@@ -213,13 +220,6 @@ function M.colorize_text(text)
     end
     return res
 end
-
--- Text to colorize.
-local _colorize_map = {}
--- ANSI colors.
-local _colors = { ['red']=91, ['green']=92, ['blue']=94, ['yellow']=33, ['gray']=95, ['bred']=41 }
--- Accessor.
-function M.set_colorize(map) _colorize_map = map end
 
 
 -----------------------------------------------------------------------------

@@ -51,14 +51,14 @@ local function pretty(obj, max_depth)
         return (meta and meta.__tostring)
     end
 
-    local function recurse(obj, depth)
-        if type(obj) == "string" then
+    local function recurse(o, depth)
+        if type(o) == "string" then
             -- Dump the string so that escape sequences are printed.
-            return string.format("%q", obj)
-        elseif type(obj) == "table" and depth < max_depth and not coerceable(obj) then
+            return string.format("%q", o)
+        elseif type(o) == "table" and depth < max_depth and not coerceable(o) then
             local str = "{"
 
-            for k, v in pairs(obj) do
+            for k, v in pairs(o) do
                 local pair = pretty(k, 0).." = "..recurse(v, depth + 1)
                 str = str..(str == "{" and pair or ", "..pair)
             end
@@ -66,7 +66,7 @@ local function pretty(obj, max_depth)
             return str.."}"
         else
             -- tostring() can fail if there is an error in a __tostring metamethod.
-            local success, value = pcall(function() return tostring(obj) end)
+            local success, value = pcall(function() return tostring(o) end)
             return (success and value or "<!!error in __tostring metamethod!!>")
         end
     end
@@ -513,7 +513,7 @@ dbg = setmetatable({}, {
         stack_top = top_offset
 
         debug.sethook(hook_next(1, source or "dbg()"), "crl")
-        return
+        -- return
     end,
 })
 

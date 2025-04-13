@@ -245,7 +245,7 @@ local tmpl_env =
     _debug=true,
     config=spec.config,
     script_funcs=spec.script_funcs,
-    host_funcs=spec.host_funcs, 
+    host_funcs=spec.host_funcs,
     -- Type name conversions.
     c_types=function(t)
         if t == 'B' then return "bool"
