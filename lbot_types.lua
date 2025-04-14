@@ -1,6 +1,6 @@
 -- LBOT type support. Some parts are lifted from or inspired by https://github.com/lunarmodules/Penlight.
 
-local sx = require("stringex")
+-- local sx = require("stringex")
 
 local M = {}
 

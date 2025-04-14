@@ -1,7 +1,7 @@
 --[[
 A slightly modified version of the template module from https://github.com/lunarmodules/Penlight.
   - Removed dependencies on other penlight modules - it's standalone.
-  - escape(s) snipped from pl.utils. 
+  - do_escape(s) snipped from pl.utils. 
   - Doesn't support nested expansions like: l.$(to_funcs[$(func.ret.type)]).
 ]]
 
@@ -41,7 +41,7 @@ A slightly modified version of the template module from https://github.com/lunar
 
 --- escape any Lua 'magic' characters in a string.w
 -- @param s The input string
-function escape(s)
+local function do_escape(s)
     -- utils.assert_string(1, s)
     return (s:gsub('[%-%.%+%[%]%(%)%$%^%%%?%*]', '%%%1'))
 end
@@ -72,8 +72,8 @@ end
 
 local function parseHashLines(chunk, inline_escape, brackets, esc, newline)
     -- Escape special characters to avoid invalid expressions
-    inline_escape = escape(inline_escape)
-    esc = escape(esc)
+    inline_escape = do_escape(inline_escape)
+    esc = do_escape(esc)
 
     local exec_pat = "()"..inline_escape.."(%b"..brackets..")()"
 
@@ -146,14 +146,12 @@ end
 -- @function ct:render
 -- @tab[opt] env the environment.
 -- @tab[opt] parent continue looking up in this table (e.g. `parent=_G`).
--- @bool[opt] db if thruthy, it will print the code upon a render error
--- (provided the template was compiled with the debug option).
 -- @return `rendered template + nil + source_code`, or `nil + error + source_code`. The last return value
 -- (`source_code`) is only returned if the template was compiled with the debug option.
 -- @usage
 -- local ct, err = template.compile(my_template)
 -- local rendered , err = ct:render(my_env, parent)
-local render = function(self, env, parent, db)
+local render = function(self, env, parent)
     env = env or {}
     if parent then  -- parent is a bit silly, but for backward compatibility retained
         setmetatable(env, {__index = parent})

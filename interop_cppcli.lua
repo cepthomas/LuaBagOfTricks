@@ -1,6 +1,6 @@
 -- Generate .NET C++/CLI interop code.
 
-local ut = require('lbot_utils')
+-- local ut = require('lbot_utils')
 local tmpl = require('template')
 
 -- Get specification.

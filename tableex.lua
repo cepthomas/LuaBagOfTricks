@@ -50,7 +50,7 @@ end
 -- @param val the value
 -- @return T/F
 function M.contains(tbl, val)
-    for k, v in pairs(tbl) do
+    for _, v in pairs(tbl) do
         if v == val then return true end
     end
     return false
@@ -100,7 +100,7 @@ function M.dump_table(tbl, depth, name, indent)
         for k, v in pairs(tbl) do
             if type(v) == "table" and _dump_level < depth then
                 _dump_level = _dump_level + 1
-                trec = M.dump_table(v, depth, k, indent) -- recursion!
+                local trec = M.dump_table(v, depth, k, indent) -- recursion!
                 _dump_level = _dump_level - 1
                 for _, v2 in ipairs(trec) do
                     table.insert(res, v2)
@@ -132,7 +132,7 @@ end
 -- @param lst What to dump.
 -- @return string Comma delim line of contents.
 function M.dump_list(lst)
-    res = {}
+    local res = {}
     for _, l in ipairs(lst) do
         table.insert(res, l)
     end

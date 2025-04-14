@@ -32,7 +32,7 @@ function M.check_globals(app_glob)
             table.insert(expected, app_glob[ind])
         end
 
-    for k, v in pairs(_G) do
+    for k, _ in pairs(_G) do
         -- print('g', k, v, tx.contains(expected, v))
         if tx.contains(expected, k) then
             expected[k] = nil --:remove(k)
@@ -139,7 +139,7 @@ end
 -----------------------------------------------------------------------------
 --- Text file helper.
 function M.file_read_all(fn)
-    f = io.open(fn, 'r')
+    local f = io.open(fn, 'r')
 
     if f ~= nil then
         local s = f:read()
@@ -153,7 +153,7 @@ end
 -----------------------------------------------------------------------------
 --- Text file helper.
 function M.file_write_all(fn, s)
-    f = io.open(fn, 'w')
+    local f = io.open(fn, 'w')
 
     if f ~= nil then
         f:write(s)
@@ -166,7 +166,7 @@ end
 -----------------------------------------------------------------------------
 --- Text file helper.
 function M.file_append_all(fn, s)
-    f = io.open(fn, 'a')
+    local f = io.open(fn, 'a')
 
     if f ~= nil then
         f:write(s)
@@ -206,7 +206,7 @@ function M.colorize_text(text)
     -- Split into lines and colorize.
     local res = {}
 
-    lines = sx.strsplit(text, '\n', false)
+    local lines = sx.strsplit(text, '\n', false)
     for _, l in ipairs(lines) do
         local s = l -- default
         for k, v in pairs(_colorize_map) do

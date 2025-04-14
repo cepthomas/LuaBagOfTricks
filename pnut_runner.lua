@@ -5,7 +5,7 @@ Future opts maybe: write to file, junit/xml format.
 --]]
 
 local pn = require("pnut")
-local ut = require("lbot_utils")
+-- local ut = require("lbot_utils")
 
 -- Create the namespace/module.
 local M = {}
@@ -71,6 +71,7 @@ function M.do_tests(...)
     local dur = (end_time - start_time)
 
     -- Overall status.
+    local pf_run = '?'
     if app_fail then pf_run = "Runner Fail"
     elseif script_fail then pf_run = "Script Fail"
     elseif pn.num_suites_failed == 0 then pf_run = "Test Pass"
@@ -110,7 +111,7 @@ if #scrarg >= 1 then
         return M
     else
         -- From command line. Process all.
-            rep = M.do_tests(...)
+        local rep = M.do_tests(...)
         for _, s in ipairs(rep) do
             print(s)
         end

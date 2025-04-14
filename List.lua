@@ -2,7 +2,7 @@
 -- Parts are lifted from or inspired by https://github.com/lunarmodules/Penlight.
 -- API names are modelled after C# instead of python.
 
-local ut = require("lbot_utils")
+-- local ut = require("lbot_utils")
 local lt = require("lbot_types")
 local tx = require("tableex")
 
@@ -35,7 +35,7 @@ function List(init, name)
         if #init == 0 then error('Can\'t create a List from empty table') end
 
         -- Check if all keys are indexes.
-        for k, v in pairs(init) do
+        for k, _ in pairs(init) do
             if type(k) ~= 'number' then error('Indexes must be number') end
             num = num + 1
         end
@@ -218,7 +218,7 @@ function List(init, name)
     --- Empty the list.
     -- @return the list
     function _o:clear()
-        for i = 1, #_o do table.remove(_o) end
+        for _ = 1, #_o do table.remove(_o) end
         return _o
     end
 
@@ -249,6 +249,7 @@ function List(init, name)
         local ls = {}
         -- local res = filter(_o, func, arg)
 
+        local k
         for i = 1, #_o do
             local v = _o[i]
             if func(v, arg) then

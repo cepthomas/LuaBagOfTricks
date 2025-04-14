@@ -6,7 +6,7 @@ Has all the assert functions - UT_XXX(info).
 ]]
 
 local ut = require('lbot_utils')
-local sx = require('stringex')
+-- local sx = require('stringex')
 
 local M = {}
 
