@@ -2,39 +2,27 @@
 -- Parts are lifted from or inspired by https://github.com/lunarmodules/Penlight.
 -- API names are modelled after C# instead of python.
 
--- local ut = require("lbot_utils")
+local ut = require("lbot_utils")
 local lt = require("lbot_types")
 local tx = require("tableex")
 
+-- Helper.
+local function who_called_me()
+    local filepath, linenumber, _ = ut.get_caller_info(4)
+    return filepath..'('..linenumber..')'
+end
+
 
 -- Meta stuff.
-local mt = {
-        __tostring = function(self) return 'List:['..self.name..'] type:'..self.value_type..' len:'..tostring(self:count()) end
-     }
+local mt =
+{
+    __tostring = function(self) return 'List:['..self.name..'] type:'..self.value_type..' len:'..tostring(self:count()) end,
+    __call = function(...) print('__call', ...) end,
+    -- __index = function(...) print('__index', who_called_me()) end,
+    -- __index = function(...) print('__index', ...) end,
+    -- __newindex = function(...) print('__newindex', who_called_me()) end,
+ }
 
---     -- Tell Lua to fall back to looking in List.__index for missing fields.
---     setmetatable(self, List)
-
--- Add a method to check type given an instance, like:
--- function List.isList(instance)
---     return getmetatable(instance).__index == List
--- end
-
--- -- Expose a constructor which can be called by <classname>(<args>).
--- local mt = {}
--- mt.__call = function(class_tbl, ...)
---     local obj = {}
---     setmetatable(obj, c)
---     if class_tbl.__init then
---         class_tbl.__init(obj, ...)
---     else
---         -- Init base class.
---         if base and base.__init then
---             base.__init(obj, ...)
---         end
---     end
---     return obj
--- end
 
 -----------------------------------------------------------------------------
 --- Create a typed list.
@@ -42,14 +30,14 @@ local mt = {
 -- @param name optional name
 -- @return a new list
 function List(init, name)
-    local _o = {} -- our storage
+    local ll = {} -- our storage
 
     -- Determine flavor.
     local valid_types = { 'number', 'string', 'boolean', 'table', 'function' }
     local stype = type(init)
 
     if stype == 'string' and tx.contains(valid_types, init) then
-        _o.value_type = init
+        ll.value_type = init
     elseif stype == 'table' then
         -- Check that the table is correct.
         local num = 0
@@ -77,22 +65,22 @@ function List(init, name)
         end
 
         -- Must be ok then.
-        _o = init
-        _o.value_type = val_type
+        ll = init
+        ll.value_type = val_type
     else
         error('Invalid value type:'..stype)
     end
 
     -- Good to go.
-    _o.name = name or 'no-name'
-    setmetatable(_o, mt)
+    ll.name = name or 'no-name'
+    setmetatable(ll, mt)
 
     -------------------------------------------------------------------------
     --- Diagnostic.
     -- @return a list of values
-    function _o:dump()
+    function ll:dump()
         local res = {}
-        for _, v in ipairs(_o) do
+        for _, v in ipairs(ll) do
             table.insert(res, v)
         end
         return res
@@ -101,8 +89,8 @@ function List(init, name)
     -------------------------------------------------------------------------
     --- How many.
     -- @return the count
-    function _o:count()
-        return #_o
+    function ll:count()
+        return #ll
     end
 
     -------------------------------------------------------------------------
@@ -110,24 +98,24 @@ function List(init, name)
     -- @param i index of start element, or nil means all aka clone
     -- @param count how many, or nil means end
     -- @return the new List
-    function _o:get_range(i, count)
+    function ll:get_range(i, count)
         local ls = {}
 
         local first
         local last
         if i == nil then
             first = 1
-            last = #_o
+            last = #ll
         elseif count == nil then
             first = i
-            last = #_o
+            last = #ll
         else
             first = i
             last = first + count - 1
         end
 
         for ind = first, last do
-            table.insert(ls, _o[ind])
+            table.insert(ls, ll[ind])
         end
 
         return List(ls)
@@ -137,20 +125,20 @@ function List(init, name)
     --- Add an item to the end of the list.
     -- @param v An item/value
     -- @return the list
-    function _o:add(v)
-        lt.val_type(v, _o.value_type)
-        table.insert(_o, v)
-        return _o
+    function ll:add(v)
+        lt.val_type(v, ll.value_type)
+        table.insert(ll, v)
+        return ll
     end
 
     -------------------------------------------------------------------------
     --- Extend the list by appending all the items in the given list.
     -- @tparam other List to append
     -- @return the list
-    function _o:add_range(other)
+    function ll:add_range(other)
         lt.val_table(other, 0)
-        for i = 1, #other do table.insert(_o, other[i]) end
-        return _o
+        for i = 1, #other do table.insert(ll, other[i]) end
+        return ll
     end
 
     -------------------------------------------------------------------------
@@ -158,46 +146,46 @@ function List(init, name)
     -- @int i index of element before which to insert
     -- @param x A data item
     -- @return the list
-    function _o:insert(i, x)
-        lt.val_integer(i, 1, #_o)
-        table.insert(_o, i, x)
-        return _o
+    function ll:insert(i, x)
+        lt.val_integer(i, 1, #ll)
+        table.insert(ll, i, x)
+        return ll
     end
 
     -------------------------------------------------------------------------
     --- Remove an element given its index.
     -- @int i the index
     -- @return the list
-    function _o:remove_at(i)
-        lt.val_integer(i, 1, #_o)
-        table.remove(_o, i)
-        return _o
+    function ll:remove_at(i)
+        lt.val_integer(i, 1, #ll)
+        table.remove(ll, i)
+        return ll
     end
 
     -------------------------------------------------------------------------
     --- Remove the first value from the list.
     -- @param v data value
     -- @return the list
-    function _o:remove(v)
+    function ll:remove(v)
         lt.val_not_nil(v)
-        for i = 1, #_o do
-            if _o[i] == v then table.remove(_o, i) return _o end
+        for i = 1, #ll do
+            if ll[i] == v then table.remove(ll, i) return ll end
         end
-        return _o
+        return ll
      end
 
     -------------------------------------------------------------------------
     --- Return the index in the list of the first item whose value is given.
-    -- @paramtion _o:index
+    -- @paramtion ll:index
     -- @param v data value
     -- @int i where to start search, nil means beginning
     -- @return the index, or nil if not found
-    function _o:index_of(v, i)
+    function ll:index_of(v, i)
         lt.val_not_nil(v)
         i = i or 1
-        if i < 0 then i = #_o + i + 1 end
-        for ind = i, #_o do
-            if _o[ind] == v then return ind end
+        if i < 0 then i = #ll + i + 1 end
+        for ind = i, #ll do
+            if ll[ind] == v then return ind end
         end
         return nil
     end
@@ -206,44 +194,44 @@ function List(init, name)
     --- Does list contain value.
     -- @param v data value
     -- @return bool
-    function _o:contains(v)
+    function ll:contains(v)
         lt.val_not_nil(v)
-        local res = _o:find(v)
+        local res = ll:find(v)
         return res ~= nil
-        -- return _o:find(v) ~= nil or false
-        -- return _o:find(v) ~= nil  --and true or false
+        -- return ll:find(v) ~= nil or false
+        -- return ll:find(v) ~= nil  --and true or false
     end
 
     -------------------------------------------------------------------------
     --- Sort the items of the list in place.
     -- @param cmp comparison function, or simple ascending if nil
     -- @return the list
-    function _o:sort(cmp)
+    function ll:sort(cmp)
         lt.val_func(cmp)
         if not cmp then cmp = function(a, b) return b < a end end
-        table.sort(_o, cmp)
-        return _o
+        table.sort(ll, cmp)
+        return ll
     end
 
     -------------------------------------------------------------------------
     --- Reverse the elements of the list, in place.
     -- @return the list
-    function _o:reverse()
-        local t = _o
+    function ll:reverse()
+        local t = ll
         local n = #t
         for i = 1, n / 2 do
             t[i], t[n] = t[n], t[i]
             n = n - 1
         end
-        return _o
+        return ll
     end
 
     -------------------------------------------------------------------------
     --- Empty the list.
     -- @return the list
-    function _o:clear()
-        for _ = 1, #_o do table.remove(_o) end
-        return _o
+    function ll:clear()
+        for _ = 1, #ll do table.remove(ll) end
+        return ll
     end
 
     -------------------------------------------------------------------------
@@ -251,14 +239,14 @@ function List(init, name)
     -- @param v the value
     -- @param start where to start
     -- @return index of value, or nil if not found
-    function _o:find(v, start)
-        lt.val_type(v, _o.value_type)
+    function ll:find(v, start)
+        lt.val_type(v, ll.value_type)
         -- lt.val_integer(start)
         local res = nil
 
         local i = start or 1
-        for idx = i, #_o do
-            if _o[idx] == v then res = idx end
+        for idx = i, #ll do
+            if ll[idx] == v then res = idx end
         end
         return res
     end
@@ -268,14 +256,14 @@ function List(init, name)
     -- @param func a boolean function
     -- @param arg optional argument to be passed as second argument of the predicate
     -- @return new filtered list
-    function _o:find_all(func, arg)
+    function ll:find_all(func, arg)
         lt.val_func(func)
         local ls = {}
-        -- local res = filter(_o, func, arg)
+        -- local res = filter(ll, func, arg)
 
         local k
-        for i = 1, #_o do
-            local v = _o[i]
+        for i = 1, #ll do
+            local v = ll[i]
             if func(v, arg) then
                 ls[k] = v
                 k = k + 1
@@ -289,13 +277,13 @@ function List(init, name)
     --- Call the function on each element of the list.
     -- @param func a function or callable object
     -- @param ... optional values to pass to function
-    function _o:foreach(func, ...)
+    function ll:foreach(func, ...)
         lt.val_func(func)
-        for i = 1, #_o do
-            func(_o[i], ...)
+        for i = 1, #ll do
+            func(ll[i], ...)
         end
     end
 
     -------------------------------------------------------------------------
-    return _o
+    return ll
 end
