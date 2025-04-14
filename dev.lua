@@ -1,46 +1,53 @@
+---@diagnostic disable: unused-function, unused-local
+local ut = require('lbot_utils')
+local sx = require('stringex')
 
---[[ The sandbox.
+-------------------- A sandbox ------------------------
 
-organize modules/globals: https://www.lua.org/pil/15.4.html
-
-
-globals:
-- basic: _G, _VERSION, assert, collectgarbage, dofile, error, getmetatable, ipairs, load, loadfile, next, pairs, pcall, print,
-    rawequal, rawget, rawlen, rawset, require, select, setmetatable, tonumber, tostring, type, warn, xpcall
-- modules: coroutine, debug, io, math, os, package, string, table, utf8, 
-- metamethods: __add, __band, __bnot, __bor, __bxor, __call, __close, __concat, __div, __eq, __gc, __idiv, __index, 
-    __le, __len, __lt, __metatable, __mod, __mode, __mul, __name, __newindex, __pairs, __pow, __shl, __shr, __sub,
-    __tostring, __unm
-
-? args can be
-  - utils.on_error 'quit'
-  - utils.on_error('quit')
-  - utils.on_error'quit'  ??
-
-
+-- ?? organize modules/globals: https://www.lua.org/pil/15.4.html  >>> https://roblox.github.io/lua-style-guide/
 -- pl import/require
-require 'pl' -- calls Penlight\lua\pl\init.lua
-utils.import 'pl.func' -- take a table/module and 'inject' it into the local namespace.
-local ops = require 'pl.operator' -- normal import
-local List = require 'pl.List' -- class
-local append, concat = table.insert, table.concat -- aliases
-local optable = ops.optable -- alias
-?? add init.lua file? see http://www.playwithlua.com/?p=64
+-- require 'pl' -- calls Penlight\lua\pl\init.lua
+-- utils.import 'pl.func' -- take a table/module and 'inject' it into the local namespace.
+-- local ops = require 'pl.operator' -- normal import
+-- local List = require 'pl.List' -- class
+-- local append, concat = table.insert, table.concat -- aliases
+-- local optable = ops.optable -- alias
+-- ?? add init.lua file? see http://www.playwithlua.com/?p=64
+-- -- check the name before the assignment.
+-- function M.check_open_package(name) -->> check_global_name?
+--  for n, v in pairs(name) do
+--      if _G[n] ~= nil then
+--          error("name clash: " .. n .. " is already defined")
+--      end
+--      _G[n] = v
+--  end
+-- end
 
--- If you are afraid of name clashes when opening a package, you can check the name before the assignment.
-function M.check_open_package(name) -->> check_global_name?
- for n, v in pairs(name) do
-     if _G[n] ~= nil then
-         error("name clash: " .. n .. " is already defined")
-     end
-     _G[n] = v
- end
+
+-- globals:
+-- - basic: _G, _VERSION, assert, collectgarbage, dofile, error, getmetatable, ipairs, load, loadfile, next, pairs, pcall, print,
+--     rawequal, rawget, rawlen, rawset, require, select, setmetatable, tonumber, tostring, type, warn, xpcall
+-- - modules: coroutine, debug, io, math, os, package, string, table, utf8, 
+-- - metamethods: __add, __band, __bnot, __bor, __bxor, __call, __close, __concat, __div, __eq, __gc, __idiv, __index, 
+--     __le, __len, __lt, __metatable, __mod, __mode, __mul, __name, __newindex, __pairs, __pow, __shl, __shr, __sub,
+--     __tostring, __unm
+
+
+
+-- ? args can be
+--   - utils.on_error 'quit'
+--   - utils.on_error('quit')
+--   - utils.on_error'quit'  ??
+
+local function myfunc( ... )
+    -- body
 end
 
 
-function M.UT_RAISES(func, args, exp_msg)
+
+local function UT_RAISES(func, args, exp_msg)
     local pass = true
-    M.num_cases_run = M.num_cases_run + 1
+    -- M.num_cases_run = M.num_cases_run + 1
 
     -- print(args, #args)
 
@@ -52,22 +59,21 @@ function M.UT_RAISES(func, args, exp_msg)
     -- print('!!!', ok, msg) -- T
 
     if ok then
-        case_failed('function did not raise error()')
+        print('fail: function did not raise error()')
         pass = false
     elseif sx.contains(msg, exp_msg) then
+        print('pass')
         pass = true
     else
-        case_failed('function did raise error() but ['..msg..'] does not contain ['..exp_msg..']')
+        print('fail: function did raise error() but ['..msg..'] does not contain ['..exp_msg..']')
     end
     return pass
 end
-pn.UT_RAISES(List, { 'muffin', 123, 'beetlejuice', 'tigger' }, '')
-
-]]
-
+-- test
+-- UT_RAISES(List, { 'muffin', 123, 'beetlejuice', 'tigger' }, '')
 
 
--- TODOL switch/pattern matching ----------------------
+-- TODOF switch/pattern matching ----------------------
 -- https://stackoverflow.com/questions/37447704
 -- http://lua-users.org/wiki/SwitchStatement
 
@@ -88,7 +94,7 @@ pn.UT_RAISES(List, { 'muffin', 123, 'beetlejuice', 'tigger' }, '')
 -- default, print('just another day')
 
 -- Run it through template (or ?) which produces:
-function switch_run(day, month, year, dtype)
+local function switch_run(day, month, year, dtype)
     if day == 0 and month == 'jan' and year >= 2020 then
         print('happy new year')
     elseif day == 0 and month ~= 'jan' then
