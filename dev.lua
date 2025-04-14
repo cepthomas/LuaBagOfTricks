@@ -32,13 +32,30 @@ local sx = require('stringex')
 --     __le, __len, __lt, __metatable, __mod, __mode, __mul, __name, __newindex, __pairs, __pow, __shl, __shr, __sub,
 --     __tostring, __unm
 
+-- Guarding against typos
+-- Indexing into a table in Lua gives you nil if the key isn't present, which can cause errors that are difficult to trace!
+-- Our other major use case for metatables is to prevent certain forms of this problem. For types that act like enums, we can carefully apply an __index metamethod that throws:
+-- local MyEnum = {
+--     A = "A",
+--     B = "B",
+--     C = "C",
+-- }
+-- setmetatable(MyEnum, {
+--     __index = function(self, key)
+--         error(string.format("%q is not a valid member of MyEnum",
+--             tostring(key)), 2)
+--     end,
+-- })
+-- Since __index is only called when a key is missing in the table, MyEnum.A and MyEnum.B will still give you back the expected values, but MyEnum.FROB will throw, hopefully helping engineers track down bugs more easily.
+
+
+
 
 
 -- ? args can be
 --   - utils.on_error 'quit'
 --   - utils.on_error('quit')
 --   - utils.on_error'quit'  ??
-
 local function myfunc( ... )
     -- body
 end

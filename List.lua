@@ -12,6 +12,30 @@ local mt = {
         __tostring = function(self) return 'List:['..self.name..'] type:'..self.value_type..' len:'..tostring(self:count()) end
      }
 
+--     -- Tell Lua to fall back to looking in List.__index for missing fields.
+--     setmetatable(self, List)
+
+-- Add a method to check type given an instance, like:
+-- function List.isList(instance)
+--     return getmetatable(instance).__index == List
+-- end
+
+-- -- Expose a constructor which can be called by <classname>(<args>).
+-- local mt = {}
+-- mt.__call = function(class_tbl, ...)
+--     local obj = {}
+--     setmetatable(obj, c)
+--     if class_tbl.__init then
+--         class_tbl.__init(obj, ...)
+--     else
+--         -- Init base class.
+--         if base and base.__init then
+--             base.__init(obj, ...)
+--         end
+--     end
+--     return obj
+-- end
+
 -----------------------------------------------------------------------------
 --- Create a typed list.
 -- @param init a not-empty table, or a type name: number, string, boolean, table, function.
