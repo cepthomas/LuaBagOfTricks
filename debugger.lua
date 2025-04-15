@@ -615,7 +615,7 @@ function dbg.enable_color()
     GREEN_CARET = string.char(27) .. "[92m => "..COLOR_RESET
 end
 
-
+-- TODOL enable color explicitly
 local color_maybe_supported = (stdout_isatty and os.getenv("TERM") and os.getenv("TERM") ~= "dumb")
 if color_maybe_supported and not os.getenv("DBG_NOCOLOR") then
     dbg.enable_color()
