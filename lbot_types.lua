@@ -8,7 +8,6 @@ local M = {}
 -----------------------------------------------------------------------------
 --- Is this number an integer?
 -- @param v a number
--- @raise error if v is not a number
 -- @return boolean
 function M.is_integer(v)
     return math.type(v) == "integer"
