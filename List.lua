@@ -50,7 +50,7 @@ function List(t, name)
         local vtype = ut.ternary(lt.is_integer(v), 'integer', type(v))
 
         if #ll == 0 then
-            -- new list, check type
+            -- new object, check type
             local valid_types = { 'number', 'integer', 'string', 'boolean', 'table', 'function' }
             if tx.contains(valid_types, vtype) then
                 local mt = getmetatable(ll)
@@ -274,6 +274,7 @@ function List(t, name)
     {
         name = name or 'no-name',
         value_type = value_type,
+        __type = function(self) return 'List' end,
         __tostring = function(self) return 'List:['..self:name()..'] type:'..self:value_type()..' len:'..tostring(self:count()) end,
         -- __call = function(...) print('__call', ...) end,
     })

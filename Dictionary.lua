@@ -5,147 +5,135 @@
 local ut = require("lbot_utils")
 local lt = require("lbot_types")
 local tx = require("tableex")
+local sx = require("stringex")
+local ls = require("List")
 
-
--- Meta stuff.
-local mt =
-{
-    __tostring = function(self) return 'Dictionary:['..self.name..'] type:'..self.value_type..' len:'..tostring(self:count()) end,
-    __call = function(...) print('__call', ...) end,
- }
-
-
--- pl.Map.keys     list of keys. => keys()
--- pl.Map.values   list of values. => values()
--- pl.Map:len()   size of map. => count()
--- pl.Map:set(key, val)   put a value into the map. combine: pl.Map:setdefault(key, default)    set a value in the map if it doesn't exist yet.
--- pl.Map:get(key)    get a value from the map.
--- pl.Map:update(table)   update the map using key/value pairs from another table. => append/add_range?
-
+-- update(table)   update the map using key/value pairs from another table. => append/add_range?
+-- find_all(func, arg)
+-- foreach(func, ...)
 
 -----------------------------------------------------------------------------
 --- Create a typed list.
--- @param tbl an initial table.
+-- @param t map-like table to init the Dictionary, or nil for deferred
 -- @param name optional name
--- @return a new list
-function Dictionary(init, name)
-    lt.val_table(tbl, 0)
-
+-- @return a new Dictionary object
+function Dictionary(t, name)
+    if t ~= nil and type(t) ~= 'table' then error('Invalid initializer: '..type(t)) end
     local dd = {} -- our storage
+    local value_type = nil -- default
 
-    -- Determine flavor.
-    local valid_key_types = { 'number', 'string' }
-    local valid_val_types = { 'number', 'string', 'boolean', 'table', 'function' }
-    local stype = type(init)
-
-    if stype == 'string' and tx.contains(valid_types, init) then
-        dd.value_type = init
-    elseif stype == 'table' then
-        -- Check that the table is correct.
-        local num = 0
-        local val_type = nil
-
-        -- Check for empty - can't determine type.
-        if #init == 0 then error('Can\'t create a List from empty table') end
-
-        -- Check if all keys are indexes.
-        for k, _ in pairs(init) do
-            if type(k) ~= 'number' then error('Indexes must be number') end
-            num = num + 1
-        end
-
-        -- Check sequential from 1.
-        for i = 1, num do
-            if init[i] == nil then error('Indexes must be sequential') end
-        end
-
-        -- Check value type.
-        for i = 1, num do
-            if i == 1 then val_type = type(init[i]) -- init
-            elseif type(init[i]) ~= val_type then error('Values must be homogenous')
-            end
-        end
-
-        -- Must be ok then.
-        dd = init
-        dd.value_type = val_type
-    else
-        error('Invalid value type:'..stype)
-    end
-
-    -- Good to go.
-    dd.name = name or 'no-name'
-    setmetatable(dd, mt)
+    -------------------------------------------------------------------------
+    -- Properties
+    function dd:name() return getmetatable(dd).name end
+    function dd:key_type() return getmetatable(dd).key_type end
+    function dd:value_type() return getmetatable(dd).value_type end
 
     -------------------------------------------------------------------------
     --- Diagnostic.
-    -- @return a list of values
+    -- @return a string
     function dd:dump()
         local res = {}
-        for _, v in ipairs(dd) do
-            table.insert(res, v)
+        table.insert(res, 'Dictionary('..dd:key_type()..':'..dd.value_type..') ['..dd:name()..']')
+        for k, v in pairs(dd) do
+            table.insert(res, '    '..k..':'..v)
         end
-        return res
+        return sx.strjoin('\n', res)
+    end
+
+    -------------------------------------------------------------------------
+    --- Check type of key and value. Also does lazy init. Raises error.
+    -- @param v the value to check
+    local function check_val(k, v)
+        local ktype = ut.ternary(lt.is_integer(k), 'integer', type(k))
+        local vtype = ut.ternary(lt.is_integer(v), 'integer', type(v))
+
+        if tx.count(dd) == 0 then -- TODOL cache size?
+            -- new object, check types
+            local valid_key_types = { 'number', 'string' }
+            local valid_val_types = { 'number', 'string', 'boolean', 'table', 'function' }
+            if tx.contains(valid_types, vtype) then
+                local mt = getmetatable(dd)
+                mt.value_type = vtype
+                setmetatable(dd, mt)
+            else
+                error('Invalid value type:'..vtype)
+            end
+        else
+            -- add, check type
+            if vtype ~= dd:value_type() then error('Values not homogenous') end
+        end
     end
 
     -------------------------------------------------------------------------
     --- How many.
     -- @return the count
     function dd:count()
-        return #dd
+        return tx.count(dd)
     end
 
     -------------------------------------------------------------------------
-    --- Add an item to the end of the list.
-    -- @param v An item/value
-    -- @return the list
-    function dd:add(v)
-        lt.val_type(v, dd.value_type)
-        table.insert(dd, v)
-        return dd
+    ---
+    -- @return list of keys
+    function dd:keys()
+        return tx.count(dd)
     end
 
     -------------------------------------------------------------------------
-    --- Extend the list by appending all the items in the given list.
-    -- @tparam other List to append
-    -- @return the list
-    function dd:add_range(other)
-        lt.val_table(other, 0)
-        for i = 1, #other do table.insert(dd, other[i]) end
-        return dd
+    ---
+    -- @return list of values
+    function dd:values()
+        return tx.count(dd)
     end
 
     -------------------------------------------------------------------------
-    --- Remove the first value from the list.
-    -- @param v data value
-    -- @return the list
-    function dd:remove(v)
-        lt.val_not_nil(v)
-        for i = 1, #dd do
-            if dd[i] == v then table.remove(dd, i) return dd end
-        end
-        return dd
-     end
+    --- put a value into the map. combine: pl.Map:setdefault(key, default)    set a value in the map if it doesn't exist yet.
+    function dd:set(key, val)
+        return tx.count(dd)
+    end
+
+    -------------------------------------------------------------------------
+    --- get a value from the map
+    -- @return the value or nil
+    function dd:get(key)
+        return tx.count(dd)
+    end
 
     -------------------------------------------------------------------------
     --- Empty the list.
     -- @return the list
     function dd:clear()
-        for _ = 1, #dd do table.remove(dd) end
+        for _ = 1, tx.count(dd) do table.remove(dd) end
         return dd
     end
 
     -------------------------------------------------------------------------
-    --- Call the function on each element of the list.
-    -- @param func a function or callable object
-    -- @param ... optional values to pass to function
-    function dd:foreach(func, ...)
-        lt.val_func(func)
-        for i = 1, #dd do
-            func(dd[i], ...)
-        end
+    -- Good to go. Do meta stuff, properties.
+    setmetatable(dd,
+    {
+        name = name or 'no-name',
+        value_type = value_type,
+        __tostring = function(self) return 'Dictionary:['..self:name()..'] type:'..self:value_type()..' len:'..tostring(self:count()) end,
+        -- __call = function(...) print('__call', ...) end,
+    })
+
+    if t ~= nil then
+        -- -- TODOL? Check that the table is array-like.
+        -- -- Check if all keys are indexes.
+        -- local num = 0
+        -- for k, _ in pairs(t) do
+        --     if type(k) ~= 'number' then error('Indexes must be number') end
+        --     num = num + 1
+        -- end
+
+        -- -- Check sequential from 1.
+        -- for i = 1, num do
+        --     if t[i] == nil then error('Indexes must be sequential') end
+        -- end
+
+        -- Copy the data. This tests for homogenity.
+        for _, v in ipairs(t) do dd:add(v) end
     end
 
-    -------------------------------------------------------------------------
     return dd
 end
+

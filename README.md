@@ -23,7 +23,7 @@ Some parts are borrowed and/or modified from  [Penlight](https://github.com/luna
   Removed dependencies on other penlight components including `LuaFileSystem` so it's standalone now.
   Generally useful and used here primarily for generating language specific interop.
 - `*interop*.lua`: Tools to generate interop glue code for embedding Lua in various hosts - C/C#/.NET.
-  See [Lua Interop](doc/Interop.md)
+  See [Lua Interop](Interop.md)
 - `class.lua` - General purpose Lua class.
 - `List.lua` - General purpose true homogenous list.
 - `lua54` folder contains Lua reference for integration in other Lua projects.
