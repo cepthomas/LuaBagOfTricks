@@ -6,6 +6,7 @@ local ut = require("lbot_utils")
 local lt = require("lbot_types")
 local tx = require("tableex")
 
+
 -- Meta stuff.
 local mt =
 {
@@ -24,14 +25,16 @@ local mt =
 
 -----------------------------------------------------------------------------
 --- Create a typed list.
--- @param init a not-empty table, or a type name: number, string, boolean, table, function.
+-- @param tbl an initial table.
 -- @param name optional name
 -- @return a new list
 function Dictionary(init, name)
+    lt.val_table(tbl, 0)
+
     local dd = {} -- our storage
 
     -- Determine flavor.
-    local valid_key_types = { 'number', 'string' } --, 'boolean', 'table', 'function' }
+    local valid_key_types = { 'number', 'string' }
     local valid_val_types = { 'number', 'string', 'boolean', 'table', 'function' }
     local stype = type(init)
 

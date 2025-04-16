@@ -5,6 +5,8 @@
 local ut = require("lbot_utils")
 local lt = require("lbot_types")
 local tx = require("tableex")
+local sx = require("stringex")
+
 
 -- Helper.
 local function who_called_me()
@@ -12,16 +14,6 @@ local function who_called_me()
     return filepath..'('..linenumber..')'
 end
 
-
--- Meta stuff.
-local mt =
-{
-    __tostring = function(self) return 'List:['..self.name..'] type:'..self.value_type..' len:'..tostring(self:count()) end,
-    __call = function(...) print('__call', ...) end,
-    -- __index = function(...) print('__index', who_called_me()) end,
-    -- __index = function(...) print('__index', ...) end,
-    -- __newindex = function(...) print('__newindex', who_called_me()) end,
- }
 
 
 -----------------------------------------------------------------------------
@@ -31,17 +23,18 @@ local mt =
 -- @return a new list
 function List(init, name)
     local ll = {} -- our storage
+    local value_type = nil
 
     -- Determine flavor.
     local valid_types = { 'number', 'string', 'boolean', 'table', 'function' }
     local stype = type(init)
 
     if stype == 'string' and tx.contains(valid_types, init) then
-        ll.value_type = init
+        value_type = init
     elseif stype == 'table' then
         -- Check that the table is correct.
         local num = 0
-        local val_type = nil
+        -- local val_type = nil
 
         -- Check for empty - can't determine type.
         if #init == 0 then error('Can\'t create a List from empty table') end
@@ -59,31 +52,43 @@ function List(init, name)
 
         -- Check value type.
         for i = 1, num do
-            if i == 1 then val_type = type(init[i]) -- init
-            elseif type(init[i]) ~= val_type then error('Values must be homogenous')
+            if i == 1 then value_type = type(init[i]) -- init
+            elseif type(init[i]) ~= value_type then error('Values must be homogenous')
             end
         end
 
         -- Must be ok then.
         ll = init
-        ll.value_type = val_type
+        -- ll.value_type = val_type
     else
         error('Invalid value type:'..stype)
     end
 
-    -- Good to go.
-    ll.name = name or 'no-name'
-    setmetatable(ll, mt)
+    -- Good to go. Do meta stuff, properties.
+    setmetatable(ll,
+    {
+        name = name or 'no-name',
+        value_type = value_type,
+        __tostring = function(self) return 'List:['..self:name()..'] type:'..self:value_type()..' len:'..tostring(self:count()) end,
+        -- __call = function(...) print('__call', ...) end,
+    })
+
+    -------------------------------------------------------------------------
+    -- Properties
+    function ll:name() return getmetatable(ll).name end
+    function ll:value_type() return getmetatable(ll).value_type end
+
 
     -------------------------------------------------------------------------
     --- Diagnostic.
-    -- @return a list of values
+    -- @return a string
     function ll:dump()
         local res = {}
+        table.insert(res, 'List('..ll:value_type()..') ['..ll:name()..']')
         for _, v in ipairs(ll) do
-            table.insert(res, v)
+            table.insert(res, '    '..v)
         end
-        return res
+        return sx.strjoin('\n', res)
     end
 
     -------------------------------------------------------------------------
@@ -126,7 +131,7 @@ function List(init, name)
     -- @param v An item/value
     -- @return the list
     function ll:add(v)
-        lt.val_type(v, ll.value_type)
+        lt.val_type(v, ll.value_type())
         table.insert(ll, v)
         return ll
     end
@@ -240,7 +245,7 @@ function List(init, name)
     -- @param start where to start
     -- @return index of value, or nil if not found
     function ll:find(v, start)
-        lt.val_type(v, ll.value_type)
+        lt.val_type(v, ll.value_type())
         -- lt.val_integer(start)
         local res = nil
 
@@ -285,5 +290,6 @@ function List(init, name)
     end
 
     -------------------------------------------------------------------------
+
     return ll
 end
