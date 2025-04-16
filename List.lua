@@ -8,76 +8,28 @@ local tx = require("tableex")
 local sx = require("stringex")
 
 
--- Helper.
-local function who_called_me()
-    local filepath, linenumber, _ = ut.get_caller_info(4)
-    return filepath..'('..linenumber..')'
-end
+-- -- Helper.
+-- local function who_called_me()
+--     local filepath, linenumber, _ = ut.get_caller_info(4)
+--     return filepath..'('..linenumber..')'
+-- end
 
 
 
 -----------------------------------------------------------------------------
 --- Create a typed list.
--- @param init a not-empty table, or a type name: number, string, boolean, table, function.
+-- @param t array-like table to init the List, or nil for deferred
 -- @param name optional name
--- @return a new list
-function List(init, name)
+-- @return a new List object
+function List(t, name)
+    if t ~= nil and type(t) ~= 'table' then error('Invalid initializer: '..type(t)) end
     local ll = {} -- our storage
-    local value_type = nil
-
-    -- Determine flavor.
-    local valid_types = { 'number', 'string', 'boolean', 'table', 'function' }
-    local stype = type(init)
-
-    if stype == 'string' and tx.contains(valid_types, init) then
-        value_type = init
-    elseif stype == 'table' then
-        -- Check that the table is correct.
-        local num = 0
-        -- local val_type = nil
-
-        -- Check for empty - can't determine type.
-        if #init == 0 then error('Can\'t create a List from empty table') end
-
-        -- Check if all keys are indexes.
-        for k, _ in pairs(init) do
-            if type(k) ~= 'number' then error('Indexes must be number') end
-            num = num + 1
-        end
-
-        -- Check sequential from 1.
-        for i = 1, num do
-            if init[i] == nil then error('Indexes must be sequential') end
-        end
-
-        -- Check value type.
-        for i = 1, num do
-            if i == 1 then value_type = type(init[i]) -- init
-            elseif type(init[i]) ~= value_type then error('Values must be homogenous')
-            end
-        end
-
-        -- Must be ok then.
-        ll = init
-        -- ll.value_type = val_type
-    else
-        error('Invalid value type:'..stype)
-    end
-
-    -- Good to go. Do meta stuff, properties.
-    setmetatable(ll,
-    {
-        name = name or 'no-name',
-        value_type = value_type,
-        __tostring = function(self) return 'List:['..self:name()..'] type:'..self:value_type()..' len:'..tostring(self:count()) end,
-        -- __call = function(...) print('__call', ...) end,
-    })
+    local value_type = nil -- default
 
     -------------------------------------------------------------------------
     -- Properties
     function ll:name() return getmetatable(ll).name end
     function ll:value_type() return getmetatable(ll).value_type end
-
 
     -------------------------------------------------------------------------
     --- Diagnostic.
@@ -90,6 +42,29 @@ function List(init, name)
         end
         return sx.strjoin('\n', res)
     end
+
+    -------------------------------------------------------------------------
+    --- Check type of value. Also does lazy init. Raises error.
+    -- @param v the value to check
+    local function check_val(v)
+        local vtype = ut.ternary(lt.is_integer(v), 'integer', type(v))
+
+        if #ll == 0 then
+            -- new list, check type
+            local valid_types = { 'number', 'integer', 'string', 'boolean', 'table', 'function' }
+            if tx.contains(valid_types, vtype) then
+                local mt = getmetatable(ll)
+                mt.value_type = vtype
+                setmetatable(ll, mt)
+            else
+                error('Invalid value type:'..vtype)
+            end
+        else
+            -- add, check type
+            if vtype ~= ll:value_type() then error('Values not homogenous') end
+        end
+    end
+
 
     -------------------------------------------------------------------------
     --- How many.
@@ -128,10 +103,10 @@ function List(init, name)
 
     -------------------------------------------------------------------------
     --- Add an item to the end of the list.
-    -- @param v An item/value
+    -- @param v the item/value
     -- @return the list
     function ll:add(v)
-        lt.val_type(v, ll.value_type())
+        check_val(v)
         table.insert(ll, v)
         return ll
     end
@@ -141,19 +116,23 @@ function List(init, name)
     -- @tparam other List to append
     -- @return the list
     function ll:add_range(other)
-        lt.val_table(other, 0)
-        for i = 1, #other do table.insert(ll, other[i]) end
+        lt.val_table(other, 1)
+        for i = 1, #other do
+            check_val(other[i])
+            table.insert(ll, other[i])
+        end
         return ll
     end
 
     -------------------------------------------------------------------------
     --- Insert an item at a given position. i is the index of the element before which to insert.
     -- @int i index of element before which to insert
-    -- @param x A data item
+    -- @param v the item/value
     -- @return the list
-    function ll:insert(i, x)
+    function ll:insert(i, v)
         lt.val_integer(i, 1, #ll)
-        table.insert(ll, i, x)
+        check_val(v)
+        table.insert(ll, i, v)
         return ll
     end
 
@@ -222,10 +201,10 @@ function List(init, name)
     --- Reverse the elements of the list, in place.
     -- @return the list
     function ll:reverse()
-        local t = ll
-        local n = #t
+        local tr = ll
+        local n = #tr
         for i = 1, n / 2 do
-            t[i], t[n] = t[n], t[i]
+            tr[i], tr[n] = tr[n], tr[i]
             n = n - 1
         end
         return ll
@@ -245,7 +224,7 @@ function List(init, name)
     -- @param start where to start
     -- @return index of value, or nil if not found
     function ll:find(v, start)
-        lt.val_type(v, ll.value_type())
+        lt.val_type(v, ll:value_type())
         -- lt.val_integer(start)
         local res = nil
 
@@ -290,6 +269,32 @@ function List(init, name)
     end
 
     -------------------------------------------------------------------------
+    -- Good to go. Do meta stuff, properties.
+    setmetatable(ll,
+    {
+        name = name or 'no-name',
+        value_type = value_type,
+        __tostring = function(self) return 'List:['..self:name()..'] type:'..self:value_type()..' len:'..tostring(self:count()) end,
+        -- __call = function(...) print('__call', ...) end,
+    })
+
+    if t ~= nil then
+        -- -- TODOL? Check that the table is array-like.
+        -- -- Check if all keys are indexes.
+        -- local num = 0
+        -- for k, _ in pairs(t) do
+        --     if type(k) ~= 'number' then error('Indexes must be number') end
+        --     num = num + 1
+        -- end
+
+        -- -- Check sequential from 1.
+        -- for i = 1, num do
+        --     if t[i] == nil then error('Indexes must be sequential') end
+        -- end
+
+        -- Copy the data. This tests for homogenity.
+        for _, v in ipairs(t) do ll:add(v) end
+    end
 
     return ll
 end
