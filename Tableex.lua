@@ -1,5 +1,6 @@
 -- Enhancements to builtin table. Some OOP flavors added.
 
+
 local ut = require("lbot_utils")
 local lt = require("lbot_types")
 -- local sx = require("stringex")
@@ -9,10 +10,33 @@ local lt = require("lbot_types")
 -- TODOL Add things like these?
 --   find_all(func, arg)
 --   foreach(func, ...)
-
 -- TODOL: Typed version - see check_val()
 -- TODOL: Get a value from the map,  opt for default? __index?
 -- TODOL: Add or replace an entry.  __newindex?
+
+
+--[[ ?? TODOL Create classes like this:
+local myclass = {}
+-- class table
+local MyClass = {}
+function MyClass:some_method()
+   -- code
+end
+function MyClass:another_one()
+   self:some_method()
+   -- more code
+end
+function myclass.new()
+   local self = {}
+   setmetatable(self, { __index = MyClass })
+   return self
+end
+return myclass
+]]
+
+-- local function makelist(t)
+--     return setmetatable(t, require('pl.List'))
+-- end
 
 
 -----------------------------------------------------------------------------

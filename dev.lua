@@ -128,26 +128,3 @@ end
 
 
 
--- ?? Create classes like this:
-
-local myclass = {}
-
--- class table
-local MyClass = {}
-
-function MyClass:some_method()
-   -- code
-end
-
-function MyClass:another_one()
-   self:some_method()
-   -- more code
-end
-
-function myclass.new()
-   local self = {}
-   setmetatable(self, { __index = MyClass })
-   return self
-end
-
-return myclass

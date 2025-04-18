@@ -1,8 +1,8 @@
 -- GP utilities. Some parts are lifted from or inspired by https://github.com/lunarmodules/Penlight.
 
 local sx = require('stringex')
--- local tx = require('tableex')
 local lt = require('lbot_types')
+
 
 local M = {}
 
@@ -20,15 +20,15 @@ function M.check_globals(app_glob)
     local extra = {}
 
     -- Expect to see these normal globals.
-    local expected = Tableex({'_G', '_VERSION', 'assert', 'collectgarbage', 'coroutine', 'debug', 'dofile', 'error',
+    local expected = {'_G', '_VERSION', 'assert', 'collectgarbage', 'coroutine', 'debug', 'dofile', 'error',
         'getmetatable', 'io', 'ipairs', 'load', 'loadfile', 'math', 'next', 'os', 'package', 'pairs', 'pcall',
         'print', 'rawequal', 'rawget', 'rawlen', 'rawset', 'require', 'select', 'setmetatable', 'string',
         'table', 'tonumber', 'tostring', 'type', 'utf8', 'warn', 'xpcall',
         -- standard modules:
         'coroutine', 'debug', 'io', 'math', 'os', 'package', 'string', 'table', 'utf8',
-        'arg' })
+        'arg' }
 
-        expected:add_range(app_glob)
+        for k, v in pairs(expected) do app_glob[k] = v end
 
     for k, _ in pairs(_G) do
         if expected[k] ~= nil then

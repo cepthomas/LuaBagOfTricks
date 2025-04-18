@@ -4,7 +4,6 @@
 
 local ut = require("lbot_utils")
 local lt = require("lbot_types")
--- local tx = require("tableex")
 local sx = require("stringex")
 
 
@@ -33,17 +32,21 @@ function List(t, name)
         local vtype = ut.ternary(lt.is_integer(v), 'integer', type(v))
 
         if #ll == 0 then
-            -- new object, check type
+            -- New object, check valid type
             local valid_types = { 'number', 'integer', 'string', 'boolean', 'table', 'function' }
-            if valid_types[vtype] ~= nil then
-                local mt = getmetatable(ll)
-                mt.value_type = vtype
-                setmetatable(ll, mt)
-            else
+            for _, vt in ipairs(valid_types) do
+                if vtype == vt then
+                    local mt = getmetatable(ll)
+                    mt.value_type = vtype
+                    setmetatable(ll, mt)
+                end
+            end
+
+            if ll:value_type() == nil then
                 error('Invalid value type:'..vtype)
             end
         else
-            -- add, check type
+            -- It's an add, check type.
             if vtype ~= ll:value_type() then error('Values not homogenous') end
         end
     end
@@ -57,9 +60,9 @@ function List(t, name)
         local res = {}
         table.insert(res, tostring(ll))
         for _, v in ipairs(ll) do
-            table.insert(res, '    '..v)
+            table.insert(res, tostring(v))
         end
-        return sx.strjoin('\n', res)
+        return sx.strjoin(',', res)
     end
 
     -------------------------------------------------------------------------
@@ -207,12 +210,15 @@ function List(t, name)
     -- @return index of value, or nil if not found
     function ll:find(v, start)
         lt.val_type(v, ll:value_type())
-        -- lt.val_integer(start)
+        start = start or 1
+        lt.val_integer(start)
         local res = nil
 
-        local i = start or 1
-        for idx = i, #ll do
-            if ll[idx] == v then res = idx end
+        for idx = start, #ll do
+            if ll[idx] == v then
+                res = idx
+                break
+            end
         end
         return res
     end
@@ -220,34 +226,20 @@ function List(t, name)
     -------------------------------------------------------------------------
     --- Create a list of all elements which match a function.
     -- @param func a boolean function
-    -- @param arg optional argument to be passed as second argument of the predicate
     -- @return List object of results
-    function ll:find_all(func, arg)
+    function ll:find_all(func)
         lt.val_func(func)
         local ls = {}
-        -- local res = filter(ll, func, arg)
-
-        local k
+        local k = 1
         for i = 1, #ll do
             local v = ll[i]
-            if func(v, arg) then
+            if func(v) then
                 ls[k] = v
                 k = k + 1
             end
         end
 
         return List(ls)
-    end
-
-    -------------------------------------------------------------------------
-    --- Call the function on each element of the list.
-    -- @param func a function or callable object
-    -- @param ... optional values to pass to function
-    function ll:foreach(func, ...)
-        lt.val_func(func)
-        for i = 1, #ll do
-            func(ll[i], ...)
-        end
     end
 
     ------------------------- Initialization --------------------------------
@@ -276,7 +268,6 @@ function List(t, name)
     --     if type(k) ~= 'number' then error('Indexes must be number') end
     --     num = num + 1
     -- end
-
     -- -- Check sequential from 1.
     -- for i = 1, num do
     --     if t[i] == nil then error('Indexes must be sequential') end
