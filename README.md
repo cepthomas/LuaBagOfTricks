@@ -14,6 +14,8 @@ Tests and examples are found in a separate repo [LbotImpl](https://github.com/ce
 
 Some parts are borrowed and/or modified from  [Penlight](https://github.com/lunarmodules/Penlight)
 
+Code mostly follows [luarocks style guide](https://github.com/luarocks/lua-style-guide)
+
 - `pnut.lua` and `pnut_runner.lua` comprise a minimalist unit test framework.
 - `lbot_utils.lua`, `lbot_types.lua`: Handy collected odds and ends for tables, math, validation, errors, ...
 - `stringex.lua`: Various string functions. .

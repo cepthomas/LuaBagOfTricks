@@ -4,16 +4,8 @@
 
 local ut = require("lbot_utils")
 local lt = require("lbot_types")
-local tx = require("tableex")
+-- local tx = require("tableex")
 local sx = require("stringex")
-
-
--- -- Helper.
--- local function who_called_me()
---     local filepath, linenumber, _ = ut.get_caller_info(4)
---     return filepath..'('..linenumber..')'
--- end
-
 
 
 -----------------------------------------------------------------------------
@@ -26,22 +18,13 @@ function List(t, name)
     local ll = {} -- our storage
     local value_type = nil -- default
 
-    -------------------------------------------------------------------------
-    -- Properties
+    ------------------------ Properties -------------------------------------
+
     function ll:name() return getmetatable(ll).name end
+    function ll:class() return getmetatable(ll).class end
     function ll:value_type() return getmetatable(ll).value_type end
 
-    -------------------------------------------------------------------------
-    --- Diagnostic.
-    -- @return a string
-    function ll:dump()
-        local res = {}
-        table.insert(res, 'List('..ll:value_type()..') ['..ll:name()..']')
-        for _, v in ipairs(ll) do
-            table.insert(res, '    '..v)
-        end
-        return sx.strjoin('\n', res)
-    end
+    ------------------------- Private ---------------------------------------
 
     -------------------------------------------------------------------------
     --- Check type of value. Also does lazy init. Raises error.
@@ -52,7 +35,7 @@ function List(t, name)
         if #ll == 0 then
             -- new object, check type
             local valid_types = { 'number', 'integer', 'string', 'boolean', 'table', 'function' }
-            if tx.contains(valid_types, vtype) then
+            if valid_types[vtype] ~= nil then
                 local mt = getmetatable(ll)
                 mt.value_type = vtype
                 setmetatable(ll, mt)
@@ -65,6 +48,19 @@ function List(t, name)
         end
     end
 
+    ------------------------- Public ----------------------------------------
+
+    -------------------------------------------------------------------------
+    --- Diagnostic.
+    -- @return a string
+    function ll:dump()
+        local res = {}
+        table.insert(res, tostring(ll))
+        for _, v in ipairs(ll) do
+            table.insert(res, '    '..v)
+        end
+        return sx.strjoin('\n', res)
+    end
 
     -------------------------------------------------------------------------
     --- How many.
@@ -104,58 +100,48 @@ function List(t, name)
     -------------------------------------------------------------------------
     --- Add an item to the end of the list.
     -- @param v the item/value
-    -- @return the list
     function ll:add(v)
         check_val(v)
         table.insert(ll, v)
-        return ll
     end
 
     -------------------------------------------------------------------------
     --- Extend the list by appending all the items in the given list.
-    -- @tparam other List to append
-    -- @return the list
+    -- @param other List to append
     function ll:add_range(other)
         lt.val_table(other, 1)
         for i = 1, #other do
             check_val(other[i])
             table.insert(ll, other[i])
         end
-        return ll
     end
 
     -------------------------------------------------------------------------
     --- Insert an item at a given position. i is the index of the element before which to insert.
     -- @int i index of element before which to insert
     -- @param v the item/value
-    -- @return the list
     function ll:insert(i, v)
         lt.val_integer(i, 1, #ll)
         check_val(v)
         table.insert(ll, i, v)
-        return ll
     end
 
     -------------------------------------------------------------------------
     --- Remove an element given its index.
     -- @int i the index
-    -- @return the list
     function ll:remove_at(i)
         lt.val_integer(i, 1, #ll)
         table.remove(ll, i)
-        return ll
     end
 
     -------------------------------------------------------------------------
     --- Remove the first value from the list.
     -- @param v data value
-    -- @return the list
     function ll:remove(v)
         lt.val_not_nil(v)
         for i = 1, #ll do
             if ll[i] == v then table.remove(ll, i) return ll end
         end
-        return ll
      end
 
     -------------------------------------------------------------------------
@@ -189,17 +175,14 @@ function List(t, name)
     -------------------------------------------------------------------------
     --- Sort the items of the list in place.
     -- @param cmp comparison function, or simple ascending if nil
-    -- @return the list
     function ll:sort(cmp)
         lt.val_func(cmp)
         if not cmp then cmp = function(a, b) return b < a end end
         table.sort(ll, cmp)
-        return ll
     end
 
     -------------------------------------------------------------------------
     --- Reverse the elements of the list, in place.
-    -- @return the list
     function ll:reverse()
         local tr = ll
         local n = #tr
@@ -207,7 +190,6 @@ function List(t, name)
             tr[i], tr[n] = tr[n], tr[i]
             n = n - 1
         end
-        return ll
     end
 
     -------------------------------------------------------------------------
@@ -239,7 +221,7 @@ function List(t, name)
     --- Create a list of all elements which match a function.
     -- @param func a boolean function
     -- @param arg optional argument to be passed as second argument of the predicate
-    -- @return new filtered list
+    -- @return List object of results
     function ll:find_all(func, arg)
         lt.val_func(func)
         local ls = {}
@@ -268,34 +250,37 @@ function List(t, name)
         end
     end
 
+    ------------------------- Initialization --------------------------------
+
     -------------------------------------------------------------------------
-    -- Good to go. Do meta stuff, properties.
+    -- Object has been created. Finish up data initialization.
     setmetatable(ll,
     {
-        name = name or 'no-name',
+        name = name or 'no_name',
+        class = 'List',
         value_type = value_type,
-        __type = function(self) return 'List' end,
-        __tostring = function(self) return 'List:['..self:name()..'] type:'..self:value_type()..' len:'..tostring(self:count()) end,
+        __tostring = function(self) return string.format('%s:(%s)[%d] "%s"',
+                        self:class(), self:value_type(), self:count(), self:name()) end,
         -- __call = function(...) print('__call', ...) end,
     })
 
     if t ~= nil then
-        -- -- TODOL? Check that the table is array-like.
-        -- -- Check if all keys are indexes.
-        -- local num = 0
-        -- for k, _ in pairs(t) do
-        --     if type(k) ~= 'number' then error('Indexes must be number') end
-        --     num = num + 1
-        -- end
-
-        -- -- Check sequential from 1.
-        -- for i = 1, num do
-        --     if t[i] == nil then error('Indexes must be sequential') end
-        -- end
-
         -- Copy the data. This tests for homogenity.
         for _, v in ipairs(t) do ll:add(v) end
     end
+
+    -- -- TODOL? Check that the table is array-like.
+    -- -- Check if all keys are indexes.
+    -- local num = 0
+    -- for k, _ in pairs(t) do
+    --     if type(k) ~= 'number' then error('Indexes must be number') end
+    --     num = num + 1
+    -- end
+
+    -- -- Check sequential from 1.
+    -- for i = 1, num do
+    --     if t[i] == nil then error('Indexes must be sequential') end
+    -- end
 
     return ll
 end

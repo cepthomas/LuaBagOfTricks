@@ -1,8 +1,8 @@
 -- GP utilities. Some parts are lifted from or inspired by https://github.com/lunarmodules/Penlight.
 
-local sx = require("stringex")
-local tx = require("tableex")
-local lt = require("lbot_types")
+local sx = require('stringex')
+-- local tx = require('tableex')
+local lt = require('lbot_types')
 
 local M = {}
 
@@ -20,22 +20,19 @@ function M.check_globals(app_glob)
     local extra = {}
 
     -- Expect to see these normal globals.
-    local expected = {'_G', '_VERSION', 'assert', 'collectgarbage', 'coroutine', 'debug', 'dofile', 'error',
+    local expected = Tableex({'_G', '_VERSION', 'assert', 'collectgarbage', 'coroutine', 'debug', 'dofile', 'error',
         'getmetatable', 'io', 'ipairs', 'load', 'loadfile', 'math', 'next', 'os', 'package', 'pairs', 'pcall',
         'print', 'rawequal', 'rawget', 'rawlen', 'rawset', 'require', 'select', 'setmetatable', 'string',
         'table', 'tonumber', 'tostring', 'type', 'utf8', 'warn', 'xpcall',
         -- standard modules:
         'coroutine', 'debug', 'io', 'math', 'os', 'package', 'string', 'table', 'utf8',
-        'arg' }
+        'arg' })
 
-        for ind = 1, #app_glob do
-            table.insert(expected, app_glob[ind])
-        end
+        expected:add_range(app_glob)
 
     for k, _ in pairs(_G) do
-        -- print('g', k, v, tx.contains(expected, v))
-        if tx.contains(expected, k) then
-            expected[k] = nil --:remove(k)
+        if expected[k] ~= nil then
+            expected[k] = nil -- remove
         else
             table.insert(extra, k)
         end
@@ -221,6 +218,52 @@ function M.colorize_text(text)
     return res
 end
 
+-----------------------------------------------------------------------------
+--- Diagnostic.
+-- @param tbl What to dump.
+-- @param name Visual
+-- @param depth How deep to go in recursion. 0 (default) means just this level.
+-- @return formatted string
+function M.dump_table(tbl, name, depth)
+    lt.val_table(tbl)
+    name = name or 'no_name'
+    depth = depth or 0
+    lt.val_integer(depth)
+    local level = 0
+
+    -- Worker function.
+    local function _dump_table(_tbl, _name, _level)
+        local res = {}
+        local sindent = string.rep('    ', _level)
+        table.insert(res, sindent.._name..'(table):')
+
+        -- Do contents.
+        sindent = sindent..'    '
+        for k, v in pairs(_tbl) do
+            if type(v) == 'table' then
+                if _level < depth then
+                    _level = _level + 1
+                    local trec = _dump_table(v, k, _level) -- recursion!
+                    _level = _level - 1
+                    for _, v2 in ipairs(trec) do
+                        table.insert(res, v2)
+                    end
+                else
+                    table.insert(res, sindent..k..'('..type(v)..')')
+                end
+            else
+                table.insert(res, sindent..k..'('..type(v)..')['..tostring(v)..']')
+            end
+        end
+
+        return res
+    end
+
+    -- Go.
+    local res = _dump_table(tbl, name, level)
+
+    return sx.strjoin('\n', res)
+end
 
 -----------------------------------------------------------------------------
 -- Return the module.

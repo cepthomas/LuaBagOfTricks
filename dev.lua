@@ -4,6 +4,7 @@ local sx = require('stringex')
 
 -------------------- A sandbox ------------------------
 
+
 -- ?? organize modules/globals: https://www.lua.org/pil/15.4.html  >>> https://roblox.github.io/lua-style-guide/
 -- pl import/require
 -- require 'pl' -- calls Penlight\lua\pl\init.lua
@@ -124,3 +125,29 @@ local function switch_run(day, month, year, dtype)
         print('just another day')
     end
 end
+
+
+
+-- ?? Create classes like this:
+
+local myclass = {}
+
+-- class table
+local MyClass = {}
+
+function MyClass:some_method()
+   -- code
+end
+
+function MyClass:another_one()
+   self:some_method()
+   -- more code
+end
+
+function myclass.new()
+   local self = {}
+   setmetatable(self, { __index = MyClass })
+   return self
+end
+
+return myclass
