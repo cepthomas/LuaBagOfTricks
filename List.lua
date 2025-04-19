@@ -15,7 +15,6 @@ local sx = require("stringex")
 function List(t, name)
     if t ~= nil and type(t) ~= 'table' then error('Invalid initializer: '..type(t)) end
     local ll = {} -- our storage
-    local value_type = nil -- default
 
     ------------------------ Properties -------------------------------------
 
@@ -250,28 +249,27 @@ function List(t, name)
     {
         name = name or 'no_name',
         class = 'List',
-        value_type = value_type,
         __tostring = function(self) return string.format('%s:(%s)[%d] "%s"',
                         self:class(), self:value_type(), self:count(), self:name()) end,
         -- __call = function(...) print('__call', ...) end,
     })
 
     if t ~= nil then
+        -- Check that the table is array-like.
+        -- Are all keys indexes.
+        local num = 0
+        for k, _ in pairs(t) do
+            if not lt.is_integer(k) then error('Indexes must be integer') end
+            num = num + 1
+        end
+        -- Are sequential from 1.
+        for i = 1, num do
+            if t[i] == nil then error('Indexes must be sequential') end
+        end
+
         -- Copy the data. This tests for homogenity.
         for _, v in ipairs(t) do ll:add(v) end
     end
-
-    -- -- TODOL? Check that the table is array-like.
-    -- -- Check if all keys are indexes.
-    -- local num = 0
-    -- for k, _ in pairs(t) do
-    --     if type(k) ~= 'number' then error('Indexes must be number') end
-    --     num = num + 1
-    -- end
-    -- -- Check sequential from 1.
-    -- for i = 1, num do
-    --     if t[i] == nil then error('Indexes must be sequential') end
-    -- end
 
     return ll
 end

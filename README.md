@@ -19,14 +19,11 @@ Code mostly follows [luarocks style guide](https://github.com/luarocks/lua-style
 - `pnut.lua` and `pnut_runner.lua` comprise a minimalist unit test framework.
 - `lbot_utils.lua`, `lbot_types.lua`: Handy collected odds and ends for tables, math, validation, errors, ...
 - `stringex.lua`: Various string functions. .
-- `tableex.lua`: Various table functions.
 - `debugger.lua`: Slightly modified version of [debugger.lua](https://github.com/slembcke/debugger.lua).
 - `template.lua`: lightly modified version of [template.lua](https://github.com/lunarmodules/Penlight).
-  Removed dependencies on other penlight components including `LuaFileSystem` so it's standalone now.
-  Generally useful and used here primarily for generating language specific interop.
 - `*interop*.lua`: Tools to generate interop glue code for embedding Lua in various hosts - C/C#/.NET.
   See [Lua Interop](Interop.md)
 - `class.lua` - General purpose Lua class.
 - `List.lua` - General purpose true homogenous list.
-- `lua54` folder contains Lua reference for integration in other Lua projects.
-  64 bit Lua 5.4.2 from https://luabinaries.sourceforge.net/download.html.
+- `Tableex.lua`: Various table functions.
+- `lua54` folder contains Lua reference for integration in other Lua projects. 64 bit Lua 5.4.2 from https://luabinaries.sourceforge.net/download.html.

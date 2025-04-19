@@ -2,10 +2,14 @@
 local ut = require('lbot_utils')
 local sx = require('stringex')
 
+
+-- TODOL https://www.sublimetext.com/docs/build_systems.html#advanced-example
+
+
 -------------------- A sandbox ------------------------
 
 
--- ?? organize modules/globals: https://www.lua.org/pil/15.4.html  >>> https://roblox.github.io/lua-style-guide/
+-- ?? organize modules/globals: https://www.lua.org/pil/15.4.html
 -- pl import/require
 -- require 'pl' -- calls Penlight\lua\pl\init.lua
 -- utils.import 'pl.func' -- take a table/module and 'inject' it into the local namespace.
