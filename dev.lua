@@ -3,7 +3,7 @@ local ut = require('lbot_utils')
 local sx = require('stringex')
 
 
--- TODOL https://www.sublimetext.com/docs/build_systems.html#advanced-example
+-- TODOL >>> https://www.sublimetext.com/docs/build_systems.html#advanced-example
 
 
 -------------------- A sandbox ------------------------
@@ -54,17 +54,13 @@ local sx = require('stringex')
 -- Since __index is only called when a key is missing in the table, MyEnum.A and MyEnum.B will still give you back the expected values, but MyEnum.FROB will throw, hopefully helping engineers track down bugs more easily.
 
 
-
-
-
--- ? args can be
+--[[ ? args can be
 --   - utils.on_error 'quit'
 --   - utils.on_error('quit')
 --   - utils.on_error'quit'  ??
 local function myfunc( ... )
     -- body
 end
-
 
 
 local function UT_RAISES(func, args, exp_msg)
@@ -95,7 +91,8 @@ end
 -- UT_RAISES(List, { 'muffin', 123, 'beetlejuice', 'tigger' }, '')
 
 
--- TODOF switch/pattern matching ----------------------
+-----------------------------------------------
+TODOF switch/pattern matching ----------------------
 -- https://stackoverflow.com/questions/37447704
 -- http://lua-users.org/wiki/SwitchStatement
 
@@ -129,6 +126,104 @@ local function switch_run(day, month, year, dtype)
         print('just another day')
     end
 end
+]]
 
 
+
+
+--[[ 
+-- ?? TODOL Create classes like this:
+
+-- instance table - data goes here
+local my_class = {}
+
+-- class table - functions go in here
+local MyClass = {}
+
+function MyClass:some_method()
+   -- code
+end
+
+function MyClass:another_one()
+   self:some_method()
+   -- more code
+end
+
+function my_class.new()
+   local self = {}
+   setmetatable(self, { __index = MyClass })
+   return self
+end
+
+return my_class
+
+------------------------------------------
+or  Typically what you do, though, is put all of a classes methods into a class object, then set that as the
+-- metatable of an instance object. Reusing your example:
+local theClass = {}
+theClass.__index = theClass
+
+function theClass:func()
+    self.property = 12
+end
+
+function newObject()    
+    local o = {}
+    local privateData = "Data"
+    return setmetatable(o, theClass)
+end
+]]
+
+
+
+-- ?? TODOL Create classes like this:
+
+-- instance table - data goes here
+local _table_ex = {}
+
+-- class table - functions go in here
+local Tableex_X = {}
+
+-- meta for _table_ex, indexes go to class
+
+-- __index: The indexing access operation table[key]. This event happens when table is not a table or when key is 
+-- not present in table. The metavalue is looked up in the metatable of table. 
+-- The metavalue for this event can be either a function, a table, or any value with an __index metavalue.
+-- If it is a function, it is called with [table and key as arguments], and the result of the call (adjusted to one value) 
+-- is the result of the operation. Otherwise, the final result is the result of indexing this metavalue with key. 
+-- This indexing is regular, not raw, and therefore can trigger another __index metavalue. 
+
+local mt =
+{
+    -- name = name or 'no_name',
+    class = 'Tableex_X',
+    __index = Tableex_X,
+    __newindex = Tableex_X,
+    __tostring = function(self) return string.format('%s:(%s:%s)[%d] "%s"',
+                    self:class(), self:key_type(), self:value_type(), self:count(), self:name()) end,
+    -- __call = function(...) print('__call', ...) end,
+}
+
+------------- the class -------------
+function Tableex_X:some_method(val)
+    print('>>> some_method', val, ut.dump_table(_table_ex, 't111'))
+    -- code
+end
+
+function Tableex_X:another_one(val)
+    print('>>> another_one', val)
+    self:some_method(val)
+    -- more code
+end
+
+------------- instantiate -------------
+function _table_ex.new(t, name)
+    local self = {}
+
+    setmetatable(self, mt)
+
+   return self
+end
+
+return _table_ex
 

@@ -7,37 +7,6 @@ local lt = require("lbot_types")
 
 
 
-
---[[ ?? TODOL Create classes like this:
-local myclass = {}
-
--- class table
-local MyClass = {}
-
-function MyClass:some_method()
-   -- code
-end
-
-function MyClass:another_one()
-   self:some_method()
-   -- more code
-end
-
-function myclass.new()
-   local self = {}
-   setmetatable(self, { __index = MyClass })
-   return self
-end
-
-return myclass
-
-
-local function makelist(t)
-    return setmetatable(t, require('pl.List'))
-end
-]]
-
-
 -----------------------------------------------------------------------------
 --- Create a fancier table.
 -- @param t map-like table to init the Tableex, or nil for deferred
