@@ -5,7 +5,7 @@ Future opts maybe: write to file, junit/xml format.
 --]]
 
 local pn = require("pnut")
--- local ut = require("lbot_utils")
+local ut = require("lbot_utils")
 
 -- Create the namespace/module.
 local M = {}
@@ -35,33 +35,34 @@ function M.do_tests(...)
 
         -- Load file in protected mode.
         local load_ok, test_mod = pcall(require, mod)
-        -- local load_ok, test_mod = xpcall(require, debug.traceback, mod)
 
-        if not load_ok then -- or type(test_mod) ~= "table" then
+        if not load_ok then
             app_fail = true
-            error(string.format("Failed to load file %s test_mod:%s ", scrfn, test_mod))
-            -- goto done
-        end
+            pn.UT_ERROR("Failed to load file: "..scrfn)
+        elseif type(test_mod) ~= "table" then
+            app_fail = true
+            pn.UT_ERROR("Not a valid test script: "..scrfn)
+        else
+            -- Dig out the test cases.
+            for k, v in pairs(test_mod) do
+                if type(v) == "function" and k:match("suite_") then
+                    -- Found something to do. Run it in between optional test boilerplate.
+                    pn.start_suite(k.." in "..scrfn)
 
-        -- Dig out the test cases.
-        for k, v in pairs(test_mod) do
-            if type(v) == "function" and k:match("suite_") then
-                -- Found something to do. Run it in between optional test boilerplate.
-                pn.start_suite(k.." in "..scrfn)
+                    -- Optional setup().
+                    local ok, result = xpcall(test_mod.setup, debug.traceback, pn)
 
-                -- Optional setup().
-                local ok, result = xpcall(test_mod.setup, debug.traceback, pn)
+                    -- Run the suite.
+                    ok, result = xpcall(v, debug.traceback, pn)
+                    if not ok then
+                        pn.UT_ERROR(result)
+                        script_fail = true
+                        -- goto done
+                    end
 
-                -- Run the suite.
-                ok, result = xpcall(v, debug.traceback, pn)
-                if not ok then
-                    pn.UT_ERROR(result)
-                    script_fail = true
-                    -- goto done
+                    -- Optional teardown().
+                    ok, result = xpcall(test_mod.teardown, debug.traceback, pn)
                 end
-
-                -- Optional teardown().
-                ok, result = xpcall(test_mod.teardown, debug.traceback, pn)
             end
         end
     end

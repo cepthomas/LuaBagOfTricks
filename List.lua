@@ -14,7 +14,7 @@ local sx = require("stringex")
 -- @return a new List object
 function List(t, name)
     if t ~= nil and type(t) ~= 'table' then error('Invalid initializer: '..type(t)) end
-    local ll = {} -- our storage
+    local ll = {} -- our instance
 
     ------------------------ Properties -------------------------------------
 
