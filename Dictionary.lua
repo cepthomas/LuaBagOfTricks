@@ -1,7 +1,6 @@
--- A dictionary class in the lua prototype style
+-- A dictionary class in the lua prototype style. Each of keys and values must be homogenous.
 -- Parts are lifted from or inspired by https://github.com/lunarmodules/Penlight.
 -- API names are modelled after C# instead of python.
--- TODOL optional homogenous values.
 
 
 local ut = require("lbot_utils")
@@ -58,45 +57,47 @@ function Dictionary:value_type() return getmetatable(self).value_type end
 
 -------------------------------------------------------------------------
 --- Check type of key and value. Also does lazy init. Raises error.
--- @param dd table TODOL klunky
 -- @param k the value to check
 -- @param v the value to check
 ---@diagnostic disable-next-line: unused-local
-local function check_kv(dd, k, v)
-    local ktype = ut.ternary(lt.is_integer(k), 'integer', type(k))
-    local vtype = ut.ternary(lt.is_integer(v), 'integer', type(v))
+function Dictionary:_check_kv(k, v)
+    local check_ktype = ut.ternary(lt.is_integer(k), 'integer', type(k))
+    local check_vtype = ut.ternary(lt.is_integer(v), 'integer', type(v))
 
-    if dd.count() == 0 then
+    if self:count() == 0 then
         -- new object, check types
-        local valid_key_types = { 'number', 'string' }
-        local valid_val_types = { 'number', 'string', 'boolean', 'table', 'function' }
+        local key_types = { 'number', 'string' }
+        local val_types = { 'number', 'string', 'boolean', 'table', 'function' }
+        local ktype = nil
+        local vtype = nil
 
+        for _, v in ipairs(key_types) do
+            if v == check_ktype then ktype = check_ktype end
+        end
 
-        -- if vtype == vt then
-        --     local mt = getmetatable(ll)
-        --     mt.value_type = vtype
-        --     setmetatable(ll, mt)
-        -- end
+        for _, v in ipairs(val_types) do
+            if v == check_vtype then vtype = check_vtype end
+        end
 
-        if dd:contains(valid_key_types, ktype) then
-            local mt = getmetatable(dd)
+        if ktype ~= nil then
+            local mt = getmetatable(self)
             mt.key_type = ktype
-            setmetatable(dd, mt)
+            setmetatable(self, mt)
         else
-            error('Invalid key type:'..ktype)
+            error('Invalid key type: '..check_ktype)
         end
 
-        if dd:contains(valid_val_types, vtype) then
-            local mt = getmetatable(dd)
+        if vtype ~= nil then
+            local mt = getmetatable(self)
             mt.value_type = vtype
-            setmetatable(dd, mt)
+            setmetatable(self, mt)
         else
-            error('Invalid value type:'..vtype)
+            error('Invalid value type: '..check_vtype)
         end
 
-    else
-        if ktype ~= dd:key_type() then error('Keys not homogenous') end
-        if vtype ~= dd:value_type() then error('Values not homogenous') end
+    else -- add to existing
+        if check_ktype ~= self:key_type() then error('Keys not homogenous: '..check_ktype) end
+        if check_vtype ~= self:value_type() then error('Values not homogenous '..check_vtype) end
     end
 end
 
@@ -112,11 +113,10 @@ function Dictionary:dump(depth)
 end
 
 -------------------------------------------------------------------------
---- Lua has no built in way to count number of values in an associative table so this does.
--- A bit expensive so maybe cache size? TODOL
+--- How many.
 -- @return number of values
 function Dictionary:count()
-    return ut.count_table(self)
+    return ut.count_table(self) --  A bit expensive so maybe cache size? TODOL
 end
 
 -------------------------------------------------------------------------
@@ -146,10 +146,9 @@ end
 -- @param other table to add
 function Dictionary:add_range(other)
     lt.val_table(other, 1)
-    -- copy and add to our internal
-    local to = ut.deep_copy(other)
-    for k, v in pairs(to) do
-        -- check_kv(self, k, v)
+    -- shallow copy to our internal - validate
+    for k, v in pairs(other) do
+        self:check_kv(k, v)
         self[k] = v
     end
 end

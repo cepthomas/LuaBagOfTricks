@@ -30,7 +30,7 @@ function List(t, name)
     -------------------------------------------------------------------------
     --- Check type of value. Also does lazy init. Raises error.
     -- @param v the value to check
-    local function check_val(v)
+    local function _check_val(v)
         local vtype = ut.ternary(lt.is_integer(v), 'integer', type(v))
 
         if #ll == 0 then
@@ -106,7 +106,7 @@ function List(t, name)
     --- Add an item to the end of the list.
     -- @param v the item/value
     function ll:add(v)
-        check_val(v)
+        _check_val(v)
         table.insert(ll, v)
     end
 
@@ -116,7 +116,7 @@ function List(t, name)
     function ll:add_range(other)
         lt.val_table(other, 1)
         for i = 1, #other do
-            check_val(other[i])
+            _check_val(other[i])
             table.insert(ll, other[i])
         end
     end
@@ -127,7 +127,7 @@ function List(t, name)
     -- @param v the item/value
     function ll:insert(i, v)
         lt.val_integer(i, 1, #ll)
-        check_val(v)
+        _check_val(v)
         table.insert(ll, i, v)
     end
 
