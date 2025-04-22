@@ -109,11 +109,12 @@ end
 -- @param t the table
 -- @param min_size optional check
 function M.val_table(t, min_size)
-    local ok = t ~= nil and type(t) == 'table'
+    if t == nil or type(t) ~= 'table' then error('Not a valid table') end
+
+    min_size = min_size or 0
     local num = 0
     for _, _ in pairs(t) do num = num + 1 end
-    if ok and min_size ~= nil then ok = ok and num >= min_size end
-    if not ok then error('Invalid table:'..tostring(min_size)) end
+    if num < min_size then error('Sparse table: '..tostring(min_size)) end
 end
 
 -----------------------------------------------------------------------------
