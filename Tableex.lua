@@ -185,7 +185,7 @@ end
 -- @return a new Tableex object
 function Tableex(t, name)
     local tt = t or {} -- our storage - copy?
-    lt.val_table(tt, 0)
+    lt.val_table(tt)
 
     ------------------------ Properties -------------------------------------
 

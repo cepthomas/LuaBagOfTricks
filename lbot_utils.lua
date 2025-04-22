@@ -16,7 +16,7 @@ local M = {}
 -- @param app_glob list of app specific globals
 -- @return list of extraneous globals, list of unused globals
 function M.check_globals(app_glob)
-    lt.val_table(app_glob, 0)
+    lt.val_table(app_glob)
     local extra = {}
 
     -- Expect to see these normal globals.
@@ -179,20 +179,15 @@ end
 -----------------------------------------------------------------------------
 
 -----------------------------------------------------------------------------
-local function _copy_table(t, cache)
-    if type(t) ~= 'table' then return t end
-    if cache[t] then return cache[t] end
-    -- assert_arg_iterable(1,t)
-    local res = {}
-    cache[t] = res
-    local mt = getmetatable(t)
-    for k, v in pairs(t) do
-        k = _copy_table(k, cache)
-        v = _copy_table(v, cache)
-        res[k] = v
+--- Lua has no built in way to count number of values in an associative table so this does.
+-- @return number of values
+function M.count_table(t)
+    lt.val_table(t)
+    local num = 0
+    for _, _ in pairs(t) do
+        num = num + 1
     end
-    setmetatable(res,mt)
-    return res
+    return num
 end
 
 -----------------------------------------------------------------------------
@@ -200,6 +195,22 @@ end
 -- @param t to copy
 -- @return new table
 function M.deep_copy(t)
+    local function _copy_table(t, cache)
+        if type(t) ~= 'table' then return t end
+        if cache[t] then return cache[t] end
+        -- assert_arg_iterable(1,t)
+        local res = {}
+        cache[t] = res
+        local mt = getmetatable(t)
+        for k, v in pairs(t) do
+            k = _copy_table(k, cache)
+            v = _copy_table(v, cache)
+            res[k] = v
+        end
+        setmetatable(res,mt)
+        return res
+    end
+
     return _copy_table(t, {})
 end
 

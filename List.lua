@@ -2,6 +2,9 @@
 -- Parts are lifted from or inspired by https://github.com/lunarmodules/Penlight.
 -- API names are modelled after C# instead of python.
 
+-- TODOL like Dictionary.
+
+
 local ut = require("lbot_utils")
 local lt = require("lbot_types")
 local sx = require("stringex")

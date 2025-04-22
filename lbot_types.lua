@@ -1,7 +1,5 @@
 -- LBOT type support. Some parts are lifted from or inspired by https://github.com/lunarmodules/Penlight.
 
--- local sx = require("stringex")
-
 local M = {}
 
 
@@ -112,7 +110,9 @@ end
 -- @param min_size optional check
 function M.val_table(t, min_size)
     local ok = t ~= nil and type(t) == 'table'
-    if ok and min_size ~= nil then ok = ok and #t >= min_size end
+    local num = 0
+    for _, _ in pairs(t) do num = num + 1 end
+    if ok and min_size ~= nil then ok = ok and num >= min_size end
     if not ok then error('Invalid table:'..tostring(min_size)) end
 end
 
