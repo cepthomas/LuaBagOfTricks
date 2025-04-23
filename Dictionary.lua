@@ -2,27 +2,27 @@
 -- Parts are lifted from or inspired by https://github.com/lunarmodules/Penlight.
 -- API names are modelled after C# instead of python.
 
-
 local ut = require("lbot_utils")
 local lt = require("lbot_types")
+local tx = require("tableex")
 require('List')
 
 
 -- The global class.
-Dictionary = {}
+local Dictionary = {}
 
 -------------------------------------------------------------------------
---- Create a Dictionary.
+--- Create a Dictionary. It's a factory.
 -- @param t map-like table to init the Dictionary, or nil for deferred
 -- @param name optional name
 -- @return a new Dictionary object
-function Dictionary:create(t, name)
+-- function Dictionary:new(t, name)
+function Dictionary.new(t, name)
     -- The instance with real data.
-    local o = {}
     if t ~= nil then
-        lt.val_table(o)
-        o = ut.deep_copy(t)
+        lt.val_table(t)
     end
+    local o = {}
 
     local mt =
     {
@@ -39,7 +39,11 @@ function Dictionary:create(t, name)
         end,
         __newindex = function(t, index, value) rawset(t, index, value) end
     }
+    -- print(type(o))
     setmetatable(o, mt)
+
+    -- safe to add the data now
+    o:add_range(t)
 
     return o
 end
@@ -66,8 +70,8 @@ function Dictionary:_check_kv(k, v)
 
     if self:count() == 0 then
         -- new object, check types
-        local key_types = { 'number', 'string' }
-        local val_types = { 'number', 'string', 'boolean', 'table', 'function' }
+        local key_types = { 'number', 'integer', 'string' }
+        local val_types = { 'number', 'integer', 'string', 'boolean', 'table', 'function' }
         local ktype = nil
         local vtype = nil
 
@@ -108,7 +112,7 @@ end
 -- @param depth how deep to look
 -- @return string
 function Dictionary:dump(depth)
-    local s = ut.dump_table(self, self:name(), depth)
+    local s = tx.dump_table(self, depth, self:name())
     return s
 end
 
@@ -116,7 +120,7 @@ end
 --- How many.
 -- @return number of values
 function Dictionary:count()
-    return ut.count_table(self) --  A bit expensive so maybe cache size? TODOL
+    return tx.table_count(self) --  A bit expensive so maybe cache size? TODOL
 end
 
 -------------------------------------------------------------------------
@@ -142,13 +146,13 @@ function Dictionary:values()
 end
 
 -------------------------------------------------------------------------
---- Merge the other table into this. Overwrites existing keys if that matters.
+--- Shallow copy the other table into this. Overwrites existing.
 -- @param other table to add
 function Dictionary:add_range(other)
     lt.val_table(other, 1)
     -- shallow copy to our internal - validate
     for k, v in pairs(other) do
-        self:check_kv(k, v)
+        self:_check_kv(k, v)
         self[k] = v
     end
 end
@@ -171,3 +175,5 @@ function Dictionary:contains_value(val)
     end
     return nil
 end
+
+return Dictionary
