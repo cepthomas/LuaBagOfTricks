@@ -278,16 +278,18 @@ end
 
 -- What to do.
 
--- test objects
+-- ----- test objects
 -- test_simple_objects()
 
 
--- test UT_RAISES
-local function func_that_throws(args, exp_msg)
-    local a1, a2, a3, a4 = table.unpack(args)
-    if a1 == a2 + a3 + a4 then error("BOOM") end
-end
+-- ----- test UT_RAISES
+-- local function func_that_throws(args, exp_msg)
+--     local a1, a2, a3, a4 = table.unpack(args)
+--     if a1 == a2 + a3 + a4 then error("BOOM") end
+-- end
 
-local res = UT_RAISES(func_that_throws, {66, 1, 2, 3}, 'not_exp_msg')
-res = UT_RAISES(func_that_throws, {6, 1, 2, 3}, 'BOOM')
-res = UT_RAISES(func_that_throws, {6, 1, 2, 3}, 'exp_msg')
+-- local res = UT_RAISES(func_that_throws, {66, 1, 2, 3}, 'not_exp_msg')
+-- res = UT_RAISES(func_that_throws, {6, 1, 2, 3}, 'BOOM')
+-- res = UT_RAISES(func_that_throws, {6, 1, 2, 3}, 'exp_msg')
+
+

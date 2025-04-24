@@ -2,10 +2,10 @@
 -- Parts are lifted from or inspired by https://github.com/lunarmodules/Penlight.
 -- API names are modelled after C# instead of python.
 
-local ut = require("lbot_utils")
-local lt = require("lbot_types")
-local tx = require("tableex")
-require('List')
+local ut = require('lbot_utils')
+local lt = require('lbot_types')
+local tx = require('tableex')
+local list = require('List')
 
 
 -- The global class.
@@ -22,7 +22,8 @@ function Dictionary.new(t, name)
     if t ~= nil then
         lt.val_table(t)
     end
-    local o = {}
+
+    local dd = {}
 
     local mt =
     {
@@ -39,13 +40,13 @@ function Dictionary.new(t, name)
         end,
         __newindex = function(t, index, value) rawset(t, index, value) end
     }
-    -- print(type(o))
-    setmetatable(o, mt)
+    -- print(type(dd))
+    setmetatable(dd, mt)
 
     -- safe to add the data now
-    o:add_range(t)
+    dd:add_range(t)
 
-    return o
+    return dd
 end
 
 
@@ -131,7 +132,7 @@ function Dictionary:keys()
     for k, _ in pairs(self) do
         table.insert(res, k)
     end
-    return List(res)
+    return list:new(res)
 end
 
 -------------------------------------------------------------------------
@@ -142,7 +143,7 @@ function Dictionary:values()
     for _, v in pairs(self) do
         table.insert(res, v)
     end
-    return List(res)
+    return list:new(res)
 end
 
 -------------------------------------------------------------------------

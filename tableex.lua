@@ -95,21 +95,25 @@ function M.dump_table(tbl, depth, name)
         table.insert(res, sindent.._name..'(table):')
 
         -- Do contents.
-        sindent = sindent..'    '
-        for k, v in pairs(_tbl) do
-            if type(v) == 'table' then
-                if _level < depth then
-                    _level = _level + 1
-                    local trec = _dump_table(v, _level, k) -- recursion!
-                    _level = _level - 1
-                    for _, v2 in ipairs(trec) do
-                        table.insert(res, v2)
+        if #_tbl == 0 then
+            table.insert(res, sindent..sindent..'EMPTY')
+        else
+            sindent = sindent..'    '
+            for k, v in pairs(_tbl) do
+                if type(v) == 'table' then
+                    if _level < depth then
+                        _level = _level + 1
+                        local trec = _dump_table(v, _level, k) -- recursion!
+                        _level = _level - 1
+                        for _, v2 in ipairs(trec) do
+                            table.insert(res, v2)
+                        end
+                    else
+                        table.insert(res, sindent..k..'('..type(v)..')')
                     end
                 else
-                    table.insert(res, sindent..k..'('..type(v)..')')
+                    table.insert(res, sindent..k..'('..type(v)..')['..tostring(v)..']')
                 end
-            else
-                table.insert(res, sindent..k..'('..type(v)..')['..tostring(v)..']')
             end
         end
 

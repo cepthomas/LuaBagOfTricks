@@ -110,7 +110,6 @@ end
 -- @param min_size optional check
 function M.val_table(t, min_size)
     if t == nil or type(t) ~= 'table' then error('Not a valid table') end
-
     min_size = min_size or 0
     local num = 0
     for _, _ in pairs(t) do num = num + 1 end
