@@ -17,14 +17,14 @@ require('List')
 - http://lua-users.org/wiki/SimpleLuaClasses
 ]]
 
--- Using shared metatable and klunky '_P' table holding private fields. 288 bytes per instance.
+----- Using shared metatable and klunky '_P' table holding private fields.
 Account1 = {}
 Account1.__index = Account1
-Account1.__tostring = function(t) return string.format('[%s:%s:%d]', t:class(), t:name(), t.balance) end
+Account1.__tostring = function(t) return string.format('[%s:%s:%d]', t:class(), t:name(), t.getbalance()) end
 Account1.__newindex = function(t, index, value) rawset(t, index, value) end
 -- Account1.__newindex = function(t, index, value) error('__newindex not supported') end
 
-function Account1:create(name, balance)
+function Account1:new(name, balance)
     local acc =
     {
         _P =
@@ -48,11 +48,10 @@ function Account1:withdraw(amount) self.balance = self.balance - amount end
 function Account1:getbalance() return self.balance end
 
 
--- Using individual metatables holding private fields. 439 bytes per per instance.
+----- Using individual metatables holding private fields.
 Account2 = {}
-
-function Account2:create(name, balance)
-    local acc = {}
+function Account2:new(name, balance)
+    local acct = {}
     local mt =
     {
         -- private info
@@ -63,11 +62,11 @@ function Account2:create(name, balance)
         __tostring = function(t) return string.format('[%s:%s:%d]', getmetatable(t).class, getmetatable(t).name, t.balance) end,
         __newindex = function(t, index, value) rawset(t, index, value) end
     }
-    setmetatable(acc, mt)
+    setmetatable(acct, mt)
 
     -- public data
-    acc.balance = balance
-    return acc
+    acct.balance = balance
+    return acct
 end
 
 function Account2:name() return getmetatable(self).name end
@@ -76,17 +75,17 @@ function Account2:withdraw(amount) self.balance = self.balance - amount end
 function Account2:getbalance() return self.balance end
 
 
--- Using closures + some meta, XXX bytes per per instance.
+----- Using closures + some meta.
 function Account3(name, balance)
-    local acc = {}
+    local acct = {}
 
-    function acc:name() return getmetatable(self).name end
-    function acc:class() return getmetatable(self).class end
-    function acc:withdraw(amount) self.balance = self.balance - amount end
-    function acc:getbalance() return self.balance end
+    function acct:name() return getmetatable(self).name end
+    function acct:class() return getmetatable(self).class end
+    function acct:withdraw(amount) self.balance = self.balance - amount end
+    function acct:getbalance() return self.balance end
 
     -- Object has been created. Finish up data initialization.
-    setmetatable(acc,
+    setmetatable(acct,
     {
         class = 'Account3',
         name = name or 'no_name',
@@ -94,75 +93,148 @@ function Account3(name, balance)
     })
 
     -- public data
-    acc.balance = balance
-    return acc
+    acct.balance = balance
+    return acct
 end
 
+
+----- Using closures + some meta.
+-- Account4 = {}
+-- function Account4.new(name, balance)
+function Account4(name, balance)
+    ----- private
+    -- fields
+    local _class = 'Account4'
+    local _name = name or 'no_name'
+    local _balance = balance
+    -- private method
+    -- local function private_method(arg) _field1 = _field1 + 1 end
+
+    ----- public
+    local acct = {}
+    -- public field
+    -- acct.public_field = "hello"
+    -- public method
+    -- function acct:method (arg) print('public_field=', acct.public_field) end
+    -- public method to access a private field
+    -- function acct:get_field1() return _field1 end
+
+    function acct:name() return _name end
+    function acct:class() return _class end
+    function acct:withdraw(amount) _balance = _balance - amount end
+    function acct:getbalance() return _balance end
+
+    local mt =
+    {
+        --__index = Account4,
+        __tostring = function(t) return string.format('[%s:%s:%d]', _class, _name, _balance) end,
+        __newindex = function(t, index, value) rawset(t, index, value) end
+    }
+    setmetatable(acct, mt)
+
+    return acct
+end
+
+
+
+-- Foo = {}
+-- function Foo.new(arg)
+function Foo(arg)
+print(arg)
+    -- private fields
+    local field1 = 42
+    local field2 = "string"
+    -- private method
+    local function private_method(arg)  end
+
+    local o = {}
+    -- public field
+    o.public_field = "hello"
+    -- public method
+    function o:method(arg)  end
+    -- public method to access a private field
+    function o:get_field1() return field1 end
+
+
+    -- local mt = {}
+    -- mt.__call = function(...)
+    --     local obj = {}
+    --     -- ???
+    --     return obj
+    -- end
+    -- setmetatable(o, mt)
+
+    -- return the object
+    return o
+end
+
+
+
+----- run tests
 local function test_simple_objects()
 
-    local acc = Account1
+--[[
+    -- local acct = Account4('bob_name', 1000)
+    -- print('00', tx.dump_table(acct, 0, 'acct'))
 
-    -- client create and use an Account
-    local acc_bob = acc:create('bob_name', 1000)
-    print('10', 'bob got:', acc_bob:getbalance())
-    acc_bob:withdraw(100)
-    print('15', 'bob got:', acc_bob:getbalance())
+    -- local fff = Foo('aaa')
+    -- print('00', tx.dump_table(fff, 0, 'fff'))
+    -- fff(table):
+    --     get_field1(function)[function: 0000000000fea4e0]
+    --     public_field(string)[hello]
+    --     method(function)[function: 0000000000fea9f0]
 
-    acc_bob['added'] = 1234
 
-    print('20', 'acc_bob:', acc_bob)
+    local acct_bob = Account4('bob_name', 1000)
+    -- -- client create and use an Account
+    print('00', tx.dump_table(acct_bob, 0, 'acct_bob_name'))
 
-    -- print('25', 'acc_bob:', acc_bob, tx.dump_table(acc_bob, 0, 'acc_bob table'))
-    print('30', acc_bob:name(), acc_bob, tx.dump_table(acc_bob, 0, acc_bob:name()))
+    print('10', 'bob got:', acct_bob:getbalance())
+    acct_bob:withdraw(100)
+    print('15', 'bob got:', acct_bob:getbalance())
 
-    -- print('I got:', acc_bob:getbalance())
+    acct_bob['added'] = 1234
 
-    local acc_mary = acc:create('mary_name', 1234)
-    print('35', 'mary got:', acc_mary.balance)
-    print('40', 'mary got:', acc_mary:getbalance())
+    print('20', 'acct_bob:', acct_bob)
 
-    print('45', 'acc_mary:', acc_mary)
-    print('50', 'acc_bob:', acc_bob)
+    print('30', acct_bob:name(), acct_bob, tx.dump_table(acct_bob, 0, acct_bob:name()))
 
+    -- print('I got:', acct_bob:getbalance())
+
+    local acct_mary = Account4('mary_name', 1234)
+    print('35', 'mary got:', acct_mary.balance)
+    print('40', 'mary got:', acct_mary:getbalance())
+
+    print('45', 'acct_mary:', acct_mary)
+    print('50', 'acct_bob:', acct_bob)
+]]
 
     --  Measure object sizes.
     local start_size = collectgarbage('count')
-    print('start', start_size)
     local store = {}
     local num = 10000
+    local current_size = 0
 
-    for i = 1, num do
-        local a = Account1:create('bob_'..tostring(i), 1000)
-        table.insert(store, a)
+    local function _do_one(func, name)
+        for i = 1, num do
+            local a = func('bob_'..tostring(i), 1000)
+            table.insert(store, a)
+        end
+        current_size = collectgarbage('count')
+        print(name..' bytes: '..tostring((current_size - start_size) * 1024 / num, 10))
+        start_size = current_size
     end
-    local current_size = collectgarbage('count')
-    print('Account1 bytes: '..tostring((current_size - start_size) * 1024 / num, 10))
-    start_size = current_size
 
-    for i = 1, num do
-        local a = Account2:create('bob_'..tostring(i), 1000)
-        table.insert(store, a)
-    end
-    current_size = collectgarbage('count')
-    print('Account2 bytes: '..tostring((current_size - start_size) * 1024 / num, 10))
-    start_size = current_size
-
-    for i = 1, num do
-        local a = Account3('bob_'..tostring(i), 1000)
-        table.insert(store, a)
-    end
-    current_size = collectgarbage('count')
-    print('Account3 bytes: '..tostring((current_size - start_size) * 1024 / num, 10))
-    start_size = current_size
+    -- _do_one(func, 'Account1')
+    -- _do_one(Account2, 'Account2')
+    _do_one(Account3, 'Account3')
+    _do_one(Account4, 'Account4')
 
     -- force garbage collection
     store = {}
-    current_size = collectgarbage()
-
-    -- current_size = collectgarbage('count')
-    -- print('GC took', current_size - start_size, current_size)
-    -- start_size = current_size
-
+    current_size = collectgarbage('count')
+    print('GC took', current_size - start_size, current_size)
+    start_size = current_size
 
 end
 
@@ -278,8 +350,8 @@ end
 
 -- What to do.
 
--- ----- test objects
--- test_simple_objects()
+----- test objects
+test_simple_objects()
 
 
 -- ----- test UT_RAISES

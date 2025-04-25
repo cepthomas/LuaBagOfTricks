@@ -95,10 +95,10 @@ function M.dump_table(tbl, depth, name)
         table.insert(res, sindent.._name..'(table):')
 
         -- Do contents.
-        if #_tbl == 0 then
+        sindent = sindent..'    '
+        if M.table_count(_tbl) == 0 then
             table.insert(res, sindent..sindent..'EMPTY')
         else
-            sindent = sindent..'    '
             for k, v in pairs(_tbl) do
                 if type(v) == 'table' then
                     if _level < depth then
