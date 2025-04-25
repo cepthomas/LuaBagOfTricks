@@ -9,21 +9,19 @@ local tx = require('tableex')
 
 
 -- The global class.
-local List = {}
-
+local M = {}
 
 -------------------------------------------------------------------------
 --- Create a List. It's a factory.
 -- @param name optional name
 -- @return a new List object
-function List.new(name)
+function M.new(name)
 
     -- Private fields
     local _class = 'List'
     local _name = name or 'no_name'
     -- local _balance = balance
     local _value_type = 'nil'
-
 
     -- Public instance
     local ll = {}
@@ -89,7 +87,7 @@ function List.new(name)
     --- Copy from an existing list.
     -- @param i index of start element, or nil means all aka clone
     -- @param count how many, or nil means end
-    -- @return the new List
+    -- @return table with copied values
     function ll:get_range(i, count)
         local res = {}
 
@@ -123,7 +121,7 @@ function List.new(name)
 
     -------------------------------------------------------------------------
     --- Extend the list by appending all the items in the given list.
-    -- @param other List to append
+    -- @param other table to append
     function ll:add_range(other)
         lt.val_table(other, 1)
         for _, val in ipairs(other) do
@@ -241,7 +239,7 @@ function List.new(name)
     -------------------------------------------------------------------------
     --- Create a list of all elements which match a function.
     -- @param func a boolean function
-    -- @return List object of results
+    -- @return table of results
     function ll:find_all(func)
         lt.val_func(func)
         local res = {}
@@ -260,9 +258,10 @@ function List.new(name)
 
     local mt =
     {
-        __index = List,
+        --__index = List,
         __tostring = function(t) return string.format('%s(%s)[%s]', _name, _class, _value_type) end,
-        __newindex = function(t, index, value) rawset(t, index, value) end
+        -- __newindex = function(t, index, value) rawset(t, index, value) end
+        -- __newindex = function(t, index, value) error('__newindex not supported') end
     }
     setmetatable(ll, mt)
 
@@ -272,4 +271,4 @@ end
 
 
 -------------------------------------------------------------------------
-return List
+return M
