@@ -5,10 +5,10 @@
 local ut = require("lbot_utils")
 local lt = require("lbot_types")
 local sx = require("stringex")
-local tx = require('tableex')
+-- local tx = require('tableex')
 
 
--- The global class.
+-- The List class.
 local M = {}
 
 -------------------------------------------------------------------------
@@ -20,17 +20,16 @@ function M.new(name)
     -- Private fields
     local _class = 'List'
     local _name = name or 'no_name'
-    -- local _balance = balance
     local _value_type = 'nil'
 
-    -- Public instance
-    local ll = {}
+    -- Instance
+    local list = {}
 
     ------------------------ Properties -------------------------------------
 
-    function ll:name() return _name end
-    function ll:class() return _class end
-    function ll:value_type() return _value_type end
+    function list:name() return _name end
+    function list:class() return _class end
+    function list:value_type() return _value_type end
 
 
     ------------------------- Private ---------------------------------------
@@ -38,7 +37,7 @@ function M.new(name)
     -------------------------------------------------------------------------
     --- Check type of value. Also does lazy init. Raises error.
     -- @param val the value to check
-    function ll:_check_val(val)
+    function list:_check_val(val)
         local check_vtype = ut.ternary(lt.is_integer(val), 'integer', type(val))
 
         if self.count(self) == 0 then
@@ -67,7 +66,7 @@ function M.new(name)
     -------------------------------------------------------------------------
     --- Diagnostic.
     -- @return a string
-    function ll:dump()
+    function list:dump()
         local res = {}
         table.insert(res, tostring(self))
         for _, v in ipairs(self) do
@@ -79,7 +78,7 @@ function M.new(name)
     -------------------------------------------------------------------------
     --- How many.
     -- @return the count
-    function ll:count()
+    function list:count()
         return #self
     end
 
@@ -88,7 +87,7 @@ function M.new(name)
     -- @param i index of start element, or nil means all aka clone
     -- @param count how many, or nil means end
     -- @return table with copied values
-    function ll:get_range(i, count)
+    function list:get_range(i, count)
         local res = {}
 
         local first
@@ -114,7 +113,7 @@ function M.new(name)
     -------------------------------------------------------------------------
     --- Add an item to the end of the list.
     -- @param val the item/value
-    function ll:add(val)
+    function list:add(val)
         self._check_val(self, val)
         table.insert(self, val)
     end
@@ -122,23 +121,19 @@ function M.new(name)
     -------------------------------------------------------------------------
     --- Extend the list by appending all the items in the given list.
     -- @param other table to append
-    function ll:add_range(other)
+    function list:add_range(other)
         lt.val_table(other, 1)
         for _, val in ipairs(other) do
             self._check_val(self, val)
             table.insert(self, val)
         end
-        -- for i = 1, #other do
-        --     ll:_check_val(other[i])
-        --     table.insert(self, other[i])
-        -- end
     end
 
     -------------------------------------------------------------------------
     --- Insert an item at a given position. i is the index of the element before which to insert.
     -- @int i index of element before which to insert
     -- @param val the item/value
-    function ll:insert(i, val)
+    function list:insert(i, val)
         lt.val_integer(i, 1, #self)
         self._check_val(self, val)
         table.insert(self, i, val)
@@ -147,7 +142,7 @@ function M.new(name)
     -------------------------------------------------------------------------
     --- Remove an element given its index.
     -- @int i the index
-    function ll:remove_at(i)
+    function list:remove_at(i)
         lt.val_integer(i, 1, #self)
         table.remove(self, i)
     end
@@ -155,7 +150,7 @@ function M.new(name)
     -------------------------------------------------------------------------
     --- Remove the first value from the list.
     -- @param val data value
-    function ll:remove(val)
+    function list:remove(val)
         lt.val_not_nil(val)
         for i = 1, #self do
             if self[i] == val then table.remove(self, i) return self end
@@ -168,7 +163,7 @@ function M.new(name)
     -- @param val data value
     -- @int i where to start search, nil means beginning
     -- @return the index, or nil if not found
-    function ll:index_of(val, i)
+    function list:index_of(val, i)
         lt.val_not_nil(val)
         i = i or 1
         if i < 0 then i = #self + i + 1 end
@@ -182,7 +177,7 @@ function M.new(name)
     --- Does list contain value.
     -- @param val data value
     -- @return bool
-    function ll:contains(val)
+    function list:contains(val)
         lt.val_not_nil(val)
         local res = self.find(self, val)
         return res ~= nil
@@ -193,7 +188,7 @@ function M.new(name)
     -------------------------------------------------------------------------
     --- Sort the items of the list in place.
     -- @param cmp comparison function, or simple ascending if nil
-    function ll:sort(cmp)
+    function list:sort(cmp)
         lt.val_func(cmp)
         if not cmp then cmp = function(a, b) return b < a end end
         table.sort(self, cmp)
@@ -201,7 +196,7 @@ function M.new(name)
 
     -------------------------------------------------------------------------
     --- Reverse the elements of the list, in place.
-    function ll:reverse()
+    function list:reverse()
         local tr = self
         local n = #tr
         for i = 1, n / 2 do
@@ -212,7 +207,7 @@ function M.new(name)
 
     -------------------------------------------------------------------------
     --- Empty the list.
-    function ll:clear()
+    function list:clear()
         for _ = 1, #self do table.remove(self) end
     end
 
@@ -221,7 +216,7 @@ function M.new(name)
     -- @param val the value
     -- @param start where to start
     -- @return index of value, or nil if not found
-    function ll:find(val, start)
+    function list:find(val, start)
         lt.val_type(val, self.value_type(self))
         start = start or 1
         lt.val_integer(start)
@@ -240,7 +235,7 @@ function M.new(name)
     --- Create a list of all elements which match a function.
     -- @param func a boolean function
     -- @return table of results
-    function ll:find_all(func)
+    function list:find_all(func)
         lt.val_func(func)
         local res = {}
         for i = 1, #self do
@@ -259,16 +254,14 @@ function M.new(name)
     local mt =
     {
         --__index = List,
-        __tostring = function(t) return string.format('%s(%s)[%s]', _name, _class, _value_type) end,
+        __tostring = function(_) return string.format('%s(%s)[%s]', _name, _class, _value_type) end,
         -- __newindex = function(t, index, value) rawset(t, index, value) end
         -- __newindex = function(t, index, value) error('__newindex not supported') end
     }
-    setmetatable(ll, mt)
+    setmetatable(list, mt)
 
-    return ll
+    return list
 end
-
-
 
 -------------------------------------------------------------------------
 return M

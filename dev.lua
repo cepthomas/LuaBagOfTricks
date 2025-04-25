@@ -140,7 +140,6 @@ end
 -- Foo = {}
 -- function Foo.new(arg)
 function Foo(arg)
-print(arg)
     -- private fields
     local field1 = 42
     local field2 = "string"
