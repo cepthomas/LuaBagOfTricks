@@ -4,7 +4,28 @@ local sx = require('stringex')
 local lt = require('lbot_types')
 
 
+-- Module elements.
 local M = {}
+
+
+-----------------------------------------------------------------------------
+------------------------------ Global ---------------------------------------
+-----------------------------------------------------------------------------
+
+-----------------------------------------------------------------------------
+--- Replacement for print(...) with file and line added.
+function printex(...)
+    local res = {}
+    local arg = {...}
+    local fpath = debug.getinfo(2, 'S').short_src
+    local line = debug.getinfo(2, 'l').currentline
+    table.insert(res, fpath..'('..line..')')
+    for _, v in ipairs(arg) do
+        table.insert(res, '['..tostring(v)..']')
+    end
+
+    print(sx.strjoin(' ', res))
+end
 
 
 -----------------------------------------------------------------------------

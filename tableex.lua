@@ -65,15 +65,15 @@ function M.contains_value(tbl, val)
     return false
 end
 
------------------------------------------------------------------------------
--- Boilerplate for adding a new kv to a table.
--- @param tbl the table
--- @param key new entry key
--- @param val new entry value
-function M.table_add(tbl, key, val)
-   if tbl[key] == nil then tbl[key] = {} end
-   table.insert(tbl[key], val)
-end
+-- -----------------------------------------------------------------------------
+-- -- Boilerplate for adding a new kv to a table.
+-- -- @param tbl the table
+-- -- @param key new entry key
+-- -- @param val new entry value
+-- function M.table_add(tbl, key, val)
+--    if tbl[key] == nil then tbl[key] = {} end
+--    table.insert(tbl[key], val)
+-- end
 
 -----------------------------------------------------------------------------
 --- Diagnostic.

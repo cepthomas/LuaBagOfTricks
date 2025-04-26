@@ -5,7 +5,7 @@
 local ut = require("lbot_utils")
 local lt = require("lbot_types")
 local sx = require("stringex")
--- local tx = require('tableex')
+local tx = require('tableex')
 
 
 -- The List class.
@@ -21,6 +21,7 @@ function M.new(name)
     local _class = 'List'
     local _name = name or 'no_name'
     local _value_type = 'nil'
+    local _data = {}
 
     -- Instance
     local list = {}
@@ -37,10 +38,10 @@ function M.new(name)
     -------------------------------------------------------------------------
     --- Check type of value. Also does lazy init. Raises error.
     -- @param val the value to check
-    function list:_check_val(val)
+    local function _check_val(val)
         local check_vtype = ut.ternary(lt.is_integer(val), 'integer', type(val))
 
-        if self.count(self) == 0 then
+        if tx.table_count(_data) == 0 then
             -- new object, check types
             local val_types = { 'number', 'integer', 'string', 'boolean', 'table', 'function' }
             local vtype = nil
@@ -56,7 +57,7 @@ function M.new(name)
             end
 
         else -- request to add to existing
-            if check_vtype ~= _value_type then error('Values not homogenous: '..check_vtype) end
+            if check_vtype ~= _value_type then error('Values not homogenous: '..check_vtype..' should be '.._value_type) end
         end
     end
 
@@ -65,21 +66,16 @@ function M.new(name)
 
     -------------------------------------------------------------------------
     --- Diagnostic.
-    -- @return a string
+    -- @return a csv string
     function list:dump()
-        local res = {}
-        table.insert(res, tostring(self))
-        for _, v in ipairs(self) do
-            table.insert(res, tostring(v))
-        end
-        return sx.strjoin(',', res)
+        return tx.dump_list(_data)
     end
 
     -------------------------------------------------------------------------
     --- How many.
     -- @return the count
     function list:count()
-        return #self
+        return #_data
     end
 
     -------------------------------------------------------------------------
@@ -94,17 +90,17 @@ function M.new(name)
         local last
         if i == nil then
             first = 1
-            last = #self
+            last = #_data
         elseif count == nil then
             first = i
-            last = #self
+            last = #_data
         else
             first = i
             last = first + count - 1
         end
 
         for ind = first, last do
-            table.insert(res, self[ind])
+            table.insert(res, _data[ind])
         end
 
         return res
@@ -114,8 +110,8 @@ function M.new(name)
     --- Add an item to the end of the list.
     -- @param val the item/value
     function list:add(val)
-        self._check_val(self, val)
-        table.insert(self, val)
+        _check_val(val)
+        table.insert(_data, val)
     end
 
     -------------------------------------------------------------------------
@@ -124,8 +120,8 @@ function M.new(name)
     function list:add_range(other)
         lt.val_table(other, 1)
         for _, val in ipairs(other) do
-            self._check_val(self, val)
-            table.insert(self, val)
+            _check_val(val)
+            table.insert(_data, val)
         end
     end
 
@@ -134,17 +130,17 @@ function M.new(name)
     -- @int i index of element before which to insert
     -- @param val the item/value
     function list:insert(i, val)
-        lt.val_integer(i, 1, #self)
-        self._check_val(self, val)
-        table.insert(self, i, val)
+        lt.val_integer(i, 1, #_data)
+        _check_val(val)
+        table.insert(_data, i, val)
     end
 
     -------------------------------------------------------------------------
     --- Remove an element given its index.
     -- @int i the index
     function list:remove_at(i)
-        lt.val_integer(i, 1, #self)
-        table.remove(self, i)
+        lt.val_integer(i, 1, #_data)
+        table.remove(_data, i)
     end
 
     -------------------------------------------------------------------------
@@ -152,8 +148,8 @@ function M.new(name)
     -- @param val data value
     function list:remove(val)
         lt.val_not_nil(val)
-        for i = 1, #self do
-            if self[i] == val then table.remove(self, i) return self end
+        for i = 1, #_data do
+            if _data[i] == val then table.remove(_data, i) end
         end
      end
 
@@ -166,9 +162,9 @@ function M.new(name)
     function list:index_of(val, i)
         lt.val_not_nil(val)
         i = i or 1
-        if i < 0 then i = #self + i + 1 end
-        for ind = i, #self do
-            if self[ind] == val then return ind end
+        if i < 0 then i = #_data + i + 1 end
+        for ind = i, #_data do
+            if _data[ind] == val then return ind end
         end
         return nil
     end
@@ -179,10 +175,10 @@ function M.new(name)
     -- @return bool
     function list:contains(val)
         lt.val_not_nil(val)
-        local res = self.find(self, val)
-        return res ~= nil
-        -- return ll:find(val) ~= nil or false
-        -- return ll:find(val) ~= nil  --and true or false
+        for idx = 1, #_data do
+            if _data[idx] == val then return true end
+        end
+        return false
     end
 
     -------------------------------------------------------------------------
@@ -191,13 +187,13 @@ function M.new(name)
     function list:sort(cmp)
         lt.val_func(cmp)
         if not cmp then cmp = function(a, b) return b < a end end
-        table.sort(self, cmp)
+        table.sort(_data, cmp)
     end
 
     -------------------------------------------------------------------------
     --- Reverse the elements of the list, in place.
     function list:reverse()
-        local tr = self
+        local tr = _data
         local n = #tr
         for i = 1, n / 2 do
             tr[i], tr[n] = tr[n], tr[i]
@@ -208,7 +204,7 @@ function M.new(name)
     -------------------------------------------------------------------------
     --- Empty the list.
     function list:clear()
-        for _ = 1, #self do table.remove(self) end
+        for _ = 1, #_data do table.remove(_data) end
     end
 
     -------------------------------------------------------------------------
@@ -217,13 +213,13 @@ function M.new(name)
     -- @param start where to start
     -- @return index of value, or nil if not found
     function list:find(val, start)
-        lt.val_type(val, self.value_type(self))
+        lt.val_type(val, _value_type)
         start = start or 1
         lt.val_integer(start)
         local res = nil
 
-        for idx = start, #self do
-            if self[idx] == val then
+        for idx = start, #_data do
+            if _data[idx] == val then
                 res = idx
                 break
             end
@@ -238,8 +234,8 @@ function M.new(name)
     function list:find_all(func)
         lt.val_func(func)
         local res = {}
-        for i = 1, #self do
-            local v = self[i]
+        for i = 1, #_data do
+            local v = _data[i]
             if func(v) then
                 res[#res + 1] = v
             end
@@ -253,10 +249,17 @@ function M.new(name)
 
     local mt =
     {
-        --__index = List,
-        __tostring = function(_) return string.format('%s(%s)[%s]', _name, _class, _value_type) end,
-        -- __newindex = function(t, index, value) rawset(t, index, value) end
-        -- __newindex = function(t, index, value) error('__newindex not supported') end
+        -- __call = TODOL??,
+        __index = function(t, index)
+            return _data[index]
+        end,
+        __newindex = function(t, index, value)
+             _check_val(value)
+             rawset(_data, index, value)
+        end,
+        __tostring = function(t)
+            return string.format('%s(%s)[%s]', _name, _class, _value_type)
+        end,
     }
     setmetatable(list, mt)
 

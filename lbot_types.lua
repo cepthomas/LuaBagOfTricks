@@ -92,16 +92,14 @@ end
 --- Validate a function value.
 -- @param f which function
 function M.val_function(f)
-    local ok = f ~= nil and type(f) == 'function'
-    if not ok then error('Invalid function:'..tostring(f)) end
+    if f == nil or type(f) ~= 'function' then error('Invalid function:'..tostring(f)) end
 end
 
 -----------------------------------------------------------------------------
 --- Validate a function value.
 -- @param s which
 function M.val_string(s)
-    local ok = s ~= nil and type(s) == 'string'
-    if not ok then error('Invalid string:'..tostring(s)) end
+    if s == nil or type(s) ~= 'string' then error('Invalid string:'..tostring(s)) end
 end
 
 -----------------------------------------------------------------------------
@@ -113,15 +111,31 @@ function M.val_table(t, min_size)
     min_size = min_size or 0
     local num = 0
     for _, _ in pairs(t) do num = num + 1 end
-    if num < min_size then error('Sparse table: '..tostring(min_size)) end
+    if num < min_size then error('Not min size: '..tostring(min_size)) end
+end
+
+-----------------------------------------------------------------------------
+--- Validate a table array type.
+-- @param t the table
+function M.val_array(t)
+    M.val_table(t)
+
+    local tnum = 0 -- total count
+    for _, _ in pairs(t) do tnum = tnum + 1 end
+    if tnum ~= #t then error('Not array type') end
+
+    -- local ind = 1
+    -- for i, _ in ipairs(t) do
+    --     if i ~= ind then error('Non-consecutive indexes') end
+    --     ind = ind + 1
+    -- end
 end
 
 -----------------------------------------------------------------------------
 --- Check nilness.
 -- @param v which value
 function M.val_not_nil(v)
-    local ok = v ~= nil
-    if not ok then error('Value is nil') end
+    if v == nil then error('Value is nil') end
 end
 
 -----------------------------------------------------------------------------

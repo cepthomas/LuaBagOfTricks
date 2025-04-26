@@ -6,7 +6,7 @@ Has all the assert functions - UT_XXX(info).
 ]]
 
 local ut = require('lbot_utils')
--- local sx = require('stringex')
+local sx = require('stringex')
 
 local M = {}
 
@@ -168,7 +168,7 @@ function M.UT_STR_EQUAL(val1, val2, info)
         case_failed(msg, info)
         pass = false
     elseif val1 ~= val2 then
-        local msg = tostring(val1)..' is not equal to '..tostring(val2)
+        local msg = val1..' is not equal to '..val2
         case_failed(msg, info)
         pass = false
     end
@@ -194,7 +194,7 @@ function M.UT_STR_NOT_EQUAL(val1, val2, info)
         case_failed(msg, info)
         pass = false
     elseif val1 == val2 then
-        local msg = tostring(val1)..' is equal to '..tostring(val2)
+        local msg = val1..' is equal to '..val2
         case_failed(msg, info)
         pass = false
     end
@@ -219,8 +219,8 @@ function M.UT_STR_CONTAINS(val, phrase, info)
         local msg = tostring(phrase)..' is not a string'
         case_failed(msg, info)
         pass = false
-    elseif val:find(phrase, 1, true) == nil then
-        local msg = tostring(val)..' does not contain '..tostring(phrase)
+    elseif not sx.contains(val, phrase) then
+        local msg = val..' does not contain '..phrase
         case_failed(msg, info)
         pass = false
     end
@@ -341,6 +341,32 @@ function M.UT_CLOSE(val1, val2, tol, info)
     return pass
 end
 
+-----------------------------------------------------------------------------
+-- Executes function that is expected to fail using pcall() and tests its return value(s).
+-- @param func Function to execute.
+-- @param args For func. value.
+-- @param exp_msg pcall() msg contents.
+-- @param info optional additional info.
+function M.UT_RAISES(func, args, exp_msg, info)
+    local pass = true
+    M.num_cases_run = M.num_cases_run + 1
+
+    local ok, msgcall = pcall(func, table.unpack(args))
+    print(ok, msgcall)
+    if ok then
+        local msg = 'function did not raise expected error()'
+        case_failed(msg, info)
+        pass = false
+    elseif sx.contains(msgcall, exp_msg) then
+        local msg = 'function did raise expected error() with correct msg contents'
+        pass = true
+    else
+        local msg = 'function did raise expected error() but ['..msgcall..'] does not contain ['..exp_msg..']'
+        case_failed(msg, info)
+        pass = false
+    end
+    return pass
+end
 
 -----------------------------------------------------------------------------
 -- Return the module.

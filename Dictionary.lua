@@ -5,7 +5,6 @@
 local ut = require('lbot_utils')
 local lt = require('lbot_types')
 local tx = require('tableex')
--- local list = require('List')
 
 
 -- The Dictionary class.
@@ -16,11 +15,13 @@ local M = {}
 -- @param name optional name
 -- @return a new Dictionary object
 function M.new(name)
+
     -- Private fields.
     local _class = 'Dictionary'
     local _name = name
     local _key_type = 'nil'
     local _value_type = 'nil'
+    local _data = {}
 
     -- Instance
     local dict = {}
@@ -39,11 +40,11 @@ function M.new(name)
     --- Check type of key and value. Also does lazy init. Raises error.
     -- @param k the value to check
     -- @param v the value to check
-    function dict:_check_kv(k, v)
+    local function _check_kv(k, v)
         local check_ktype = ut.ternary(lt.is_integer(k), 'integer', type(k))
         local check_vtype = ut.ternary(lt.is_integer(v), 'integer', type(v))
 
-        if self.count(self) == 0 then
+        if tx.table_count(_data) == 0 then
             -- new object, check types
             local key_types = { 'number', 'integer', 'string' }
             local val_types = { 'number', 'integer', 'string', 'boolean', 'table', 'function' }
@@ -69,12 +70,14 @@ function M.new(name)
             else
                 error('Invalid value type: '..check_vtype)
             end
+            printex('new object, check types', _key_type, _value_type)
 
-        else -- add to existing
-            if check_ktype ~= _key_type then error('Keys not homogenous: '..check_ktype) end
-            if check_vtype ~= _value_type then error('Values not homogenous '..check_vtype) end
+        else -- adding to existing
+            if check_ktype ~= _key_type then error('Keys not homogenous: '..check_ktype..' should be '.._key_type) end
+            if check_vtype ~= _value_type then error('Values not homogenous: '..check_vtype..' should be '.._val_type) end
         end
     end
+
 
     ------------------------- Public ----------------------------------------
 
@@ -83,7 +86,7 @@ function M.new(name)
     -- @param depth how deep to look
     -- @return string
     function dict:dump(depth)
-        local s = tx.dump_table(self, depth, self:name())
+        local s = tx.dump_table(_data, depth, _name)
         return s
     end
 
@@ -91,7 +94,7 @@ function M.new(name)
     --- How many.
     -- @return number of values
     function dict:count()
-        return tx.table_count(self) --  A bit expensive so maybe cache size? TODOL
+        return tx.table_count(_data) --  A bit expensive so maybe cache size? TODOL
     end
 
     -------------------------------------------------------------------------
@@ -99,7 +102,7 @@ function M.new(name)
     -- @return table of keys
     function dict:keys()
         local res = {}
-        for k, _ in pairs(self) do
+        for k, _ in pairs(_data) do
             table.insert(res, k)
         end
         return res
@@ -110,7 +113,7 @@ function M.new(name)
     -- @return table of values
     function dict:values()
         local res = {}
-        for _, v in pairs(self) do
+        for _, v in pairs(_data) do
             table.insert(res, v)
         end
         return res
@@ -123,16 +126,17 @@ function M.new(name)
         lt.val_table(other, 1)
         -- shallow copy to our internal - validate
         for k, v in pairs(other) do
-            self._check_kv(k, v)
-            table.insert(self, k, v)
+            _check_kv(k, v)
+            -- tx.table_add(_data, k, v)
+            _data[k] = v
         end
     end
 
     -------------------------------------------------------------------------
     --- Empty the table.
     function dict:clear()
-        for k, _ in pairs(self) do
-            self[k] = nil
+        for k, _ in pairs(_data) do
+            _data[k] = nil
         end
     end
 
@@ -141,7 +145,7 @@ function M.new(name)
     -- @param val the value
     -- @return corresponding key or nil if not
     function dict:contains_value(val)
-        for k, v in pairs(self) do
+        for k, v in pairs(_data) do
             if v == val then return k end
         end
         return nil
@@ -151,14 +155,24 @@ function M.new(name)
 
     local mt =
     {
-        -- __index = Dictionary,
-        __tostring = function(t) return string.format('%s(%s)[%s:%s]',_name,_class,_key_type,_value_type) end,
-        -- __newindex = function(t, index, value) rawset(t, index, value) end
+        -- __call = TODOL??,
+        __index = function(t, index)
+            printex('__index', t)
+            return _data[index]
+        end,
+        __newindex = function(t, index, value)
+             _check_kv(index, value)
+             rawset(_data, index, value)
+        end,
+        __tostring = function(t)
+            return string.format('%s(%s)[%s:%s]', _name, _class, _key_type, _value_type)
+        end,
     }
     setmetatable(dict, mt)
 
     return dict
 end
+
 
 -------------------------------------------------------------------------
 return M
