@@ -9,13 +9,13 @@ local tx = require('tableex')
 
 
 -- The List class.
-local M = {}
+local List = {}
 
 -------------------------------------------------------------------------
 --- Create a List. It's a factory.
 -- @param name optional name
 -- @return a new List object
-function M.new(name)
+function List.new(name)
 
     -- Private fields
     local _class = 'List'
@@ -249,7 +249,6 @@ function M.new(name)
 
     local mt =
     {
-        -- __call = TODOL??,
         __index = function(t, index)
             return _data[index]
         end,
@@ -267,4 +266,4 @@ function M.new(name)
 end
 
 -------------------------------------------------------------------------
-return M
+return List

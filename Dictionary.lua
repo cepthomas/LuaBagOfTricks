@@ -8,13 +8,13 @@ local tx = require('tableex')
 
 
 -- The Dictionary class.
-local M = {}
+local Dictionary = {}
 
 -------------------------------------------------------------------------
 --- Create a Dictionary. It's a factory.
 -- @param name optional name
 -- @return a new Dictionary object
-function M.new(name)
+function Dictionary.new(name)
 
     -- Private fields.
     local _class = 'Dictionary'
@@ -70,7 +70,6 @@ function M.new(name)
             else
                 error('Invalid value type: '..check_vtype)
             end
-            printex('new object, check types', _key_type, _value_type)
 
         else -- adding to existing
             if check_ktype ~= _key_type then error('Keys not homogenous: '..check_ktype..' should be '.._key_type) end
@@ -155,9 +154,7 @@ function M.new(name)
 
     local mt =
     {
-        -- __call = TODOL??,
         __index = function(t, index)
-            printex('__index', t)
             return _data[index]
         end,
         __newindex = function(t, index, value)
@@ -175,4 +172,4 @@ end
 
 
 -------------------------------------------------------------------------
-return M
+return Dictionary

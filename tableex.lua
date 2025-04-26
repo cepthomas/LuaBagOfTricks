@@ -34,23 +34,26 @@ end
 -- @return new table
 function M.deep_copy(t)
 
-    local function _copy_table(t, cache)
+    local function _copy(t, cache)
         if type(t) ~= 'table' then return t end
         if cache[t] then return cache[t] end
-        -- assert_arg_iterable(1,t)
+
+        -- else newly seen table
         local res = {}
         cache[t] = res
-        -- local mt = getmetatable(t)
+        local mt = getmetatable(t)
+
         for k, v in pairs(t) do
-            k = _copy_table(k, cache)
-            v = _copy_table(v, cache)
+            k = _copy(k, cache)
+            v = _copy(v, cache)
             res[k] = v
         end
-        setmetatable(res, getmetatable(t))
+
+        setmetatable(res, mt)
         return res
     end
 
-    return _copy_table(t, {})
+    return _copy(t, {})
 end
 
 -----------------------------------------------------------------------------
