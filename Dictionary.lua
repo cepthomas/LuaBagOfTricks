@@ -10,6 +10,7 @@ local tx = require('tableex')
 -- The Dictionary class.
 local Dictionary = {}
 
+
 -------------------------------------------------------------------------
 --- Create a Dictionary. It's a factory.
 -- @param name optional name
@@ -19,8 +20,8 @@ function Dictionary.new(name)
     -- Private fields.
     local _class = 'Dictionary'
     local _name = name
-    local _key_type = 'nil'
-    local _value_type = 'nil'
+    local _key_type = nil
+    local _value_type = nil
     local _data = {}
 
     -- Instance
@@ -38,43 +39,28 @@ function Dictionary.new(name)
 
     -------------------------------------------------------------------------
     --- Check type of key and value. Also does lazy init. Raises error.
-    -- @param k the value to check
-    -- @param v the value to check
-    local function _check_kv(k, v)
-        local check_ktype = ut.ternary(lt.is_integer(k), 'integer', type(k))
-        local check_vtype = ut.ternary(lt.is_integer(v), 'integer', type(v))
+    -- @param key the value to check
+    -- @param val the value to check
+    local function _check_kv(key, val)
+        local check_ktype = ut.ternary(lt.is_integer(key), 'integer', type(key))
+        local check_vtype = ut.ternary(lt.is_integer(val), 'integer', type(val))
 
-        if tx.table_count(_data) == 0 then
-            -- new object, check types
+        if _key_type == nil then
+            -- new object, check/init types
             local key_types = { 'number', 'integer', 'string' }
             local val_types = { 'number', 'integer', 'string', 'boolean', 'table', 'function' }
-            local ktype = nil
-            local vtype = nil
 
             for _, v in ipairs(key_types) do
-                if v == check_ktype then ktype = check_ktype end
+                if v == check_ktype then _key_type = check_ktype end
             end
 
             for _, v in ipairs(val_types) do
-                if v == check_vtype then vtype = check_vtype end
+                if v == check_vtype then _value_type = check_vtype end
             end
-
-            if ktype ~= nil then
-                _key_type = ktype
-            else
-                error('Invalid key type: '..check_ktype)
-            end
-
-            if vtype ~= nil then
-                _value_type = vtype
-            else
-                error('Invalid value type: '..check_vtype)
-            end
-
-        else -- adding to existing
-            if check_ktype ~= _key_type then error('Keys not homogenous: '..check_ktype..' should be '.._key_type) end
-            if check_vtype ~= _value_type then error('Values not homogenous: '..check_vtype..' should be '.._val_type) end
         end
+
+        if check_ktype ~= _key_type then error('Invalid key type: '..check_ktype) end
+        if check_vtype ~= _value_type then error('Invalid value type: '..check_vtype) end
     end
 
 
@@ -93,7 +79,7 @@ function Dictionary.new(name)
     --- How many.
     -- @return number of values
     function dict:count()
-        return tx.table_count(_data) --  A bit expensive so maybe cache size? TODOL
+        return tx.table_count(_data) --  A bit expensive so maybe cache size? TODOF
     end
 
     -------------------------------------------------------------------------
@@ -137,6 +123,9 @@ function Dictionary.new(name)
         for k, _ in pairs(_data) do
             _data[k] = nil
         end
+        _key_type = 'nil'
+        _value_type = 'nil'
+        _data = {}
     end
 
     -------------------------------------------------------------------------

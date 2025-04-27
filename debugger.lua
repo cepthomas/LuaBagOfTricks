@@ -1,6 +1,8 @@
 --[[
     Copyright (c) 2023 Scott Lembcke and Howling Moon Software
+
     https://github.com/slembcke/debugger.lua/blob/master/README.md
+    https://www.slembcke.net/blog/DebuggerLua/
 
     Permission is hereby granted, free of charge, to any person obtaining a copy
     of this software and associated documentation files (the "Software"), to deal
@@ -22,10 +24,10 @@
 
     ***1 indicates -> Removed some support for older lua versions.
     
-    TODOF from original:
-      - Print short function arguments as part of stack location.
-      - Properly handle being reentrant due to coroutines.
-      - You can't add breakpoints to a running program or remove them - must use dbg().
+    From original:
+    TODOF Print short function arguments as part of stack location.
+    TODOF Properly handle being reentrant due to coroutines.
+    TODOF You can't add breakpoints to a running program or remove them - must use dbg().
 ]]
 
 local dbg

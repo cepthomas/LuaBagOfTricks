@@ -27,3 +27,4 @@ Code mostly follows [luarocks style guide](https://github.com/luarocks/lua-style
 - `List.lua` - General purpose true homogenous list.
 - `Dictionary.lua` - General purpose true homogenous dictionary/map.
 - `lua54` folder contains Lua reference for integration in other Lua projects. 64 bit Lua 5.4.2 from https://luabinaries.sourceforge.net/download.html.
+

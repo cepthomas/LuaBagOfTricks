@@ -32,7 +32,7 @@ end
 --- Make a deep copy of a table, including metatables.
 -- @param t to copy
 -- @return new table
-function M.deep_copy(t)
+function M.deep_copy(tbl)
 
     local function _copy(t, cache)
         if type(t) ~= 'table' then return t end
@@ -53,7 +53,7 @@ function M.deep_copy(t)
         return res
     end
 
-    return _copy(t, {})
+    return _copy(tbl, {})
 end
 
 -----------------------------------------------------------------------------
@@ -67,16 +67,6 @@ function M.contains_value(tbl, val)
     end
     return false
 end
-
--- -----------------------------------------------------------------------------
--- -- Boilerplate for adding a new kv to a table.
--- -- @param tbl the table
--- -- @param key new entry key
--- -- @param val new entry value
--- function M.table_add(tbl, key, val)
---    if tbl[key] == nil then tbl[key] = {} end
---    table.insert(tbl[key], val)
--- end
 
 -----------------------------------------------------------------------------
 --- Diagnostic.

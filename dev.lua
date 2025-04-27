@@ -144,13 +144,13 @@ function Foo(arg)
     local field1 = 42
     local field2 = "string"
     -- private method
-    local function private_method(arg)  end
+    local function private_method(parg)  end
 
     local o = {}
     -- public field
     o.public_field = "hello"
     -- public method
-    function o:method(arg)  end
+    function o:method(parg)  end
     -- public method to access a private field
     function o:get_field1() return field1 end
 

@@ -352,7 +352,6 @@ function M.UT_RAISES(func, args, exp_msg, info)
     M.num_cases_run = M.num_cases_run + 1
 
     local ok, msgcall = pcall(func, table.unpack(args))
-    print(ok, msgcall)
     if ok then
         local msg = 'function did not raise expected error()'
         case_failed(msg, info)

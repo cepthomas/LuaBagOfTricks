@@ -44,21 +44,13 @@ function List.new(name)
         if tx.table_count(_data) == 0 then
             -- new object, check types
             local val_types = { 'number', 'integer', 'string', 'boolean', 'table', 'function' }
-            local vtype = nil
 
             for _, v in ipairs(val_types) do
-                if v == check_vtype then vtype = check_vtype end
+                if v == check_vtype then _value_type = check_vtype end
             end
-
-            if vtype ~= nil then
-                _value_type = vtype
-            else
-                error('Invalid value type: '..check_vtype)
-            end
-
-        else -- request to add to existing
-            if check_vtype ~= _value_type then error('Values not homogenous: '..check_vtype..' should be '.._value_type) end
         end
+
+        if check_vtype ~= _value_type then error('Invalid value type: '..check_vtype) end
     end
 
 
