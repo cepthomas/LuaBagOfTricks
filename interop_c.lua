@@ -20,7 +20,7 @@ local tmpl_interop_c =
 ///// Warning - this file is created by gen_interop.lua - do not edit. /////
 
 #include "$(config.lua_lib_name).h"
->if config.add_refs ~= nil then
+>if config.add_refs then
 >for _, inc in ipairs(config.add_refs) do
 #include $(inc)
 >end

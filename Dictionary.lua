@@ -45,7 +45,7 @@ function Dictionary.new(name)
         local check_ktype = ut.ternary(lt.is_integer(key), 'integer', type(key))
         local check_vtype = ut.ternary(lt.is_integer(val), 'integer', type(val))
 
-        if _key_type == nil then
+        if not _key_type then
             -- new object, check/init types
             local key_types = { 'number', 'integer', 'string' }
             local val_types = { 'number', 'integer', 'string', 'boolean', 'table', 'function' }
@@ -123,8 +123,8 @@ function Dictionary.new(name)
         for k, _ in pairs(_data) do
             _data[k] = nil
         end
-        _key_type = 'nil'
-        _value_type = 'nil'
+        _key_type = nil
+        _value_type = nil
         _data = {}
     end
 

@@ -24,7 +24,7 @@ using System.IO;
 using System.Text;
 using System.Collections.Generic;
 using KeraLuaEx;
->if config.add_refs ~= nil then
+>if config.add_refs then
 >for _, us in ipairs(config.add_refs) do
 using $(us);
 >end

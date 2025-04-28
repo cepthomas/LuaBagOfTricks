@@ -29,7 +29,7 @@ local syntaxes =
 local function write_output(fn, content)
     -- output
     local cf = io.open(fn, "w")
-    if cf == nil then
+    if not cf then
         error("Invalid filename: "..fn)
     else
         cf:write(content)

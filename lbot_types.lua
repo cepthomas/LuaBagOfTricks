@@ -31,7 +31,7 @@ function M.is_callable(obj)
 end
 
 -----------------------------------------------------------------------------
---- Is an object 'array-like'?
+--- Is an object a sequence?
 -- @param obj what to check
 -- @return T/F
 function M.is_indexable(obj)
@@ -115,14 +115,14 @@ function M.val_table(t, min_size)
 end
 
 -----------------------------------------------------------------------------
---- Validate a table array type.
+--- Validate a table sequence type.
 -- @param t the table
-function M.val_array(t)
+function M.val_sequence(t)
     M.val_table(t)
 
     local tnum = 0 -- total count
     for _, _ in pairs(t) do tnum = tnum + 1 end
-    if tnum ~= #t then error('Not array type') end
+    if tnum ~= #t then error('Not sequence type') end
 
     -- local ind = 1
     -- for i, _ in ipairs(t) do

@@ -121,7 +121,7 @@ end
 
 -----------------------------------------------------------------------------
 --- Diagnostic. 
--- @param lst array-like table
+-- @param lst sequence-like table
 -- @return string Comma delim values
 function M.dump_list(lst)
     local res = {}

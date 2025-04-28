@@ -20,7 +20,7 @@ function List.new(name)
     -- Private fields
     local _class = 'List'
     local _name = name or 'no_name'
-    local _value_type = 'nil'
+    local _value_type = nil
     local _data = {}
 
     -- Instance
@@ -80,10 +80,10 @@ function List.new(name)
 
         local first
         local last
-        if i == nil then
+        if not i then
             first = 1
             last = #_data
-        elseif count == nil then
+        elseif not count then
             first = i
             last = #_data
         else

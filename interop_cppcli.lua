@@ -22,7 +22,7 @@ local tmpl_interop_cpp =
 #include <windows.h>
 #include "$(config.lua_lib_name).h"
 #include "$(config.class_name).h"
->if config.add_refs ~= nil then
+>if config.add_refs then
 >  for _, inc in ipairs(config.add_refs) do
 #include $(inc)
 >  end

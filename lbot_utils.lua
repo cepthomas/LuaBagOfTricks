@@ -13,7 +13,7 @@ local M = {}
 -----------------------------------------------------------------------------
 
 -----------------------------------------------------------------------------
---- Replacement for print(...) with file and line added.
+--- Replacement for print(...) with caller file and line added. TODOL
 function printex(...)
     local res = {}
     local arg = {...}
@@ -52,7 +52,7 @@ function M.check_globals(app_glob)
         for k, v in pairs(expected) do app_glob[k] = v end
 
     for k, _ in pairs(_G) do
-        if expected[k] ~= nil then
+        if not expected[k] then
             expected[k] = nil -- remove
         else
             table.insert(extra, k)
@@ -78,7 +78,7 @@ end
 -- @return Output text or nil if invalid file.
 function M.execute_and_capture(cmd)
     local f = io.popen(cmd, 'r')
-    if f ~= nil then
+    if f then
         local s = f:read('*a')
         f:close()
         return s
@@ -158,8 +158,7 @@ end
 --- Text file helper.
 function M.file_read_all(fn)
     local f = io.open(fn, 'r')
-
-    if f ~= nil then
+    if f then
         local s = f:read()
         f:close()
         return s
@@ -172,8 +171,7 @@ end
 --- Text file helper.
 function M.file_write_all(fn, s)
     local f = io.open(fn, 'w')
-
-    if f ~= nil then
+    if f then
         f:write(s)
         f:close()
     else
@@ -185,8 +183,7 @@ end
 --- Text file helper.
 function M.file_append_all(fn, s)
     local f = io.open(fn, 'a')
-
-    if f ~= nil then
+    if f then
         f:write(s)
         f:close()
     else
@@ -230,7 +227,7 @@ function M.colorize_text(text)
         for k, v in pairs(_colorize_map) do
             if sx.contains(l, k) then
                 local col = _colors[v]
-                if col == nil then error('Invalid color for phrase '..k) end
+                if not col then error('Invalid color for phrase '..k) end
                 s = string.char(27)..'['..col..'m'..l..string.char(27)..'[0m'
             end
         end

@@ -53,7 +53,7 @@ function M.strsplit(text, delimiter, trim)
 
     while 1 do
         local first, last = text:find(delimiter, pos, true)
-        if first ~= nil then -- found?
+        if first then -- found?
             local s = text:sub(pos, first - 1)
             if trim then
                 s = M.strtrim(s)
@@ -98,7 +98,7 @@ function M.contains(s, phrase)
     lt.val_string(s)
     lt.val_string(phrase)
     local res = s:find(phrase, 1, true)
-    return res ~= nil and res >= 1
+    return res and res >= 1
 end
 
 -----------------------------------------------------------------------------
