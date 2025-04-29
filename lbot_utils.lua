@@ -13,7 +13,7 @@ local M = {}
 -----------------------------------------------------------------------------
 
 -----------------------------------------------------------------------------
---- Replacement for print(...) with caller file and line added. TODOL
+--- Replacement for print(...) with caller file and line added. TODOD
 function printex(...)
     local res = {}
     local arg = {...}
