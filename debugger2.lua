@@ -1,7 +1,7 @@
 
 ------------------- early wip ------------------------
 
--- a lot borrowed from 
+-- a lot stolen from 
     -- Copyright (c) 2023 Scott Lembcke and Howling Moon Software
     -- https://github.com/slembcke/debugger.lua/blob/master/README.md
     -- https://www.slembcke.net/blog/DebuggerLua/
@@ -12,8 +12,12 @@
 -- Get all the variable binding names and sort them. TODOD gets noisy with large tables.
 -- TODOD enable color explicitly?
 
+local ut = require('lbot_utils')
+local sx = require('stringex')
+local tx = require("tableex")
 
---[[
+
+--[[ commands
 
 <return> re-run last command
 w(here) [line count] print source code around the current line --> cmd_where,
@@ -28,7 +32,6 @@ f(inish) step forward until exiting the current function --> cmd_finish,
 u(p) move up the stack by one frame --> cmd_up,
 d(own) move down the stack by one frame --> cmd_down,
 i(nspect) [index] move to a specific stack frame --> cmd_inspect,
-
 
 e(val) [statement] execute the statement --> cmd_eval,
 p(rint) [expression] execute the expression and print the result --> cmd_print,
@@ -49,36 +52,52 @@ local COLOR_YELLOW = string.char(27) .. "[33m"
 local COLOR_RESET = string.char(27) .. "[0m"
 local GREEN_CARET = string.char(27) .. "[92m => "..COLOR_RESET
 
-local function pretty(obj, max_depth) -- TODOD use lbot
-    if max_depth == nil then max_depth = dbg.pretty_depth end
+-- Server provides ansi color (https://en.wikipedia.org/wiki/ANSI_escape_code)
+local use_color = true
 
-    -- Returns true if a table has a __tostring metamethod.
-    local function coerceable(tbl)
-        local meta = getmetatable(tbl)
-        return (meta and meta.__tostring)
+-- Convenience enum.
+local Color = {
+    DEFAULT = 0, -- yellow
+    FAINT = 90, -- gray
+    EXCEPTION_LINE = 92, -- green
+    STACK_LOCATION = 96, -- cyan
+    PROMPT = 94, -- blue
+    ERROR = 91 -- red
+}
+setmetatable(Color, { __index = function(self, key) error('Invalid color:'..key) end })
+
+
+
+
+
+-- COLOR_BLUE..file..COLOR_RESET..":"..COLOR_YELLOW..line..COLOR_RESET end
+-- local name = (info.name and "'"..COLOR_BLUE..info.name..COLOR_RESET.."'" or format_loc(source, info.linedefined))
+-- COLOR_YELLOW.."debugger.lua"..GREEN_CARET.."Set local variable "..COLOR_BLUE..name..COLOR_RESET)
+-- COLOR_RED.."Error: Source not available for "..COLOR_BLUE..info.short_src);
+-- if not chunk then COLOR_RED.."Error: Could not compile block:\n"..COLOR_RESET..block) end
+-- COLOR_BLUE..expr.. GREEN_CARET..output)
+-- if line then COLOR_GRAY.."% 4d"..tab_or_caret.."%s", i, line) end
+-- COLOR_GRAY.."% 4d"..COLOR_RESET..tab_or_caret.."%s", i, format_stack_frame_info(info))
+-- if not rawequal(v, dbg) and k ~= "_ENV" and not k:match("%(.*%)") then "  "..COLOR_BLUE..k.. GREEN_CARET..dbg.pretty(v))
+-- ..COLOR_BLUE.."  i"..COLOR_YELLOW.."(nspect) "..COLOR_BLUE.."[index]"..GREEN_CARET.."move to a specific stack frame\n"
+-- reason = reason and (COLOR_YELLOW.."break via "..COLOR_RED..reason..GREEN_CARET) or ""
+-- COLOR_RED.."debugger.lua: "..COLOR_RESET.."Error did not occur in Lua code. Execution will continue after dbg_pcall().")
+
+
+
+
+
+
+
+
+local function pretty(obj, depth, name)
+    if type(obj) == "string" then
+        return string.format("%q", obj)
+    elseif type(obj) == "table" then
+        return tx.dump_table(obj, depth, 'name')
+    else
+        return tostring(obj)
     end
-
-    local function recurse(obj, depth)
-        if type(obj) == "string" then
-            -- Dump the string so that escape sequences are printed.
-            return string.format("%q", obj)
-        elseif type(obj) == "table" and depth < max_depth and not coerceable(obj) then
-            local str = "{"
-
-            for k, v in pairs(obj) do
-                local pair = pretty(k, 0).." = "..recurse(v, depth + 1)
-                str = str..(str == "{" and pair or ", "..pair)
-            end
-
-            return str.."}"
-        else
-            -- tostring() can fail if there is an error in a __tostring metamethod.
-            local success, value = pcall(function() return tostring(obj) end)
-            return (success and value or "<!!error in __tostring metamethod!!>")
-        end
-    end
-
-    return recurse(obj, 0)
 end
 
 -- The stack level that cmd_* functions use to access locals or info
@@ -126,6 +145,57 @@ local function dbg_writeln(str, ...)
         dbg.write(string.format(str.."\n", ...))
     end
 end
+
+local function dbg_writeln_XX(str, color)
+
+    --                 self.send(f'{s}{MDEL}' if color is None else f'\033[{color}m{s}\033[0m{MDEL}')
+
+
+    -- if select("#", ...) == 0 then
+    --     dbg.write((str or "<NULL>").."\n")
+    -- else
+    --     dbg.write(string.format(str.."\n", ...))
+    -- end
+end
+
+    -- def write(self, line):
+    --     '''Core pdb calls this to write to cli/client. This adjusts and sends to socket.'''
+    --     try:
+    --         # pdb writes lines piecemeal but we want full proper lines.
+    --         # Easiest is to accumulate in a buffer until we see the prompt then slice and write.
+    --         if '(Pdb)' in line:
+    --             # settings = sublime.load_settings(sc.get_settings_fn())
+
+    --             for s in self.buff.splitlines():
+    --                 # sc.debug(f'DBG Send response: {s}')
+    --                 color = None
+
+    --                 if USE_COLOR:
+    --                     if s.startswith('-> '): color = CURRENT_LINE_COLOR
+    --                     elif ' ->' in s: color = CURRENT_LINE_COLOR
+    --                     elif s.startswith('>> '): color = EXCEPTION_LINE_COLOR
+    --                     elif '***' in s: color = ERROR_COLOR
+    --                     elif 'Error:' in s: color = ERROR_COLOR
+    --                     elif s.startswith('> '): color = STACK_LOCATION_COLOR
+
+    --                 self.send(f'{s}{MDEL}' if color is None else f'\033[{color}m{s}\033[0m{MDEL}')
+
+    --             self.writePrompt()
+
+    --             # Reset buffer.
+    --             self.buff = ''
+    --         else:
+    --             # Just collect.
+    --             self.buff += line
+
+    --     except (ConnectionError, socket.timeout) as e:
+    --         self.do_debug(f'Disconnected: {type(e)}')
+    --         raise
+
+    --     except Exception as e:
+    --         self.do_debug(f'CommIf.write() other exception: {str(e)}')
+    --         self.buff = ''
+    --         raise
 
 ------------------------------------------------------------------------------------
 ----------------------------- repl, hooks internals --------------------------------
@@ -510,6 +580,15 @@ local function run_command(line)
     if line == "" then line = last_cmd or "h" end
 
     local command, command_arg = match_command(line)
+
+    -- for pat, func in pairs(line) do
+    --     -- Return the matching command and capture argument.
+    --     if line:find(pat) then
+    --         command = func
+    --         command_arg = line:match(pat)
+    --     end
+    -- end
+
     if command then
         last_cmd = line
         -- unpack({...}) prevents tail call elimination so the stack frame indices are predictable.
