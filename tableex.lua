@@ -76,7 +76,7 @@ end
 -- @return string of contents
 function M.dump_table(tbl, depth, name)
     lt.val_table(tbl)
-    name = name or 'noname'
+    name = name or 'anonymous'
     depth = depth or 0
     lt.val_integer(depth)
     local level = 0
