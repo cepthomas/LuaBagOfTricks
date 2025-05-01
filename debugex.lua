@@ -21,17 +21,18 @@ local tx = require("tableex")
 local unpack = unpack or table.unpack
 local pack = function(...) return {n = select('#', ...), ...} end
 
+local dbg = {}
 
 ------------------------------------------------------------------------------------
 ----------------------------- Definitions ------------------------------------------
 ------------------------------------------------------------------------------------
 
-local dbg
 
+-- Forward ref.
 local repl
 
+-- Cache.
 local last_cmd = false
-
 
 -- Location of the top of the stack outside of the debugger. Adjusted by some debugger entrypoints.
 local stack_top = 0
@@ -40,8 +41,9 @@ local stack_top = 0
 local stack_inspect_offset = 0
 
 -- LuaJIT has an off by one bug when setting local variables.
-local LUA_JIT_SETLOCAL_WORKAROUND = 0
+local luajit_local_fix = 0
 
+-- It's a cache for source code!
 local source_cache = {}
 
 -- Server provides ansi color (https://en.wikipedia.org/wiki/ANSI_escape_code)
@@ -50,7 +52,7 @@ local use_color = true
 
 -- Constants.
 local ESC = string.char(27)
-local GREEN_CARET = ' => '
+local CARET = ' => '
 -- Delimiter for socket message lines.
 local MDEL = '\n'
 -- The stack level that cmd_* functions use to access locals or info
@@ -73,7 +75,7 @@ setmetatable(Color, { __index = function(_, key) error('Invalid color: '..key) e
 
 
 ------------------------------------------------------------------------------------
------------------------------ Private funcs ----------------------------------------
+----------------------------- Infrastructure ---------------------------------------
 ------------------------------------------------------------------------------------
 
 ------------------------------------------------------------------------------------
@@ -123,8 +125,6 @@ end
 
 
 ------------------------------------------------------------------------------------
--- local function format_loc(file, line) return COLOR_BLUE..file..COLOR_RESET..':'..COLOR_YELLOW..line..COLOR_RESET end
-
 local function format_stack_frame_info(info)
 
     local function format_loc(file, line) return file..':'..line end
@@ -226,9 +226,9 @@ local function mutate_bindings(_, name, value)
     do local i = 1; repeat
         local var = debug.getlocal(level, i)
         if name == var then
-            -- dbg_writeln(COLOR_YELLOW..'debugger.lua'..GREEN_CARET..'Set local variable '..COLOR_BLUE..name..COLOR_RESET)
-            dbg_writeln('debugex.lua'..GREEN_CARET..'Set local variable '..name)
-            return debug.setlocal(level + LUA_JIT_SETLOCAL_WORKAROUND, i, value)
+            -- dbg_writeln(COLOR_YELLOW..'debugger.lua'..CARET..'Set local variable '..COLOR_BLUE..name..COLOR_RESET)
+            dbg_writeln('debugex.lua'..CARET..'Set local variable '..name)
+            return debug.setlocal(level + luajit_local_fix, i, value)
         end
         i = i + 1
     until var == nil end
@@ -238,16 +238,16 @@ local function mutate_bindings(_, name, value)
     do local i = 1; repeat
         local var = debug.getupvalue(func, i)
         if name == var then
-            -- dbg_writeln(COLOR_YELLOW..'debugger.lua'..GREEN_CARET..'Set upvalue '..COLOR_BLUE..name..COLOR_RESET)
-            dbg_writeln('debugex.lua'..GREEN_CARET..'Set upvalue '..name)
+            -- dbg_writeln(COLOR_YELLOW..'debugger.lua'..CARET..'Set upvalue '..COLOR_BLUE..name..COLOR_RESET)
+            dbg_writeln('debugex.lua'..CARET..'Set upvalue '..name)
             return debug.setupvalue(func, i, value)
         end
         i = i + 1
     until var == nil end
 
     -- Set a global.
-    -- dbg_writeln(COLOR_YELLOW..'debugger.lua'..GREEN_CARET..'Set global variable '..COLOR_BLUE..name..COLOR_RESET)
-    dbg_writeln('debugex.lua'..GREEN_CARET..'Set global variable '..name)
+    -- dbg_writeln(COLOR_YELLOW..'debugger.lua'..CARET..'Set global variable '..COLOR_BLUE..name..COLOR_RESET)
+    dbg_writeln('debugex.lua'..CARET..'Set global variable '..name)
     _G[name] = value
 end
 
@@ -286,7 +286,7 @@ local function where(info, context_lines)
 
     if source and source[info.currentline] then
         for i = info.currentline - context_lines, info.currentline + context_lines do
-            local tab_or_caret = (i == info.currentline and GREEN_CARET or '    ')
+            local tab_or_caret = (i == info.currentline and CARET or '    ')
             local line = source[i]
             -- if line then dbg_writeln('% 4d'..tab_or_caret..'%s', i, line, Color.FAINT) end
             if line then dbg_writeln(i..tab_or_caret..line, Color.FAINT) end
@@ -341,7 +341,7 @@ local function cmd_print(expr)
         end
 
         if output == '' then output = '<no result>' end
-        dbg_writeln(expr..GREEN_CARET..output)
+        dbg_writeln(expr..CARET..output)
     end
 
     return false
@@ -438,7 +438,7 @@ local function cmd_trace()
         if not info then break end
 
         local is_current_frame = (i + stack_top == stack_inspect_offset)
-        local tab_or_caret = (is_current_frame and GREEN_CARET or '    ')
+        local tab_or_caret = (is_current_frame and CARET or '    ')
         -- dbg_writeln('% 4d'..COLOR_RESET..tab_or_caret..'%s', i, format_stack_frame_info(info))
         dbg_writeln(i..tab_or_caret..format_stack_frame_info(info))
         i = i + 1
@@ -461,7 +461,7 @@ local function cmd_locals()
 
         -- Skip the debugger object itself, '(*internal)' values, and Lua 5.2's _ENV object.
         if not rawequal(v, dbg) and k ~= '_ENV' and not k:match('%(.*%)') then
-            dbg_writeln('  '..k..GREEN_CARET..dbg.pretty(v))
+            dbg_writeln('  '..k..CARET..dbg.pretty(v))
         end
     end
 
@@ -565,7 +565,7 @@ repl = function(reason)
     end
 
     local info = debug.getinfo(stack_inspect_offset + CMD_STACK_LEVEL - 3)
-    -- reason = reason and (COLOR_YELLOW..'break via '..COLOR_RED..reason..GREEN_CARET) or ''
+    -- reason = reason and (COLOR_YELLOW..'break via '..COLOR_RED..reason..CARET) or ''
 
     dbg_writeln('break via '..reason..' '..format_stack_frame_info(info))
 
@@ -603,9 +603,10 @@ end
 
 
 
-dbg = {}
 local _trace = nil
 local _err = nil
+
+------------------------------------------------------------------------------------
 -- Works like pcall(), but invokes the debugger on an error.
 dbg.pdebug = function(f, ...)
 
@@ -616,7 +617,7 @@ dbg.pdebug = function(f, ...)
             _trace = sx.strsplit(debug.traceback(), '\n')
             table.remove(_trace, 1)
             -- Start debugger.
-            dbg.run(false, 1, "msgh")
+            dbg.run(false, 1, "msgh?????")
             return ...
         end,
         ...)
@@ -657,11 +658,12 @@ dbg.exit = function(err) os.exit(err) end
 
 dbg.writeln = dbg_writeln
 
-dbg.pretty_depth = 3
+--? dbg.pretty_depth = 3
 dbg.pretty = pretty
-dbg.pp = function(value, depth) dbg_writeln(dbg.pretty(value, depth)) end
+--? dbg.pp = function(value, depth) dbg_writeln(dbg.pretty(value, depth)) end
 
-dbg.auto_where = true -- false
+--? these
+dbg.auto_where = true -- was false
 dbg.auto_eval = false
 
 local lua_error, lua_assert = error, assert
@@ -698,17 +700,133 @@ function dbg.call(f, ...)
     end, ...)
 end
 
-------------------------------------------------------------------------------------
--- Error message handler that can be used with lua_pcall().
-function dbg.msgh(...)
-    if debug.getinfo(2) then
-        dbg_writeln('ERROR: '..dbg.pretty(...), Color.ERROR)
-        dbg(false, 1, 'dbg.msgh()')
-    else
-        dbg_writeln('debugex.lua: Error did not occur in Lua code. Execution will continue after dbg_pcall().', Color.ERROR)
-    end
+-- ------------------------------------------------------------------------------------
+-- -- Error message handler that can be used with lua_pcall().
+-- function dbg.msgh(...)
+--     if debug.getinfo(2) then
+--         dbg_writeln('ERROR: '..dbg.pretty(...), Color.ERROR)
+--         dbg(false, 1, 'dbg.msgh()')
+--     else
+--         dbg_writeln('debugex.lua: Error did not occur in Lua code. Execution will continue after dbg_pcall().', Color.ERROR)
+--     end
 
-    return ...
-end
+--     return ...
+-- end
 
 return dbg
+
+
+
+------------------------------------------------------------------------------------
+----------------------------- luajit etc -------------------------------------------
+------------------------------------------------------------------------------------
+
+-- -- Assume stdin/out are TTYs unless we can use LuaJIT's FFI to properly check them.
+-- local stdin_isatty = true
+-- local stdout_isatty = true
+
+-- -- Conditionally enable the LuaJIT FFI.
+-- local ffi = (jit and require("ffi"))
+-- if ffi then
+--     ffi.cdef[[
+--         int isatty(int); // Unix
+--         int _isatty(int); // Windows
+--         void free(void *ptr);
+
+--         char *readline(const char *);
+--         int add_history(const char *);
+--     ]]
+
+--     local function get_func_or_nil(sym)
+--         local success, func = pcall(function() return ffi.C[sym] end)
+--         return success and func or nil
+--     end
+
+--     local isatty = get_func_or_nil("isatty") or get_func_or_nil("_isatty") or (ffi.load("ucrtbase"))["_isatty"]
+--     stdin_isatty = isatty(0)
+--     stdout_isatty = isatty(1)
+-- end
+
+-- -- Conditionally enable color support.
+-- local color_maybe_supported = (stdout_isatty and os.getenv("TERM") and os.getenv("TERM") ~= "dumb")
+-- if color_maybe_supported and not os.getenv("DBG_NOCOLOR") then
+--     COLOR_GRAY = string.char(27) .. "[90m"
+--     COLOR_RED = string.char(27) .. "[91m"
+--     COLOR_BLUE = string.char(27) .. "[94m"
+--     COLOR_YELLOW = string.char(27) .. "[33m"
+--     COLOR_RESET = string.char(27) .. "[0m"
+--     CARET = string.char(27) .. "[92m => "..COLOR_RESET
+-- end
+
+-- if stdin_isatty and not os.getenv("DBG_NOREADLINE") then
+--     pcall(function()
+--         local linenoise = require 'linenoise'
+
+--         -- Load command history from ~/.lua_history
+--         local hist_path = os.getenv('HOME') .. '/.lua_history'
+--         linenoise.historyload(hist_path)
+--         linenoise.historysetmaxlen(50)
+
+--         local function autocomplete(env, input, matches)
+--             for name, _ in pairs(env) do
+--                 if name:match('^' .. input .. '.*') then
+--                     linenoise.addcompletion(matches, name)
+--                 end
+--             end
+--         end
+
+--         -- Auto-completion for locals and globals
+--         linenoise.setcompletion(function(matches, input)
+--             -- First, check the locals and upvalues.
+--             local env = local_bindings(1, true)
+--             autocomplete(env, input, matches)
+
+--             -- Then, check the implicit environment.
+--             env = getmetatable(env).__index
+--             autocomplete(env, input, matches)
+--         end)
+
+--         dbg.read = function(prompt)
+--             local str = linenoise.linenoise(prompt)
+--             if str and not str:match "^%s*$" then
+--                 linenoise.historyadd(str)
+--                 linenoise.historysave(hist_path)
+--             end
+--             return str
+--         end
+--         dbg_writeln(COLOR_YELLOW.."debugger.lua: "..COLOR_RESET.."Linenoise support enabled.")
+--     end)
+
+--     -- Conditionally enable LuaJIT readline support.
+--     pcall(function()
+--         if dbg.read == dbg_read and ffi then
+--             local readline = ffi.load("readline")
+--             dbg.read = function(prompt)
+--                 local cstr = readline.readline(prompt)
+--                 if cstr ~= nil then
+--                     local str = ffi.string(cstr)
+--                     if string.match(str, "[^%s]+") then
+--                         readline.add_history(cstr)
+--                     end
+
+--                     ffi.C.free(cstr)
+--                     return str
+--                 else
+--                     return nil
+--                 end
+--             end
+--             dbg_writeln(COLOR_YELLOW.."debugger.lua: "..COLOR_RESET.."Readline support enabled.")
+--         end
+--     end)
+-- end
+
+-- -- Detect Lua version.
+-- if jit then -- LuaJIT
+--     luajit_local_fix = -1
+--     dbg_writeln(COLOR_YELLOW.."debugger.lua: "..COLOR_RESET.."Loaded for "..jit.version)
+-- elseif "Lua 5.1" <= _VERSION and _VERSION <= "Lua 5.4" then
+--     dbg_writeln(COLOR_YELLOW.."debugger.lua: "..COLOR_RESET.."Loaded for ".._VERSION)
+-- else
+--     dbg_writeln(COLOR_YELLOW.."debugger.lua: "..COLOR_RESET.."Not tested against ".._VERSION)
+--     dbg_writeln("Please send me feedback!")
+-- end
