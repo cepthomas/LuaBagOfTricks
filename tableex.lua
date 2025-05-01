@@ -74,7 +74,7 @@ end
 -- @param name Visual optional
 -- @param depth How deep to go in recursion. 0 (default) means just this level.
 -- @return string of contents
-function M.dump_table(tbl, depth, name)
+function M.dump_table(tbl, name, depth)
     lt.val_table(tbl)
     name = name or 'anonymous'
     depth = depth or 0
@@ -82,10 +82,10 @@ function M.dump_table(tbl, depth, name)
     local level = 0
 
     -- Worker function.
-    local function _dump_table(_tbl, _level, _name)
+    local function _dump_table(_tbl, _name, _level)
         local res = {}
         local sindent = string.rep('    ', _level)
-        table.insert(res, sindent.._name..'(table):')
+        table.insert(res, sindent.._name..'[T]')
 
         -- Do contents.
         sindent = sindent..'    '
@@ -96,16 +96,16 @@ function M.dump_table(tbl, depth, name)
                 if type(v) == 'table' then
                     if _level < depth then
                         _level = _level + 1
-                        local trec = _dump_table(v, _level, k) -- recursion!
+                        local trec = _dump_table(v, k, _level) -- recursion!
                         _level = _level - 1
                         for _, v2 in ipairs(trec) do
                             table.insert(res, v2)
                         end
                     else
-                        table.insert(res, sindent..k..'('..type(v)..')')
+                        table.insert(res, string.format('%s%s[%s]:%s[%s]', sindent, tostring(k), lt.short_type(k), tostring(v), lt.short_type(v)))
                     end
                 else
-                    table.insert(res, sindent..k..'('..type(v)..')['..tostring(v)..']')
+                    table.insert(res, string.format('%s%s[%s]:%s[%s]', sindent, tostring(k), lt.short_type(k), tostring(v), lt.short_type(v)))
                 end
             end
         end
@@ -114,7 +114,7 @@ function M.dump_table(tbl, depth, name)
     end
 
     -- Go.
-    local res = _dump_table(tbl, level, name)
+    local res = _dump_table(tbl, name, level)
 
     return sx.strjoin('\n', res)
 end

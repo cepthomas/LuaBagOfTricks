@@ -2,6 +2,26 @@
 
 local M = {}
 
+local _short_types =
+{
+    ['nil']='X',
+    ['boolean']='B',
+    ['number']='N',
+    ['string']='S',
+    ['function']='F',
+    ['userdata']='U',
+    ['thread']='D',
+    ['table']='T'
+}
+
+
+-----------------------------------------------------------------------------
+--- Short version of type.
+-- @param v a number
+-- @return char
+function M.short_type(v)
+    return _short_types[type(v)]
+end
 
 -----------------------------------------------------------------------------
 --- Is this number an integer?

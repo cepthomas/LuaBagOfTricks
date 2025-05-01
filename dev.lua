@@ -174,10 +174,10 @@ local function test_simple_objects()
 
 --[[
     -- local acct = Account4('bob_name', 1000)
-    -- print('00', tx.dump_table(acct, 0, 'acct'))
+    -- print('00', tx.dump_table(acct, 'acct', 0))
 
     -- local fff = Foo('aaa')
-    -- print('00', tx.dump_table(fff, 0, 'fff'))
+    -- print('00', tx.dump_table(fff, 'fff', 0))
     -- fff(table):
     --     get_field1(function)[function: 0000000000fea4e0]
     --     public_field(string)[hello]
@@ -186,7 +186,7 @@ local function test_simple_objects()
 
     local acct_bob = Account4('bob_name', 1000)
     -- -- client create and use an Account
-    print('00', tx.dump_table(acct_bob, 0, 'acct_bob_name'))
+    print('00', tx.dump_table(acct_bob, 'acct_bob_name', 0))
 
     print('10', 'bob got:', acct_bob:getbalance())
     acct_bob:withdraw(100)
@@ -196,7 +196,7 @@ local function test_simple_objects()
 
     print('20', 'acct_bob:', acct_bob)
 
-    print('30', acct_bob:name(), acct_bob, tx.dump_table(acct_bob, 0, acct_bob:name()))
+    print('30', acct_bob:name(), acct_bob, tx.dump_table(acct_bob, acct_bob:name(), 0))
 
     -- print('I got:', acct_bob:getbalance())
 

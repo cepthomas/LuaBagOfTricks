@@ -43,11 +43,12 @@ end
 --   Example: strsplit(",%s*", "Anna, Bob, Charlie,Dolores")
 -- @param text The string to split.
 -- @param delimiter Delimiter.
--- @param trim Remove leading and trailing whitespace, and empty entries.
+-- @param trim Remove leading and trailing whitespace, and empty entries. Default is true.
 -- @return list Split input.
 function M.strsplit(text, delimiter, trim)
     lt.val_string(text)
     lt.val_string(delimiter)
+    trim = trim or true
     local list = {}
     local pos = 1
 

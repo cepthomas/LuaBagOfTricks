@@ -71,7 +71,7 @@ function Dictionary.new(name)
     -- @param depth how deep to look
     -- @return string
     function dict:dump(depth)
-        local s = tx.dump_table(_data, depth, _name)
+        local s = tx.dump_table(_data, _name, depth)
         return s
     end
 
