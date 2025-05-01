@@ -69,7 +69,7 @@ local Color = {
     ERROR = 91, -- red
     TBD = 5
 }
-setmetatable(Color, { __index = function(self, key) error('Invalid color: '..key) end })
+setmetatable(Color, { __index = function(_, key) error('Invalid color: '..key) end })
 
 
 ------------------------------------------------------------------------------------
@@ -587,19 +587,67 @@ end
 ----------------------------- api --------------------------------------------------
 ------------------------------------------------------------------------------------
 
--- Make the debugger object callable like a function.
-dbg = setmetatable({}, {
-    __call = function(_, condition, top_offset, source)
-        if condition then return end
+-- -- Make the debugger object callable like a function.
+-- dbg = setmetatable({}, {
+--     __call = function(_, condition, top_offset, source)
+--         if condition then return end
 
-        top_offset = (top_offset or 0)
-        stack_inspect_offset = top_offset
-        stack_top = top_offset
+--         top_offset = (top_offset or 0)
+--         stack_inspect_offset = top_offset
+--         stack_top = top_offset
 
-        debug.sethook(hook_next(1, source or 'dbg()'), 'crl')
-        -- return
-    end,
-})
+--         debug.sethook(hook_next(1, source or 'dbg()'), 'crl')
+--         -- return
+--     end,
+-- })
+
+
+
+dbg = {}
+local _trace = nil
+local _err = nil
+-- Works like pcall(), but invokes the debugger on an error.
+dbg.pdebug = function(f, ...)
+
+    -- msg like: test_debugex.lua:68: attempt to concatenate a nil value
+    local ok, msg = xpcall(f,
+        function(...)
+            _err = ...
+            _trace = sx.strsplit(debug.traceback(), '\n')
+            table.remove(_trace, 1)
+            -- Start debugger.
+            dbg.run(false, 1, "msgh")
+            return ...
+        end,
+        ...)
+
+    if not ok then
+        print('!!! run_debug', _err)
+        print('!!! _trace', tx.dump_table(_trace))
+        -- !!! run_debug   test_debugex.lua:51: attempt to concatenate a nil value
+        -- !!! _trace      anonymous[T]
+        --     1[N]:C:\Dev\Libs\LbotImpl\LBOT\debugex.lua:616: in metamethod 'concat'[S]
+        --     2[N]:test_debugex.lua:51: in upvalue 'nest2'[S]
+        --     3[N]:test_debugex.lua:56: in upvalue 'nest1'[S]
+        --     4[N]:test_debugex.lua:61: in function <test_debugex.lua:59>[S]
+        --     5[N]:[C]: in function 'xpcall'[S]
+        --     6[N]:C:\Dev\Libs\LbotImpl\LBOT\debugex.lua:613: in function 'debugex.pdebug'[S]
+        --     7[N]:test_debugex.lua:149: in main chunk[S]
+        --     8[N]:[C]: in ?[S]
+    end
+end
+
+
+-- Run the debugger.
+dbg.run = function(condition, top_offset, source)
+    if condition then return end
+
+    top_offset = (top_offset or 0)
+    stack_inspect_offset = top_offset
+    stack_top = top_offset
+
+    debug.sethook(hook_next(1, source or 'dbg()'), 'crl')
+end
 
 -- Expose the debugger's IO functions.
 dbg.read = dbg_read
