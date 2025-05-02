@@ -88,7 +88,7 @@ function M.execute_and_capture(cmd)
 end
 
 -----------------------------------------------------------------------------
---- Gets the file and line of the caller.
+--- Gets the file and line of the caller. TODOD
 -- @param level How deep to look:
 --    0 is the debug.getinfo() itself
 --    1 is the function that called debug.getinfo() - this function
@@ -106,6 +106,15 @@ function M.get_caller_info(level)
     local dir = sx.strjoin(sep, parts)
 
     return fpath, line, dir
+end
+
+-----------------------------------------------------------------------------
+--- Gets the file and line of the caller. TODOD
+-- @param level see get_caller_info()
+-- @return string of file and line
+function M.get_caller_info_str(level)
+    local fpath, line, dir = M.get_caller_info(level)
+    return tostring(level)..':'.. fpath..'('..tostring(line)..')'
 end
 
 
