@@ -143,17 +143,32 @@ end
 ------------------------------------------------------------------------------------
 -- Return false for stack frames without source - C frames, Lua bytecode, and `loadstring` functions.
 local function frame_has_line(info)
+
+    if not info then
+        print('---', ut.get_caller_info_str(2))
+        print('---', ut.get_caller_info_str(3))
+        print('---', ut.get_caller_info_str(4))
+    end
+
     return info.currentline >= 0
+
+-- >>>     true    true    function: 000000000105f380
+---     2:C:\Dev\Libs\LbotImpl\LBOT\lbot_utils.lua(116)
+---     3:C:\Dev\Libs\LbotImpl\LBOT\debugex.lua(149)
+---     4:C:\Dev\Libs\LbotImpl\LBOT\debugex.lua(611)
+
 end
 
 ------------------------------------------------------------------------------------
 local function hook_factory(repl_threshold)
     return function(offset, reason)
-        if not reason then
-            print(ut.get_caller_info_str(2))
-            print(ut.get_caller_info_str(3))
-            print(ut.get_caller_info_str(4))
-        end
+       reason = reason or 'unreasonable'
+
+        -- if not reason then
+            -- print(ut.get_caller_info_str(2))
+            -- print(ut.get_caller_info_str(3))
+            -- print(ut.get_caller_info_str(4))
+        -- end
 
         return function(event, _)
             -- Skip events that don't have line information.
@@ -296,8 +311,9 @@ local function where(info, context_lines)
     end
 
     if source and source[info.currentline] then
+        -- print('111', info.currentline, context_lines)
         for i = info.currentline - context_lines, info.currentline + context_lines do
-            local tab_or_caret = (i == info.currentline and CARET or '    ')
+            -- local tab_or_caret = (i == info.currentline and CARET or '    ')
             local line = source[i]
             -- if line then dbg_writeln('% 4d'..tab_or_caret..'%s', i, line, Color.FAINT) end
             if line then
@@ -397,7 +413,8 @@ local function cmd_down()
     if info then
         stack_inspect_offset = offset
         dbg_writeln('Inspecting frame: '..format_stack_frame_info(info), Color.TBD)
-        if tonumber(dbg.auto_where) then where(info, dbg.auto_where) end
+        -- if tonumber(dbg.auto_where) then where(info, dbg.auto_where) end
+        where(info, dbg.auto_where)
     else
         info = debug.getinfo(stack_inspect_offset + CMD_STACK_LEVEL)
         dbg_writeln('Already at the bottom of the stack.', Color.TBD)
@@ -420,7 +437,8 @@ local function cmd_up()
     if info then
         stack_inspect_offset = offset
         dbg_writeln('Inspecting frame: '..format_stack_frame_info(info), Color.TBD)
-        if tonumber(dbg.auto_where) then where(info, dbg.auto_where) end
+        -- if tonumber(dbg.auto_where) then where(info, dbg.auto_where) end
+        where(info, dbg.auto_where)
     else
         info = debug.getinfo(stack_inspect_offset + CMD_STACK_LEVEL)
         dbg_writeln('Already at the top of the stack.', Color.TBD)
@@ -444,7 +462,9 @@ end
 ------------------------------------------------------------------------------------
 local function cmd_where(context_lines)
     local info = debug.getinfo(stack_inspect_offset + CMD_STACK_LEVEL)
-    return (info and where(info, tonumber(context_lines) or 5))
+    -- printex('222', context_lines)
+    return (info and where(info, tonumber(context_lines) or dbg.auto_where))
+    -- return (info and where(info, context_lines))
 end
 
 ------------------------------------------------------------------------------------
@@ -542,13 +562,13 @@ local commands = {
     ["^q$"] = function() dbg.exit(0); return true end,
 }
 
-------------------------------------------------------------------------------------
-local function match_command(line)
-    for pat, func in pairs(commands) do
-        -- Return the matching command and capture argument.
-        if line:find(pat) then return func, line:match(pat) end
-    end
-end
+-- ------------------------------------------------------------------------------------
+-- local function match_command(line)
+--     for pat, func in pairs(commands) do
+--         -- Return the matching command and capture argument.
+--         if line:find(pat) then return func, line:match(pat) end
+--     end
+-- end
 
 ------------------------------------------------------------------------------------
 -- Run a command line
@@ -560,21 +580,24 @@ local function run_command(line)
     -- Re-execute the last command if you press return.
     if line == '' then line = last_cmd or 'h' end
 
-    local command, command_arg = match_command(line)
+    -- Return the matching command and capture argument.
+    local function match_command(line)
+        for pat, func in pairs(commands) do
+            if line:find(pat) then return func, line:match(pat) end
+        end
+    end
 
-    -- for pat, func in pairs(line) do
-    --     -- Return the matching command and capture argument.
-    --     if line:find(pat) then
-    --         command = func
-    --         command_arg = line:match(pat)
-    --     end
-    -- end
+    local command, command_arg = match_command(line)
 
     if command then
         last_cmd = line
         -- unpack({...}) prevents tail call elimination so the stack frame indices are predictable.
+        -- local res = command(command_arg)
+        -- return unpack(res)
         return unpack({command(command_arg)})
     elseif dbg.auto_eval then
+        -- local res = cmd_eval(line)
+        -- return unpack(res)
         return unpack({cmd_eval(line)})
     else
         dbg_writeln('Invalid command '..line, Color.ERROR)
@@ -585,9 +608,14 @@ end
 ------------------------------------------------------------------------------------
 repl = function(reason)
     -- Skip frames without source info.
+
+    print('+++', debug.getinfo(stack_inspect_offset + CMD_STACK_LEVEL - 3))
+
+
     while not frame_has_line(debug.getinfo(stack_inspect_offset + CMD_STACK_LEVEL - 3)) do
         stack_inspect_offset = stack_inspect_offset + 1
-    end
+    end 
+
 
     local info = debug.getinfo(stack_inspect_offset + CMD_STACK_LEVEL - 3)
     -- reason = reason and (COLOR_YELLOW..'break via '..COLOR_RED..reason..CARET) or ''
@@ -596,11 +624,19 @@ repl = function(reason)
 
     dbg_writeln('break via '..reason..' '..format_stack_frame_info(info), Color.TBD)
 
-    if tonumber(dbg.auto_where) then where(info, dbg.auto_where) end
+    -- if tonumber(dbg.auto_where) then where(info, dbg.auto_where) end
+    where(info, dbg.auto_where)
 
     repeat
         -- local success, done, hook = pcall(run_command, dbg.read(COLOR_RED..'debugger.lua> '..COLOR_RESET))
-        local success, done, hook = pcall(run_command, dbg.read('prompt??? debugex.lua> '))
+
+--         local vvv = dbg.read('??? debugex.lua> ')
+-- print('===', vvv)
+
+        local success, done, hook = pcall(run_command, dbg.read('??? debugex.lua> '))
+
+print('>>>', success, done, hook)
+
         if success then
             debug.sethook(hook and hook(0), 'crl')
         else
@@ -690,7 +726,7 @@ dbg.pretty = pretty
 --? dbg.pp = function(value, depth) dbg_writeln(dbg.pretty(value, depth)) end
 
 --? these
-dbg.auto_where = true -- was false
+dbg.auto_where = 3 -- was false
 dbg.auto_eval = false
 
 -- local lua_error, lua_assert = error, assert
