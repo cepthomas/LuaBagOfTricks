@@ -6,12 +6,12 @@
     -- https://github.com/slembcke/debugger.lua/blob/master/README.md
     -- https://www.slembcke.net/blog/DebuggerLua/
 
--- TODOD Print short function arguments as part of stack location.
--- TODOD Properly handle being reentrant due to coroutines.
+-- TODOD-orig Print short function arguments as part of stack location.
+-- TODOD-orig Properly handle being reentrant due to coroutines.
+
 -- TODOD You can't add breakpoints to a running program or remove them - must use dbg.run().
--- Get all the variable binding names and sort them. TODOD gets noisy with large tables.
 -- TODOD enable color explicitly?
--- TODOD py tracer?
+-- TODOD something like py tracer?
 
 local ut = require('lbot_utils')
 local sx = require('stringex')
@@ -21,8 +21,8 @@ local tx = require("tableex")
 local unpack = unpack or table.unpack
 local pack = function(...) return {n = select('#', ...), ...} end
 
-local dbg
--- local dbg = {}
+local dbg -- = {}
+
 
 ------------------------------------------------------------------------------------
 ----------------------------- Definitions ------------------------------------------
@@ -33,33 +33,25 @@ local dbg
 local repl
 
 -- Cache.
-local last_cmd = false
+local _last_cmd = false
 
 -- Location of the top of the stack outside of the debugger. Adjusted by some debugger entrypoints.
-local stack_top = 0
+local _stack_top = 0
 
 -- The current stack frame index. Changed using the up/down commands
-local stack_inspect_offset = 0
-
--- LuaJIT has an off by one bug when setting local variables.
-local luajit_local_fix = 0
+local _stack_inspect_offset = 0
 
 -- It's a cache for source code!
-local source_cache = {}
+local _source_cache = {}
 
--- Server provides ansi color (https://en.wikipedia.org/wiki/ANSI_escape_code)
-local use_color = true
-
-
--- Constants.
+-- ANSI formatting.
 local ESC = string.char(27)
-local CARET = ' => ' -- TODOD
--- Delimiter for socket message lines.
-local MDEL = '\n'
--- The stack level that cmd_* functions use to access locals or info
--- The structure of the code very carefully ensures this.
-local CMD_STACK_LEVEL = 6
 
+-- Delimiter for message lines.
+local MDEL = '\n'
+
+-- The stack level that cmd_* functions use to access locals or info. The structure of the code very carefully ensures this.
+local CMD_STACK_LEVEL = 6
 
 -- Convenience enum.
 local Color = {
@@ -73,6 +65,15 @@ local Color = {
     TBD = 5
 }
 setmetatable(Color, { __index = function(_, key) error('Invalid color: '..key) end })
+
+
+
+-- TODOD need neater config setting - args or public?
+local pretty_depth = 1
+local auto_where = 3 -- was false
+local auto_eval = false -- ??
+local use_ansi_color = true
+
 
 
 ------------------------------------------------------------------------------------
@@ -90,23 +91,16 @@ local function pretty(obj, name, depth)
     end
 end
 
+local function exit(err) os.exit(err) end
 
 ------------------------------------------------------------------------------------
 ----------------------------- IO ---------------------------------------------------
 ------------------------------------------------------------------------------------
 
 ------------------------------------------------------------------------------------
--- Default dbg.read function
-local function dbg_read(prompt)
-    dbg.write(prompt, Color.PROMPT)
-    io.flush()
-    return io.read()
-end
-
-------------------------------------------------------------------------------------
 -- Default dbg.write function
 local function dbg_write(str, color)
-    if not use_color or not color then
+    if not use_ansi_color or not color then
         io.write(str)
     else
         io.write(ESC..'['..color..'m'..str..ESC..'[0m')
@@ -116,7 +110,15 @@ end
 ------------------------------------------------------------------------------------
 -- Default dbg.writeln function
 local function dbg_writeln(str, color)
-    dbg.write(str..MDEL, color or Color.TBD)
+    dbg_write(str..MDEL, color or Color.TBD)
+end
+
+------------------------------------------------------------------------------------
+-- Default dbg.read function
+local function dbg_read(prompt)
+    dbg_write(prompt, Color.PROMPT)
+    io.flush()
+    return io.read()
 end
 
 
@@ -128,50 +130,49 @@ end
 ------------------------------------------------------------------------------------
 local function format_stack_frame_info(info)
 
-    local function format_loc(file, line) return file..':'..line end
+    -- local function format_loc(file, line) return file..':'..line end
+    -- local filename = info.source:match('^@(.*)')
+    -- local source = filename or info.short_src
+    -- local namewhat = (info.namewhat == '' and 'chunk at' or info.namewhat)
+    -- local name = info.name or format_loc(source, info.linedefined)
+    -- -- local name = (info.name and '''..COLOR_BLUE..info.name..COLOR_RESET..''' or format_loc(source, info.linedefined))
+    -- return format_loc(source, info.currentline)..' in '..namewhat..' '..name
 
     local filename = info.source:match('^@(.*)')
-    local source = filename or info.short_src
-    -- local source = filename and dbg.shorten_path(filename) or info.short_src
-    local namewhat = (info.namewhat == '' and 'chunk at' or info.namewhat)
-    local name = info.name or format_loc(source, info.linedefined)
-    -- local name = (info.name and '''..COLOR_BLUE..info.name..COLOR_RESET..''' or format_loc(source, info.linedefined))
-    return format_loc(source, info.currentline)..' in '..namewhat..' '..name
+    if info.what == 'Lua' then
+        return string.format('[Lua} %s(%d) in %s %s', filename, info.currentline, info.namewhat, info.name)
+    else
+        return '['..info.what..']'
+    end
 end
-
 
 ------------------------------------------------------------------------------------
 -- Return false for stack frames without source - C frames, Lua bytecode, and `loadstring` functions.
 local function frame_has_line(info)
 
     if not info then
-        print('---', ut.get_caller_info_str(2))
-        print('---', ut.get_caller_info_str(3))
-        print('---', ut.get_caller_info_str(4))
+        print('!!! info is nil!!', debug.traceback())
+        -- return false
     end
 
     return info.currentline >= 0
-
--- >>>     true    true    function: 000000000105f380
----     2:C:\Dev\Libs\LbotImpl\LBOT\lbot_utils.lua(116)
----     3:C:\Dev\Libs\LbotImpl\LBOT\debugex.lua(149)
----     4:C:\Dev\Libs\LbotImpl\LBOT\debugex.lua(611)
-
 end
 
 ------------------------------------------------------------------------------------
 local function hook_factory(repl_threshold)
     return function(offset, reason)
-       reason = reason or 'unreasonable'
 
-        -- if not reason then
-            -- print(ut.get_caller_info_str(2))
-            -- print(ut.get_caller_info_str(3))
-            -- print(ut.get_caller_info_str(4))
-        -- end
+        if not reason then
+            print('!!! reason is nil!!', debug.traceback())
+        end
+
+       reason = reason or 'unreasonable'
 
         return function(event, _)
             -- Skip events that don't have line information.
+            local info = debug.getinfo(2)
+            -- print(tx.dump_table(info, 'info'))
+
             if not frame_has_line(debug.getinfo(2)) then return end
 
             -- Tail calls are specifically ignored since they also will have tail returns to balance out.
@@ -200,7 +201,7 @@ local hook_finish = hook_factory(-1)
 -- Create a table of all the locally accessible variables.
 -- Globals are not included when running the locals command, but are when running the print command.
 local function local_bindings(offset, include_globals)
-    local level = offset + stack_inspect_offset + CMD_STACK_LEVEL
+    local level = offset + _stack_inspect_offset + CMD_STACK_LEVEL
     local func = debug.getinfo(level).func
     local bindings = {}
 
@@ -243,15 +244,14 @@ end
 -- Used as a __newindex metamethod to modify variables in cmd_eval().
 local function mutate_bindings(_, name, value)
     local FUNC_STACK_OFFSET = 3 -- Stack depth of this function.
-    local level = stack_inspect_offset + FUNC_STACK_OFFSET + CMD_STACK_LEVEL
+    local level = _stack_inspect_offset + FUNC_STACK_OFFSET + CMD_STACK_LEVEL
 
     -- Set a local.
     do local i = 1; repeat
         local var = debug.getlocal(level, i)
         if name == var then
             dbg_writeln('Set local variable '..name, Color.TBD)
-            -- dbg_writeln('debugex.lua'..CARET..'Set local variable '..name)
-            return debug.setlocal(level + luajit_local_fix, i, value)
+            return debug.setlocal(level, i, value) -- was level + luajit_local_fix
         end
         i = i + 1
     until var == nil end
@@ -262,7 +262,6 @@ local function mutate_bindings(_, name, value)
         local var = debug.getupvalue(func, i)
         if name == var then
             dbg_writeln('Set upvalue '..name, Color.TBD)
-            -- dbg_writeln('debugex.lua'..CARET..'Set upvalue '..name)
             return debug.setupvalue(func, i, value)
         end
         i = i + 1
@@ -270,7 +269,6 @@ local function mutate_bindings(_, name, value)
 
     -- Set a global.
     dbg_writeln('Set global variable '..name, Color.TBD)
-    -- dbg_writeln('debugex.lua'..CARET..'Set global variable '..name)
     _G[name] = value
 end
 
@@ -295,10 +293,9 @@ local function compile_chunk(block, env)
     return chunk
 end
 
-
 ------------------------------------------------------------------------------------
 local function where(info, context_lines)
-    local source = source_cache[info.source]
+    local source = _source_cache[info.source]
     if not source then
         source = {}
         local filename = info.source:match('^@(.*)')
@@ -307,18 +304,15 @@ local function where(info, context_lines)
         elseif info.source then
             for line in info.source:gmatch('([^\n]*)\n?') do table.insert(source, line) end
         end
-        source_cache[info.source] = source
+        _source_cache[info.source] = source
     end
 
     if source and source[info.currentline] then
-        -- print('111', info.currentline, context_lines)
         for i = info.currentline - context_lines, info.currentline + context_lines do
-            -- local tab_or_caret = (i == info.currentline and CARET or '    ')
             local line = source[i]
-            -- if line then dbg_writeln('% 4d'..tab_or_caret..'%s', i, line, Color.FAINT) end
             if line then
                 if i == info.currentline then
-                    dbg_writeln(i..CARET..line, Color.DEFAULT)
+                    dbg_writeln(i..' => '..line, Color.DEFAULT)
                 else
                     dbg_writeln(i..'    '..line, Color.FAINT)
                 end
@@ -331,27 +325,26 @@ local function where(info, context_lines)
     return false
 end
 
-
 ------------------------------------------------------------------------------------
 ----------------------------- all the cmd_* ----------------------------------------
 ------------------------------------------------------------------------------------
 
 ------------------------------------------------------------------------------------
 local function cmd_step()
-    stack_inspect_offset = stack_top
+    _stack_inspect_offset = _stack_top
     return true, hook_step
 end
 
 ------------------------------------------------------------------------------------
 local function cmd_next()
-    stack_inspect_offset = stack_top
+    _stack_inspect_offset = _stack_top
     return true, hook_next
 end
 
 ------------------------------------------------------------------------------------
 local function cmd_finish()
-    local offset = stack_top - stack_inspect_offset
-    stack_inspect_offset = stack_top
+    local offset = _stack_top - _stack_inspect_offset
+    _stack_inspect_offset = _stack_top
     return true, offset < 0 and hook_factory(offset - 1) or hook_finish
 end
 
@@ -370,11 +363,11 @@ local function cmd_print(expr)
     else
         local output = ''
         for i = 2, results.n do
-            output = output..(i ~= 2 and ', ' or '')..dbg.pretty(results[i])
+            output = output..(i ~= 2 and ', ' or '')..pretty(results[i], 'res'..tostring(i -1), pretty_depth)
         end
 
-        if output == '' then output = '<no result>' end
-        dbg_writeln(expr..CARET..output, Color.TBD)
+        if output == '' then output = 'no_result' end
+        dbg_writeln(expr..' => '..output, Color.TBD)
     end
 
     return false
@@ -402,7 +395,7 @@ end
 
 ------------------------------------------------------------------------------------
 local function cmd_down()
-    local offset = stack_inspect_offset
+    local offset = _stack_inspect_offset
     local info
 
     repeat -- Find the next frame with a file.
@@ -411,12 +404,11 @@ local function cmd_down()
     until not info or frame_has_line(info)
 
     if info then
-        stack_inspect_offset = offset
+        _stack_inspect_offset = offset
         dbg_writeln('Inspecting frame: '..format_stack_frame_info(info), Color.TBD)
-        -- if tonumber(dbg.auto_where) then where(info, dbg.auto_where) end
         where(info, dbg.auto_where)
     else
-        info = debug.getinfo(stack_inspect_offset + CMD_STACK_LEVEL)
+        info = debug.getinfo(_stack_inspect_offset + CMD_STACK_LEVEL)
         dbg_writeln('Already at the bottom of the stack.', Color.TBD)
     end
 
@@ -425,22 +417,21 @@ end
 
 ------------------------------------------------------------------------------------
 local function cmd_up()
-    local offset = stack_inspect_offset
+    local offset = _stack_inspect_offset
     local info
 
     repeat -- Find the next frame with a file.
         offset = offset - 1
-        if offset < stack_top then info = nil; break end
+        if offset < _stack_top then info = nil; break end
         info = debug.getinfo(offset + CMD_STACK_LEVEL)
     until frame_has_line(info)
 
     if info then
-        stack_inspect_offset = offset
+        _stack_inspect_offset = offset
         dbg_writeln('Inspecting frame: '..format_stack_frame_info(info), Color.TBD)
-        -- if tonumber(dbg.auto_where) then where(info, dbg.auto_where) end
         where(info, dbg.auto_where)
     else
-        info = debug.getinfo(stack_inspect_offset + CMD_STACK_LEVEL)
+        info = debug.getinfo(_stack_inspect_offset + CMD_STACK_LEVEL)
         dbg_writeln('Already at the top of the stack.', Color.TBD)
     end
 
@@ -449,39 +440,33 @@ end
 
 ------------------------------------------------------------------------------------
 local function cmd_inspect(offset)
-    offset = stack_top + tonumber(offset)
+    offset = _stack_top + tonumber(offset)
     local info = debug.getinfo(offset + CMD_STACK_LEVEL)
     if info then
-        stack_inspect_offset = offset
-        dbg.writeln('Inspecting frame: '..format_stack_frame_info(info), Color.TBD)
+        _stack_inspect_offset = offset
+        dbg_writeln('Inspecting frame: '..format_stack_frame_info(info), Color.TBD)
     else
-        dbg.writeln('Invalid stack frame index', Color.ERROR)
+        dbg_writeln('Invalid stack frame index', Color.ERROR)
     end
 end
 
 ------------------------------------------------------------------------------------
 local function cmd_where(context_lines)
-    local info = debug.getinfo(stack_inspect_offset + CMD_STACK_LEVEL)
-    -- printex('222', context_lines)
+    local info = debug.getinfo(_stack_inspect_offset + CMD_STACK_LEVEL)
     return (info and where(info, tonumber(context_lines) or dbg.auto_where))
-    -- return (info and where(info, context_lines))
 end
 
 ------------------------------------------------------------------------------------
 local function cmd_trace()
-    dbg_writeln('Inspecting frame '..(stack_inspect_offset - stack_top), Color.TBD)
+    dbg_writeln('Inspecting frame '..(_stack_inspect_offset - _stack_top), Color.TBD)
     local i = 0; while true do
-        local info = debug.getinfo(stack_top + CMD_STACK_LEVEL + i)
+        local info = debug.getinfo(_stack_top + CMD_STACK_LEVEL + i)
         if not info then break end
 
-        local is_current_frame = (i + stack_top == stack_inspect_offset)
-        -- local tab_or_caret = (is_current_frame and CARET or '    ')
-        -- dbg_writeln('% 4d'..COLOR_RESET..tab_or_caret..'%s', i, format_stack_frame_info(info))
-        -- dbg_writeln(i..tab_or_caret..format_stack_frame_info(info))
-
+        local is_current_frame = (i + _stack_top == _stack_inspect_offset)
 
         if is_current_frame then
-            dbg_writeln(i..CARET..format_stack_frame_info(info), Color.DEFAULT)
+            dbg_writeln(i..' => '..format_stack_frame_info(info), Color.DEFAULT)
         else
             dbg_writeln(i..'    '..format_stack_frame_info(info), Color.FAINT)
         end
@@ -496,17 +481,18 @@ end
 local function cmd_locals()
     local bindings = local_bindings(1, false)
 
-    -- Get all the variable binding names and sort them
+    -- Get all the variable binding names and sort them. TODOD gets noisy with large tables.
     local keys = {}
-    for k, _ in pairs(bindings) do table.insert(keys, k) end
+    for k, _ in pairs(bindings) do
+        table.insert(keys, k)
+    end
     table.sort(keys)
 
     for _, k in ipairs(keys) do
         local v = bindings[k]
-
         -- Skip the debugger object itself, '(*internal)' values, and Lua 5.2's _ENV object.
         if not rawequal(v, dbg) and k ~= '_ENV' and not k:match('%(.*%)') then
-            dbg_writeln('  '..k..CARET..dbg.pretty(v), Color.TBD)
+            dbg_writeln('  '..k..' => '..pretty(v, 'locals', pretty_depth), Color.TBD)
         end
     end
 
@@ -540,7 +526,7 @@ local command_descs =
 
 ------------------------------------------------------------------------------------
 local function cmd_help()
-    for _, v in ipairs(command_descs) do dbg.write('  '..v..'\n') end
+    for _, v in ipairs(command_descs) do dbg_writeln('  '..v, Color.DEFAULT) end
     return false
 end
 
@@ -559,26 +545,17 @@ local commands = {
     ["^t$"] = cmd_trace,
     ["^l$"] = cmd_locals,
     ["^h$"] = cmd_help,
-    ["^q$"] = function() dbg.exit(0); return true end,
+    ["^q$"] = function() exit(0); return true end,
 }
-
--- ------------------------------------------------------------------------------------
--- local function match_command(line)
---     for pat, func in pairs(commands) do
---         -- Return the matching command and capture argument.
---         if line:find(pat) then return func, line:match(pat) end
---     end
--- end
 
 ------------------------------------------------------------------------------------
 -- Run a command line
--- Returns true if the REPL should exit and the hook function factory
+-- Returns true if the repl should exit, hook function factory
 local function run_command(line)
-    -- GDB/LLDB exit on ctrl-d
-    if line == nil then dbg.exit(1); return true end
+    if line == nil then exit(1); return true end
 
     -- Re-execute the last command if you press return.
-    if line == '' then line = last_cmd or 'h' end
+    if line == '' then line = _last_cmd or 'h' end
 
     -- Return the matching command and capture argument.
     local function match_command(line)
@@ -590,14 +567,10 @@ local function run_command(line)
     local command, command_arg = match_command(line)
 
     if command then
-        last_cmd = line
+        _last_cmd = line
         -- unpack({...}) prevents tail call elimination so the stack frame indices are predictable.
-        -- local res = command(command_arg)
-        -- return unpack(res)
         return unpack({command(command_arg)})
     elseif dbg.auto_eval then
-        -- local res = cmd_eval(line)
-        -- return unpack(res)
         return unpack({cmd_eval(line)})
     else
         dbg_writeln('Invalid command '..line, Color.ERROR)
@@ -607,44 +580,72 @@ end
 
 ------------------------------------------------------------------------------------
 repl = function(reason)
+
     -- Skip frames without source info.
+    -- while not frame_has_line(debug.getinfo(_stack_inspect_offset + CMD_STACK_LEVEL - 3)) do
+    --     _stack_inspect_offset = _stack_inspect_offset + 1
+    --     print('_stack_inspect_offset', _stack_inspect_offset)
+    -- end
 
-    print('+++', debug.getinfo(stack_inspect_offset + CMD_STACK_LEVEL - 3))
-
-
-    while not frame_has_line(debug.getinfo(stack_inspect_offset + CMD_STACK_LEVEL - 3)) do
-        stack_inspect_offset = stack_inspect_offset + 1
-    end 
-
-
-    local info = debug.getinfo(stack_inspect_offset + CMD_STACK_LEVEL - 3)
-    -- reason = reason and (COLOR_YELLOW..'break via '..COLOR_RED..reason..CARET) or ''
+    print('repl() traceback', debug.traceback())
+    print(tx.dump_table(debug.getinfo(4), 'stk 4'))
 
 
+    local done = false
+    while not done do
+        print('offset', _stack_inspect_offset + CMD_STACK_LEVEL - 3)
+        local info = debug.getinfo(_stack_inspect_offset + CMD_STACK_LEVEL - 3)
+        -- print(tx.dump_table(info))
+        done = frame_has_line(info)
+        _stack_inspect_offset = _stack_inspect_offset + 1
+    end
+
+
+
+
+    local info = debug.getinfo(_stack_inspect_offset + CMD_STACK_LEVEL - 3)
 
     dbg_writeln('break via '..reason..' '..format_stack_frame_info(info), Color.TBD)
 
-    -- if tonumber(dbg.auto_where) then where(info, dbg.auto_where) end
     where(info, dbg.auto_where)
 
     repeat
-        -- local success, done, hook = pcall(run_command, dbg.read(COLOR_RED..'debugger.lua> '..COLOR_RESET))
-
---         local vvv = dbg.read('??? debugex.lua> ')
--- print('===', vvv)
-
-        local success, done, hook = pcall(run_command, dbg.read('??? debugex.lua> '))
-
-print('>>>', success, done, hook)
+        local success, done, hook = pcall(run_command, dbg_read('TODOD>>> '))
 
         if success then
             debug.sethook(hook and hook(0), 'crl')
         else
-            dbg_writeln('INTERNAL DEBUGGER.LUA ERROR. ABORTING:'..done, Color.ERROR)
-            error('INTERNAL DEBUGGER.LUA ERROR. ABORTING:'..done)
+            local msg = 'Fatal internal lua error: '..done
+            dbg_writeln(msg, Color.ERROR)
+            error(msg)
         end
     until done
 end
+
+-- original
+-- repl = function(reason)
+--     -- Skip frames without source info.
+--     while not frame_has_line(debug.getinfo(_stack_inspect_offset + CMD_STACK_LEVEL - 3)) do
+--         _stack_inspect_offset = _stack_inspect_offset + 1
+--     end
+
+--     local info = debug.getinfo(_stack_inspect_offset + CMD_STACK_LEVEL - 3)
+--     reason = reason and (COLOR_YELLOW.."break via "..COLOR_RED..reason..GREEN_CARET) or ""
+--     dbg_writeln(reason..format_stack_frame_info(info))
+
+--     if tonumber(dbg.auto_where) then where(info, dbg.auto_where) end
+
+--     repeat
+--         local success, done, hook = pcall(run_command, dbg.read(COLOR_RED.."debugger.lua> "..COLOR_RESET))
+--         if success then
+--             debug.sethook(hook and hook(0), "crl")
+--         else
+--             local message = COLOR_RED.."INTERNAL DEBUGGER.LUA ERROR. ABORTING\n:"..COLOR_RESET.." "..done
+--             dbg_writeln(message)
+--             error(message)
+--         end
+--     until done
+-- end
 
 ------------------------------------------------------------------------------------
 ----------------------------- api --------------------------------------------------
@@ -656,8 +657,8 @@ dbg = setmetatable({}, {
         if condition then return end
 
         top_offset = (top_offset or 0)
-        stack_inspect_offset = top_offset
-        stack_top = top_offset
+        _stack_inspect_offset = top_offset
+        _stack_top = top_offset
 
         debug.sethook(hook_next(1, source or 'dbg()'), 'crl')
         -- return
@@ -665,23 +666,8 @@ dbg = setmetatable({}, {
 })
 
 
--- debug.sethook ([thread,] hook, mask [, count])
--- Sets the given function as the debug hook. The string mask and the number count describe when the hook will be called.
--- The string mask may have any combination of the following characters, with the given meaning:
---     'c': the hook is called every time Lua calls a function;
---     'r': the hook is called every time Lua returns from a function;
---     'l': the hook is called every time Lua enters a new line of code.
--- Moreover, with a count different from zero, the hook is called also after every count instructions.
--- When called without arguments, debug.sethook turns off the hook.
--- When the hook is called, its first parameter is a string describing the event that has triggered its call:
--- "call", "tail call", "return", "line", and "count".
--- For line events, the hook also gets the new line number as its second parameter. Inside a hook, you can call getinfo with
--- level 2 to get more information about the running function. (Level 0 is the getinfo function, and level 1 is the hook function.)
-
-
-
 ------------------------------------------------------------------------------------
--- Works like pcall(), but invokes the debugger on an error.
+-- Run the debugger with msg handler on error().
 dbg.pdebug = function(f, ...)
 
     local ok, msg = xpcall(f,
@@ -689,8 +675,7 @@ dbg.pdebug = function(f, ...)
             -- local _trace = sx.strsplit(debug.traceback(), '\n')
             -- table.remove(_trace, 1)
             -- Start debugger.
-            dbg(false, 1, "msgh?????")
-            -- dbg.run(false, 1, "msgh?????")
+            dbg(false, 1, "pdebug()")
             return ...
         end,
         ...)
@@ -699,197 +684,36 @@ dbg.pdebug = function(f, ...)
 end
 
 
--- ------------------------------------------------------------------------------------
--- -- Run the debugger. Was dbg().
--- dbg.run = function(condition, top_offset, source)
---     if condition then return end
+------------------------------------------------------------------------------------
+-- Breakpoint now. Was dbg().
+dbg.bp = function(f, ...)
 
---     top_offset = (top_offset or 0)
---     stack_inspect_offset = top_offset
---     stack_top = top_offset
+    top_offset = (top_offset or 0)
+    _stack_inspect_offset = top_offset
+    _stack_top = top_offset
+    debug.sethook(hook_next(1, source or "dbg()"), "crl")
+end
 
---     debug.sethook(hook_next(1, source or 'dbg()'), 'crl')
--- end
-
+-- dbg = setmetatable({}, {
+--     __call = function(_, condition, top_offset, source)
+--         if condition then return end
+        
+--         top_offset = (top_offset or 0)
+--         stack_inspect_offset = top_offset
+--         stack_top = top_offset
+        
+--         debug.sethook(hook_next(1, source or "dbg()"), "crl")
+--         return
+--     end,
+-- })
 
 ------------------------------------------------------------------------------------
 -- Expose the debugger's IO functions.
-dbg.read = dbg_read
-dbg.write = dbg_write
--- dbg.shorten_path = function (path) return path end
-dbg.exit = function(err) os.exit(err) end
+-- dbg.read = dbg_read
+-- dbg.write = dbg_write
+-- dbg.exit = function(err) os.exit(err) end
+-- dbg.pretty = pretty
+-- dbg.writeln = dbg_writeln
 
-dbg.writeln = dbg_writeln
-
---? dbg.pretty_depth = 3
-dbg.pretty = pretty
---? dbg.pp = function(value, depth) dbg_writeln(dbg.pretty(value, depth)) end
-
---? these
-dbg.auto_where = 3 -- was false
-dbg.auto_eval = false
-
--- local lua_error, lua_assert = error, assert
-
--- ------------------------------------------------------------------------------------
--- -- Works like error(), but invokes the debugger.
--- function dbg.error(err, level)
---     level = level or 1
---     dbg_writeln(dbg.pretty(err), Color.ERROR)
---     dbg(false, level, 'dbg.error()')
-
---     lua_error(err, level)
--- end
-
--- ------------------------------------------------------------------------------------
--- -- Works like assert(), but invokes the debugger on a failure.
--- function dbg.assert(condition, message)
---     message = message or 'assertion failed!'
---     if not condition then
---         dbg_writeln(message, Color.ERROR)
---         dbg(false, 1, 'dbg.assert()')
---     end
-
---     return lua_assert(condition, message)
--- end
-
--- ------------------------------------------------------------------------------------
--- -- Works like pcall(), but invokes the debugger on an error.
--- function dbg.call(f, ...)
---     return xpcall(f, function(err)
---         dbg_writeln(dbg.pretty(err), Color.ERROR)
---         dbg(false, 1, 'dbg.call()')
---         return err
---     end, ...)
--- end
-
--- ------------------------------------------------------------------------------------
--- -- Error message handler that can be used with lua_pcall().
--- function dbg.msgh(...)
---     if debug.getinfo(2) then
---         dbg_writeln(dbg.pretty(...), Color.ERROR)
---         dbg(false, 1, 'dbg.msgh()')
---     else
---         dbg_writeln('Error did not occur in Lua code. Execution will continue after dbg_pcall().', Color.ERROR)
---     end
-
---     return ...
--- end
 
 return dbg
-
-
-
-------------------------------------------------------------------------------------
------------------------------ luajit etc -------------------------------------------
-------------------------------------------------------------------------------------
-
--- -- Assume stdin/out are TTYs unless we can use LuaJIT's FFI to properly check them.
--- local stdin_isatty = true
--- local stdout_isatty = true
-
--- -- Conditionally enable the LuaJIT FFI.
--- local ffi = (jit and require("ffi"))
--- if ffi then
---     ffi.cdef[[
---         int isatty(int); // Unix
---         int _isatty(int); // Windows
---         void free(void *ptr);
-
---         char *readline(const char *);
---         int add_history(const char *);
---     ]]
-
---     local function get_func_or_nil(sym)
---         local success, func = pcall(function() return ffi.C[sym] end)
---         return success and func or nil
---     end
-
---     local isatty = get_func_or_nil("isatty") or get_func_or_nil("_isatty") or (ffi.load("ucrtbase"))["_isatty"]
---     stdin_isatty = isatty(0)
---     stdout_isatty = isatty(1)
--- end
-
--- -- Conditionally enable color support.
--- local color_maybe_supported = (stdout_isatty and os.getenv("TERM") and os.getenv("TERM") ~= "dumb")
--- if color_maybe_supported and not os.getenv("DBG_NOCOLOR") then
---     COLOR_GRAY = string.char(27) .. "[90m"
---     COLOR_RED = string.char(27) .. "[91m"
---     COLOR_BLUE = string.char(27) .. "[94m"
---     COLOR_YELLOW = string.char(27) .. "[33m"
---     COLOR_RESET = string.char(27) .. "[0m"
---     CARET = string.char(27) .. "[92m => "..COLOR_RESET
--- end
-
--- if stdin_isatty and not os.getenv("DBG_NOREADLINE") then
---     pcall(function()
---         local linenoise = require 'linenoise'
-
---         -- Load command history from ~/.lua_history
---         local hist_path = os.getenv('HOME') .. '/.lua_history'
---         linenoise.historyload(hist_path)
---         linenoise.historysetmaxlen(50)
-
---         local function autocomplete(env, input, matches)
---             for name, _ in pairs(env) do
---                 if name:match('^' .. input .. '.*') then
---                     linenoise.addcompletion(matches, name)
---                 end
---             end
---         end
-
---         -- Auto-completion for locals and globals
---         linenoise.setcompletion(function(matches, input)
---             -- First, check the locals and upvalues.
---             local env = local_bindings(1, true)
---             autocomplete(env, input, matches)
-
---             -- Then, check the implicit environment.
---             env = getmetatable(env).__index
---             autocomplete(env, input, matches)
---         end)
-
---         dbg.read = function(prompt)
---             local str = linenoise.linenoise(prompt)
---             if str and not str:match "^%s*$" then
---                 linenoise.historyadd(str)
---                 linenoise.historysave(hist_path)
---             end
---             return str
---         end
---         dbg_writeln(COLOR_YELLOW.."debugger.lua: "..COLOR_RESET.."Linenoise support enabled.")
---     end)
-
---     -- Conditionally enable LuaJIT readline support.
---     pcall(function()
---         if dbg.read == dbg_read and ffi then
---             local readline = ffi.load("readline")
---             dbg.read = function(prompt)
---                 local cstr = readline.readline(prompt)
---                 if cstr ~= nil then
---                     local str = ffi.string(cstr)
---                     if string.match(str, "[^%s]+") then
---                         readline.add_history(cstr)
---                     end
-
---                     ffi.C.free(cstr)
---                     return str
---                 else
---                     return nil
---                 end
---             end
---             dbg_writeln(COLOR_YELLOW.."debugger.lua: "..COLOR_RESET.."Readline support enabled.")
---         end
---     end)
--- end
-
--- -- Detect Lua version.
--- if jit then -- LuaJIT
---     luajit_local_fix = -1
---     dbg_writeln(COLOR_YELLOW.."debugger.lua: "..COLOR_RESET.."Loaded for "..jit.version)
--- elseif "Lua 5.1" <= _VERSION and _VERSION <= "Lua 5.4" then
---     dbg_writeln(COLOR_YELLOW.."debugger.lua: "..COLOR_RESET.."Loaded for ".._VERSION)
--- else
---     dbg_writeln(COLOR_YELLOW.."debugger.lua: "..COLOR_RESET.."Not tested against ".._VERSION)
---     dbg_writeln("Please send me feedback!")
--- end
