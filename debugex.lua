@@ -31,6 +31,7 @@ local dbg -- = {}
 
 -- Forward ref.
 local repl
+-- local replXX
 
 -- Cache.
 local _last_cmd = false
@@ -59,8 +60,8 @@ local Color = {
     FAINT = 90, -- gray
     ERROR = 91, -- red
     WARN = 93, -- yellow
-    -- EXCEPTION_LINE = 92, -- green
-    -- STACK_LOCATION = 96, -- cyan
+    TODOD = 92, -- green
+    TRACE = 96, -- cyan
     PROMPT = 94, -- blue
     TBD = 5
 }
@@ -74,7 +75,7 @@ local auto_where = 3 -- was false
 local auto_eval = false -- ??
 local use_ansi_color = true
 
-
+local _trace = false
 
 ------------------------------------------------------------------------------------
 ----------------------------- Infrastructure ---------------------------------------
@@ -100,17 +101,21 @@ local function exit(err) os.exit(err) end
 ------------------------------------------------------------------------------------
 -- Default dbg.write function
 local function dbg_write(str, color)
-    if not use_ansi_color or not color then
-        io.write(str)
-    else
+
+    if color == Color.TRACE and not _trace then return end
+
+    if use_ansi_color then
+        color = color or Color.TBD--DEFAULT
         io.write(ESC..'['..color..'m'..str..ESC..'[0m')
+    else -- plain
+        io.write(str)
     end
 end
 
 ------------------------------------------------------------------------------------
 -- Default dbg.writeln function
 local function dbg_writeln(str, color)
-    dbg_write(str..MDEL, color or Color.TBD)
+    dbg_write(str..MDEL, color)
 end
 
 ------------------------------------------------------------------------------------
@@ -140,7 +145,7 @@ local function format_stack_frame_info(info)
 
     local filename = info.source:match('^@(.*)')
     if info.what == 'Lua' then
-        return string.format('[Lua} %s(%d) in %s %s', filename, info.currentline, info.namewhat, info.name)
+        return string.format('[Lua] %s(%d) in %s %s', filename, info.currentline, info.namewhat, info.name)
     else
         return '['..info.what..']'
     end
@@ -151,7 +156,7 @@ end
 local function frame_has_line(info)
 
     if not info then
-        print('!!! info is nil!!', debug.traceback())
+        dbg_writeln('frame_has_line() !!! info is nil!!  '..debug.traceback(), Color.ERROR)
         -- return false
     end
 
@@ -163,15 +168,15 @@ local function hook_factory(repl_threshold)
     return function(offset, reason)
 
         if not reason then
-            print('!!! reason is nil!!', debug.traceback())
+            dbg_writeln('!!! reason is nil!!'  ..debug.traceback(), Color.ERROR)
         end
 
        reason = reason or 'unreasonable'
 
         return function(event, _)
             -- Skip events that don't have line information.
-            local info = debug.getinfo(2)
-            -- print(tx.dump_table(info, 'info'))
+            -- local info = debug.getinfo(2)
+            -- dbg_writeln(tx.dump_table(info, 'info'), Color.TRACE)
 
             if not frame_has_line(debug.getinfo(2)) then return end
 
@@ -237,7 +242,7 @@ local function local_bindings(offset, include_globals)
         return setmetatable(bindings, {__index = env or _G})
     else
         return bindings
-    end
+    end 
 end
 
 ------------------------------------------------------------------------------------
@@ -250,7 +255,7 @@ local function mutate_bindings(_, name, value)
     do local i = 1; repeat
         local var = debug.getlocal(level, i)
         if name == var then
-            dbg_writeln('Set local variable '..name, Color.TBD)
+            dbg_writeln('Set local variable '..name, Color.TODOD)
             return debug.setlocal(level, i, value) -- was level + luajit_local_fix
         end
         i = i + 1
@@ -261,14 +266,14 @@ local function mutate_bindings(_, name, value)
     do local i = 1; repeat
         local var = debug.getupvalue(func, i)
         if name == var then
-            dbg_writeln('Set upvalue '..name, Color.TBD)
+            dbg_writeln('Set upvalue '..name, Color.TODOD)
             return debug.setupvalue(func, i, value)
         end
         i = i + 1
     until var == nil end
 
     -- Set a global.
-    dbg_writeln('Set global variable '..name, Color.TBD)
+    dbg_writeln('Set global variable '..name, Color.TODOD)
     _G[name] = value
 end
 
@@ -288,13 +293,14 @@ local function compile_chunk(block, env)
 
     if not chunk then
         dbg_writeln('Could not compile block:', Color.ERROR)
-        dbg_writeln(block, Color.TBD)
+        dbg_writeln(block, Color.DEFAULT)
     end
     return chunk
 end
 
 ------------------------------------------------------------------------------------
 local function where(info, context_lines)
+    dbg_writeln('where()  '..tx.dump_table(info)..' '..context_lines, Color.TRACE)
     local source = _source_cache[info.source]
     if not source then
         source = {}
@@ -367,7 +373,7 @@ local function cmd_print(expr)
         end
 
         if output == '' then output = 'no_result' end
-        dbg_writeln(expr..' => '..output, Color.TBD)
+        dbg_writeln(expr..' => '..output, Color.TODOD)
     end
 
     return false
@@ -405,11 +411,11 @@ local function cmd_down()
 
     if info then
         _stack_inspect_offset = offset
-        dbg_writeln('Inspecting frame: '..format_stack_frame_info(info), Color.TBD)
-        where(info, dbg.auto_where)
+        dbg_writeln('Inspecting frame: '..format_stack_frame_info(info), Color.TODOD)
+        where(info, auto_where)
     else
         info = debug.getinfo(_stack_inspect_offset + CMD_STACK_LEVEL)
-        dbg_writeln('Already at the bottom of the stack.', Color.TBD)
+        dbg_writeln('Already at the bottom of the stack.', Color.TODOD)
     end
 
     return false
@@ -428,11 +434,11 @@ local function cmd_up()
 
     if info then
         _stack_inspect_offset = offset
-        dbg_writeln('Inspecting frame: '..format_stack_frame_info(info), Color.TBD)
-        where(info, dbg.auto_where)
+        dbg_writeln('Inspecting frame: '..format_stack_frame_info(info), Color.TODOD)
+        where(info, auto_where)
     else
         info = debug.getinfo(_stack_inspect_offset + CMD_STACK_LEVEL)
-        dbg_writeln('Already at the top of the stack.', Color.TBD)
+        dbg_writeln('Already at the top of the stack.', Color.TODOD)
     end
 
     return false
@@ -444,7 +450,7 @@ local function cmd_inspect(offset)
     local info = debug.getinfo(offset + CMD_STACK_LEVEL)
     if info then
         _stack_inspect_offset = offset
-        dbg_writeln('Inspecting frame: '..format_stack_frame_info(info), Color.TBD)
+        dbg_writeln('Inspecting frame: '..format_stack_frame_info(info), Color.TODOD)
     else
         dbg_writeln('Invalid stack frame index', Color.ERROR)
     end
@@ -453,12 +459,13 @@ end
 ------------------------------------------------------------------------------------
 local function cmd_where(context_lines)
     local info = debug.getinfo(_stack_inspect_offset + CMD_STACK_LEVEL)
-    return (info and where(info, tonumber(context_lines) or dbg.auto_where))
+    -- dbg_writeln('cmd_where()', tonumber(context_lines), auto_where, Color.TRACE)
+    return (info and where(info, tonumber(context_lines) or auto_where))
 end
 
 ------------------------------------------------------------------------------------
 local function cmd_trace()
-    dbg_writeln('Inspecting frame '..(_stack_inspect_offset - _stack_top), Color.TBD)
+    dbg_writeln('Inspecting frame '..(_stack_inspect_offset - _stack_top), Color.TODOD)
     local i = 0; while true do
         local info = debug.getinfo(_stack_top + CMD_STACK_LEVEL + i)
         if not info then break end
@@ -492,7 +499,7 @@ local function cmd_locals()
         local v = bindings[k]
         -- Skip the debugger object itself, '(*internal)' values, and Lua 5.2's _ENV object.
         if not rawequal(v, dbg) and k ~= '_ENV' and not k:match('%(.*%)') then
-            dbg_writeln('  '..k..' => '..pretty(v, 'locals', pretty_depth), Color.TBD)
+            dbg_writeln('  '..k..' => '..pretty(v, 'locals', pretty_depth), Color.TODOD)
         end
     end
 
@@ -570,7 +577,7 @@ local function run_command(line)
         _last_cmd = line
         -- unpack({...}) prevents tail call elimination so the stack frame indices are predictable.
         return unpack({command(command_arg)})
-    elseif dbg.auto_eval then
+    elseif auto_eval then
         return unpack({cmd_eval(line)})
     else
         dbg_writeln('Invalid command '..line, Color.ERROR)
@@ -579,57 +586,90 @@ local function run_command(line)
 end
 
 ------------------------------------------------------------------------------------
+-- replXX = function(reason)
+
+--     -- Skip frames without source info.
+--     -- while not frame_has_line(debug.getinfo(_stack_inspect_offset + CMD_STACK_LEVEL - 3)) do
+--     --     _stack_inspect_offset = _stack_inspect_offset + 1
+--     --     dbg_writeln('_stack_inspect_offset', _stack_inspect_offset, Color.TRACE)
+--     -- end
+
+--     dbg_writeln('repl() _stack_inspect_offset=', _stack_inspect_offset, Color.TRACE)
+--     dbg_writeln('repl()', debug.traceback(), Color.TRACE)
+
+--     local done = false
+--     while not done do
+--         dbg_writeln('offset=', _stack_inspect_offset + CMD_STACK_LEVEL - 3, '_stack_inspect_offset=', _stack_inspect_offset, Color.TRACE)
+--         local info = debug.getinfo(_stack_inspect_offset + CMD_STACK_LEVEL - 3)
+--         -- dbg_writeln(tx.dump_table(info), Color.TRACE)
+--         done = frame_has_line(info)
+--         _stack_inspect_offset = _stack_inspect_offset + 1
+--     end
+--     dbg_writeln('repl() done', Color.TRACE)
+
+--     local info = debug.getinfo(_stack_inspect_offset + CMD_STACK_LEVEL - 3)
+
+--     dbg_writeln('break via '..reason..' '..format_stack_frame_info(info), Color.TBD)
+
+--     where(info, dbg.auto_where)
+
+--     repeat
+--         local success, done, hook = pcall(run_command, dbg_read('TODOD>>> '))
+
+--         if success then
+--             debug.sethook(hook and hook(0), 'crl')
+--         else
+--             local msg = 'Fatal internal lua error: '..done
+--             dbg_writeln(msg, Color.ERROR)
+--             error(msg)
+--         end
+--     until done
+-- end
+
+
+
 repl = function(reason)
-
     -- Skip frames without source info.
-    -- while not frame_has_line(debug.getinfo(_stack_inspect_offset + CMD_STACK_LEVEL - 3)) do
-    --     _stack_inspect_offset = _stack_inspect_offset + 1
-    --     print('_stack_inspect_offset', _stack_inspect_offset)
-    -- end
-
-    print('repl() traceback', debug.traceback())
-    print(tx.dump_table(debug.getinfo(4), 'stk 4'))
-
-
-    local done = false
-    while not done do
-        print('offset', _stack_inspect_offset + CMD_STACK_LEVEL - 3)
-        local info = debug.getinfo(_stack_inspect_offset + CMD_STACK_LEVEL - 3)
-        -- print(tx.dump_table(info))
-        done = frame_has_line(info)
+    while not frame_has_line(debug.getinfo(_stack_inspect_offset + CMD_STACK_LEVEL - 3)) do
+        dbg_writeln('offset='..(_stack_inspect_offset + CMD_STACK_LEVEL - 3)..'  _stack_inspect_offset='.._stack_inspect_offset, Color.TRACE)
+        -- dbg_writeln('offset='..tostring(_stack_inspect_offset + CMD_STACK_LEVEL - 3)..'  _stack_inspect_offset='..tostring(_stack_inspect_offset), Color.TRACE)
         _stack_inspect_offset = _stack_inspect_offset + 1
     end
 
-
-
+    dbg_writeln('repl() _stack_inspect_offset='.._stack_inspect_offset, Color.TRACE)
+    dbg_writeln('repl()  '..debug.traceback(), Color.TRACE)
 
     local info = debug.getinfo(_stack_inspect_offset + CMD_STACK_LEVEL - 3)
 
-    dbg_writeln('break via '..reason..' '..format_stack_frame_info(info), Color.TBD)
+    reason = reason and ("...break via "..reason) or "not-reason"
 
-    where(info, dbg.auto_where)
+    dbg_writeln(reason..format_stack_frame_info(info), Color.TODOD)
+
+    where(info, auto_where)
+    -- if tonumber(auto_where) then where(info, auto_where) end
 
     repeat
-        local success, done, hook = pcall(run_command, dbg_read('TODOD>>> '))
-
+        local success, done, hook = pcall(run_command, dbg_read("debugex.lua> "))
         if success then
-            debug.sethook(hook and hook(0), 'crl')
+            debug.sethook(hook and hook(0), "crl")
         else
-            local msg = 'Fatal internal lua error: '..done
-            dbg_writeln(msg, Color.ERROR)
-            error(msg)
+            local message = "INTERNAL DEBUGGER.LUA ERROR. ABORTING\n:".." "..done
+            dbg_writeln(message, Color.ERROR)
+            error(message)
         end
     until done
 end
 
+
+
 -- original
 -- repl = function(reason)
 --     -- Skip frames without source info.
---     while not frame_has_line(debug.getinfo(_stack_inspect_offset + CMD_STACK_LEVEL - 3)) do
---         _stack_inspect_offset = _stack_inspect_offset + 1
+--     while not frame_has_line(debug.getinfo(stack_inspect_offset + CMD_STACK_LEVEL - 3)) do
+--         stack_inspect_offset = stack_inspect_offset + 1
 --     end
 
---     local info = debug.getinfo(_stack_inspect_offset + CMD_STACK_LEVEL - 3)
+--     local info = debug.getinfo(stack_inspect_offset + CMD_STACK_LEVEL - 3)
 --     reason = reason and (COLOR_YELLOW.."break via "..COLOR_RED..reason..GREEN_CARET) or ""
 --     dbg_writeln(reason..format_stack_frame_info(info))
 
@@ -654,6 +694,9 @@ end
 -- Make the debugger object callable like a function.
 dbg = setmetatable({}, {
     __call = function(_, condition, top_offset, source)
+
+        dbg_writeln(string.format('__call condition:%d top_offset:%d source:%s', condition or -1, top_offset or -1, source or 'nil'), Color.TRACE)
+
         if condition then return end
 
         top_offset = (top_offset or 0)
@@ -667,15 +710,17 @@ dbg = setmetatable({}, {
 
 
 ------------------------------------------------------------------------------------
--- Run the debugger with msg handler on error().
-dbg.pdebug = function(f, ...)
+-- Works like pcall(), but invokes the debugger on an error.
+dbg.call = function(f, ...)
+    -- Protected call the function and catch any error().
+    dbg_writeln('dbg.call() '..unpack(arg(...)), Color.TRACE)
 
     local ok, msg = xpcall(f,
         function(...)
             -- local _trace = sx.strsplit(debug.traceback(), '\n')
             -- table.remove(_trace, 1)
             -- Start debugger.
-            dbg(false, 1, "pdebug()")
+            dbg(false, 1, "dbg.call()")
             return ...
         end,
         ...)
@@ -683,25 +728,41 @@ dbg.pdebug = function(f, ...)
     return ok, msg
 end
 
+-- -- Works like pcall(), but invokes the debugger on an error.
+-- function dbg.call(f, ...)
+--     return xpcall(f, function(err)
+--         dbg(false, 1, "dbg.call()")
+--         return err
+--     end, ...)
+-- end
 
 ------------------------------------------------------------------------------------
--- Breakpoint now. Was dbg().
-dbg.bp = function(f, ...)
+-- -- Breakpoint now. Was dbg().
+-- dbg.bp = function()
 
-    top_offset = (top_offset or 0)
-    _stack_inspect_offset = top_offset
-    _stack_top = top_offset
-    debug.sethook(hook_next(1, source or "dbg()"), "crl")
-end
+--     top_offset = (top_offset or 0)
+--     _stack_inspect_offset = top_offset
+--     _stack_top = top_offset
+--     debug.sethook(hook_next(1, source or "dbg()"), "crl")
+-- end
+
+-- error(message [, level])
+-- Raises an error (see §2.3) with message as the error object. This function never returns.
+
+-- Usually, error adds some information about the error position at the beginning of the message, if the message is a string.
+-- The level argument specifies how to get the error position. With level 1 (the default), the error position is 
+-- where the error function was called. Level 2 points the error to where the function that called error was called; and so on.
+-- Passing a level 0 avoids the addition of error position information to the message.
+
 
 -- dbg = setmetatable({}, {
 --     __call = function(_, condition, top_offset, source)
 --         if condition then return end
-        
+
 --         top_offset = (top_offset or 0)
 --         stack_inspect_offset = top_offset
 --         stack_top = top_offset
-        
+
 --         debug.sethook(hook_next(1, source or "dbg()"), "crl")
 --         return
 --     end,
