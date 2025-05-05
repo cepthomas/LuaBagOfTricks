@@ -1,47 +1,33 @@
+--[[
 
-------------------- early wip ------------------------
+A lot stolen from :
+https://github.com/slembcke/debugger.lua/blob/master/README.md
+https://www.slembcke.net/blog/DebuggerLua/
 
--- a lot stolen from 
-    -- Copyright (c) 2023 Scott Lembcke and Howling Moon Software
-    -- https://github.com/slembcke/debugger.lua/blob/master/README.md
-    -- https://www.slembcke.net/blog/DebuggerLua/
-
--- TODOD-orig Print short function arguments as part of stack location.
--- TODOD-orig Properly handle being reentrant due to coroutines.
-
--- TODOD You can't add breakpoints to a running program or remove them - must use dbg.run().
--- TODOD enable color explicitly?
--- TODOD something like py tracer?
-
--- TODOD holding tank
--- local _trace = sx.strsplit(debug.traceback(), '\n')
--- table.remove(_trace, 1)
+TODOD-orig Print short function arguments as part of stack location.
+TODOD-orig Properly handle being reentrant due to coroutines.
+TODOD You can't add breakpoints to a running program or remove them - must use dbg.run().
+TODOD something like py tracer?
 
 
+]]
 
 local ut = require('lbot_utils')
 local sx = require('stringex')
 local tx = require("tableex")
 
--- Wee version differences TODOD
-local unpack = unpack or table.unpack
-local pack = function(...) return {n = select('#', ...), ...} end
--- local function compile_chunk(block, env)
---     if _VERSION <= 'Lua 5.1' then
---         chunk = loadstring(block, source)
---         if chunk then setfenv(chunk, env) end
---     else
---         -- The Lua 5.2 way is a bit cleaner
---         chunk = load(block, source, 't', env)
---     end
--- local function local_bindings(offset, include_globals)
---         -- In Lua 5.2, you have to get the environment table from the function's locals.
---         local env = (_VERSION <= 'Lua 5.1' and getfenv(func) or bindings._ENV)
---         return setmetatable(bindings, {__index = env or _G})
+
+-------------------------------------------------------------------------
+-- Expose the debugger's IO functions. Probably not necessary? Maybe useful for socket flavor?
+-- dbg.read = dbg_read
+-- dbg.write = dbg_write
+-- dbg.exit = function(err) os.exit(err) end
+-- dbg.pretty = pretty
+-- dbg.writeln = dbg_writeln
 
 
 
--- The module itself.
+-- The module.
 local dbg = {}
 
 
@@ -74,7 +60,7 @@ local MDEL = '\n'
 -- The stack level that cmd_* functions use to access locals or info. The structure of the code very carefully ensures this.
 local CMD_STACK_LEVEL = 6
 
--- Convenience enum.
+-- Convenience enum for writeln.
 local Color = {
     DEFAULT = 0, -- reset
     FAINT = 90, -- gray
@@ -89,11 +75,11 @@ setmetatable(Color, { __index = function(_, key) error('Invalid color: '..key) e
 
 
 
--- TODOD need neater config setting - args or public?
-local pretty_depth = 1
-local auto_where = 3 -- was false
-local auto_eval = false -- ??
-local use_ansi_color = true
+-- TODOD need better config setting - args or public?
+local _pretty_depth = 1
+local _auto_where = 3 -- was false
+local _auto_eval = false -- ??
+local _use_ansi_color = true
 local _trace = true
 
 -------------------------------------------------------------------------
@@ -101,11 +87,7 @@ local _trace = true
 -------------------------------------------------------------------------
 
 -------------------------------------------------------------------------
---- Format for humans.
--- @param obj xxxx
--- @param name xxxx
--- @param depth xxxx
--- @return desc
+--- Format for humans. Returns the string.
 local function pretty(obj, name, depth)
     if type(obj) == 'string' then
         return string.format('%q', obj)
@@ -117,18 +99,22 @@ local function pretty(obj, name, depth)
 end
 
 
+-- Handle lua version differences.
+local unpack = unpack or table.unpack
+
+local pack = function(...) return { n = select('#', ...), ... } end
+
+
 -------------------------------------------------------------------------
 ----------------------------- IO ----------------------------------------
 -------------------------------------------------------------------------
 
 -------------------------------------------------------------------------
---- Default dbg.write function
--- @param xxx xxxx
--- @return desc
+-- Default dbg.write function
 local function dbg_write(str, color)
     if color == Color.TRACE and not _trace then return end
 
-    if use_ansi_color then
+    if _use_ansi_color then
         color = color or Color.DEFAULT
         io.write(ESC..'['..color..'m'..str..ESC..'[0m')
     else -- plain
@@ -137,17 +123,13 @@ local function dbg_write(str, color)
 end
 
 -------------------------------------------------------------------------
---- Default dbg.writeln function
--- @param xxx xxxx
--- @return desc
+-- Default dbg.writeln function
 local function dbg_writeln(str, color)
     dbg_write(str..MDEL, color)
 end
 
 -------------------------------------------------------------------------
---- Default dbg.read function
--- @param xxx xxxx
--- @return desc
+-- Default dbg.read function
 local function dbg_read(prompt)
     dbg_write(prompt, Color.PROMPT)
     io.flush()
@@ -155,17 +137,7 @@ local function dbg_read(prompt)
 end
 
 -------------------------------------------------------------------------
--- Expose the debugger's IO functions. TODOD not necessary? Maybe useful for socket flavor?
--- dbg.read = dbg_read
--- dbg.write = dbg_write
--- dbg.exit = function(err) os.exit(err) end
--- dbg.pretty = pretty
--- dbg.writeln = dbg_writeln
-
--------------------------------------------------------------------------
---- Convenience for host to inject into write stream.
--- @param xxx xxxx
--- @return desc
+-- Convenience for host to inject into write stream.
 function dbg.print(str)
     dbg_writeln(str, Color.PRINT)
 end
@@ -176,9 +148,7 @@ end
 -------------------------------------------------------------------------
 
 -------------------------------------------------------------------------
---- Print where we are for humans.
--- @param info from this
--- @return string
+--- Return where we are in the stack for humans.
 local function format_frame(info)
     local filename = info.source:match('^@(.*)')
     if info.what == 'Lua' then
@@ -189,9 +159,6 @@ local function format_frame(info)
 end
 
 -------------------------------------------------------------------------
---- xxx
--- @param xxx xxxx
--- @return desc
 -- Return false for stack frames without source - C frames, Lua bytecode, and `loadstring` functions.
 local function frame_has_line(info)
 
@@ -203,9 +170,7 @@ local function frame_has_line(info)
 end
 
 -------------------------------------------------------------------------
---- Hook function factory.
--- @param repl_threshold xxxx
--- @return hook function
+-- Hook function factory.
 local function hook_factory(repl_threshold)
 
     return function(offset, reason)
@@ -230,11 +195,6 @@ local function hook_factory(repl_threshold)
     end
 end
 
--------------------------------------------------------------------------
--------------------------------------------------------------------------
--------------------------------------------------------------------------
--------------------------------------------------------------------------
--------------------------------------------------------------------------
 local hook_step = hook_factory(1)
 local hook_next = hook_factory(0)
 local hook_finish = hook_factory(-1)
@@ -245,9 +205,6 @@ local hook_finish = hook_factory(-1)
 -------------------------------------------------------------------------
 
 -------------------------------------------------------------------------
---- xxx
--- @param xxx xxxx
--- @return desc
 -- Create a table of all the locally accessible variables.
 -- Globals are not included when running the locals command, but are when running the print command.
 local function local_bindings(offset, include_globals)
@@ -291,9 +248,6 @@ local function local_bindings(offset, include_globals)
 end
 
 -------------------------------------------------------------------------
---- xxx
--- @param xxx xxxx
--- @return desc
 -- Used as a __newindex metamethod to modify variables in cmd_eval().
 local function mutate_bindings(_, name, value)
     local FUNC_STACK_OFFSET = 3 -- Stack depth of this function.
@@ -326,15 +280,12 @@ local function mutate_bindings(_, name, value)
 end
 
 -------------------------------------------------------------------------
---- xxx
--- @param xxx xxxx
--- @return desc
 -- Compile an expression with the given variable bindings.
 local function compile_chunk(block, env)
     local source = 'debugex.lua REPL'
     local chunk = nil
 
-    if _VERSION <= 'Lua 5.1' then --TODOD clean up version stuff
+    if _VERSION <= 'Lua 5.1' then
         chunk = loadstring(block, source)
         if chunk then setfenv(chunk, env) end
     else
@@ -350,9 +301,7 @@ local function compile_chunk(block, env)
 end
 
 -------------------------------------------------------------------------
---- xxx
--- @param xxx xxxx
--- @return desc
+-- Print info about the source.
 local function where(info, context_lines)
     -- dbg_writeln('where()  '..tx.dump_table(info)..' '..context_lines, Color.TRACE)
     local source = _source_cache[info.source]
@@ -368,7 +317,6 @@ local function where(info, context_lines)
     end
 
     dbg_writeln('=> '..format_frame(info), Color.FAINT)
-
 
     if source and source[info.currentline] then
         for i = info.currentline - context_lines, info.currentline + context_lines do
@@ -393,27 +341,18 @@ end
 -------------------------------------------------------------------------
 
 -------------------------------------------------------------------------
---- xxx
--- @param xxx xxxx
--- @return desc
 local function cmd_step() -- TODOD don't step into this file funcs.
     _stack_inspect_offset = _stack_top
     return true, hook_step
 end
 
 -------------------------------------------------------------------------
---- xxx
--- @param xxx xxxx
--- @return desc
 local function cmd_next()
     _stack_inspect_offset = _stack_top
     return true, hook_next
 end
 
 -------------------------------------------------------------------------
---- xxx
--- @param xxx xxxx
--- @return desc
 local function cmd_finish()
     local offset = _stack_top - _stack_inspect_offset
     _stack_inspect_offset = _stack_top
@@ -421,9 +360,6 @@ local function cmd_finish()
 end
 
 -------------------------------------------------------------------------
---- xxx
--- @param xxx xxxx
--- @return desc
 local function cmd_print(expr)
     local env = local_bindings(1, true)
     local chunk = compile_chunk('return '..expr, env)
@@ -438,7 +374,7 @@ local function cmd_print(expr)
     else
         local output = ''
         for i = 2, results.n do
-            output = output..(i ~= 2 and ', ' or '')..pretty(results[i], 'res'..tostring(i -1), pretty_depth)
+            output = output..(i ~= 2 and ', ' or '')..pretty(results[i], 'res'..tostring(i -1), _pretty_depth)
         end
 
         if output == '' then output = 'no_result' end
@@ -449,9 +385,6 @@ local function cmd_print(expr)
 end
 
 -------------------------------------------------------------------------
---- xxx
--- @param xxx xxxx
--- @return desc
 local function cmd_eval(code)
     local env = local_bindings(1, true)
     local mutable_env = setmetatable({}, {
@@ -472,9 +405,6 @@ local function cmd_eval(code)
 end
 
 -------------------------------------------------------------------------
---- xxx
--- @param xxx xxxx
--- @return desc
 local function cmd_down()
     local offset = _stack_inspect_offset
     local info
@@ -487,7 +417,7 @@ local function cmd_down()
     if info then
         _stack_inspect_offset = offset
         dbg_writeln('Inspecting frame: '..format_frame(info))
-        where(info, auto_where)
+        where(info, _auto_where)
     else
         info = debug.getinfo(_stack_inspect_offset + CMD_STACK_LEVEL)
         dbg_writeln('Already at the bottom of the stack.')
@@ -497,9 +427,6 @@ local function cmd_down()
 end
 
 -------------------------------------------------------------------------
---- xxx
--- @param xxx xxxx
--- @return desc
 local function cmd_up()
     local offset = _stack_inspect_offset
     local info
@@ -513,7 +440,7 @@ local function cmd_up()
     if info then
         _stack_inspect_offset = offset
         dbg_writeln('Inspecting frame: '..format_frame(info))
-        where(info, auto_where)
+        where(info, _auto_where)
     else
         info = debug.getinfo(_stack_inspect_offset + CMD_STACK_LEVEL)
         dbg_writeln('Already at the top of the stack.')
@@ -523,9 +450,6 @@ local function cmd_up()
 end
 
 -------------------------------------------------------------------------
---- xxx
--- @param xxx xxxx
--- @return desc
 local function cmd_inspect(offset)
     offset = _stack_top + tonumber(offset)
     local info = debug.getinfo(offset + CMD_STACK_LEVEL)
@@ -538,19 +462,13 @@ local function cmd_inspect(offset)
 end
 
 -------------------------------------------------------------------------
---- xxx
--- @param xxx xxxx
--- @return desc
 local function cmd_where(context_lines)
     local info = debug.getinfo(_stack_inspect_offset + CMD_STACK_LEVEL)
-    -- dbg_writeln('cmd_where()', tonumber(context_lines), auto_where, Color.TRACE)
-    return (info and where(info, tonumber(context_lines) or auto_where))
+    -- dbg_writeln('cmd_where()', tonumber(context_lines), _auto_where, Color.TRACE)
+    return (info and where(info, tonumber(context_lines) or _auto_where))
 end
 
 -------------------------------------------------------------------------
---- xxx
--- @param xxx xxxx
--- @return desc
 local function cmd_stack()
     dbg_writeln('Inspecting frame '..(_stack_inspect_offset - _stack_top))
     local i = 0; while true do
@@ -572,9 +490,6 @@ local function cmd_stack()
 end
 
 -------------------------------------------------------------------------
---- xxx
--- @param xxx xxxx
--- @return desc
 local function cmd_locals()
     local bindings = local_bindings(1, false)
 
@@ -589,7 +504,7 @@ local function cmd_locals()
         local v = bindings[k]
         -- Skip the debugger object itself, '(*internal)' values, and Lua 5.2's _ENV object.
         if not rawequal(v, dbg) and k ~= '_ENV' and not k:match('%(.*%)') then
-            dbg_writeln('  '..k..' => '..pretty(v, 'locals', pretty_depth))
+            dbg_writeln('  '..k..' => '..pretty(v, 'locals', _pretty_depth))
         end
     end
 
@@ -597,30 +512,26 @@ local function cmd_locals()
 end
 
 -------------------------------------------------------------------------
---- xxx
--- @param xxx xxxx
--- @return desc
 local function cmd_continue()
     return true
 end
 
 -------------------------------------------------------------------------
---- Normal exit.
--- @param xxx xxxx
--- @return desc
 local function cmd_quit()
     os.exit(0)
     return true
 end
 
 -------------------------------------------------------------------------
---- xxx
--- @param xxx xxxx
--- @return desc
 local function cmd_help()
     for _, v in ipairs(_commands) do dbg_writeln('  '..v[3]) end
     return false
 end
+
+
+-------------------------------------------------------------------------
+----------------------------- command processor -------------------------
+-------------------------------------------------------------------------
 
 -------------------------------------------------------------------------
 _commands = {
@@ -642,13 +553,7 @@ _commands = {
 
 
 -------------------------------------------------------------------------
------------------------------ command processor -------------------------
--------------------------------------------------------------------------
-
--------------------------------------------------------------------------
---- Run a command line
--- @param line input string to process
--- @return true if the repl should exit, optional hook
+-- Run a command input line. Returns true if the repl should exit, optional hook
 local function run_command(line)
     if line == nil then
         error('missing input line')
@@ -669,7 +574,7 @@ local function run_command(line)
         _last_cmd = line
         -- unpack({...}) prevents tail call elimination so the stack frame indices are predictable.
         return unpack({cmd(arg)})
-    elseif auto_eval then
+    elseif _auto_eval then
         return unpack({cmd_eval(line)})
     else
         dbg_writeln('Invalid command '..line, Color.ERROR)
@@ -679,10 +584,8 @@ end
 
 
 -------------------------------------------------------------------------
---- The human interface.
--- @param reason What triggered this. Dubious usefulness, nil for some commands (s/n/?)
--- @return the repl function
--- local function repl(reason)
+-- The human interface repl function.
+-- reason - What triggered this. Dubious usefulness, nil for some commands (s/n/?)
 repl = function(reason)
 
     -- Skip frames without source info.
@@ -697,19 +600,11 @@ repl = function(reason)
         end
     end
 
-    -- orig:
-    -- while not frame_has_line(debug.getinfo(_stack_inspect_offset + CMD_STACK_LEVEL - 3)) do
-    --     _stack_inspect_offset = _stack_inspect_offset + 1
-    -- end
-    -- local info = debug.getinfo(_stack_inspect_offset + CMD_STACK_LEVEL - 3)
-    -- reason = reason and ("...break via "..reason) or "not-reason"
-    -- dbg_writeln(reason..format_frame(info))
-
-    where(info, auto_where)
+    where(info, _auto_where)
 
     -- Do the repl loop.
     repeat
-        local success, done, hook = pcall(run_command, dbg_read("debugex.lua> "))
+        local success, done, hook = pcall(run_command, dbg_read("> "))
         if success then
             debug.sethook(hook and hook(0), "crl")
         else
@@ -726,9 +621,7 @@ end
 -------------------------------------------------------------------------
 
 -------------------------------------------------------------------------
---- Make the debugger object callable like a function.
--- @param xxx xxxx
--- @return desc
+-- Make the debugger object callable like a function.
 -- dbg = setmetatable({}, {
 setmetatable(dbg, {
     __call = function(_, top_offset, source)
@@ -746,30 +639,23 @@ setmetatable(dbg, {
 
 
 -------------------------------------------------------------------------
---- Works like plain pcall(), but invokes the debugger on error().
--- @param xxx xxxx
--- @return desc
-dbg.pcall = function(f, ...)
-        dbg_writeln('XXX '..debug.traceback(), Color.TRACE)
-    local ok, msg = xpcall(f,
+-- Works like plain pcall(), but invokes the debugger on error().
+dbg.pcall = function(func, ...)
+
+    local ok, msg = xpcall(func,
         function(...)
             -- Start debugger.
             dbg_writeln('dbg.pcall() AAA ', Color.TRACE)
 
-            -- dbg(1, "dbg.pcall()")
-
+            -- dbg(1, "dbg.pcall()") TODOD or...
             local top_offset = 1-- (top_offset or 0)
             _stack_inspect_offset = top_offset
             _stack_top = top_offset
-
             debug.sethook(hook_next(1, 'dbg.pcall()'), 'crl')
-
 
             return ...
         end,
         ...)
-        dbg_writeln('ZZZ '..tostring(msg), Color.TRACE)
-        dbg_writeln('ZZZ '..debug.traceback(), Color.TRACE)
 
     return ok, msg
 end
@@ -782,31 +668,24 @@ end
 --     end, ...)
 -- end
 
+-- -- Works like error(), but invokes the debugger.
+-- function dbg.bp()
+--     -- level = 1
+--     -- dbg_writeln(COLOR_RED.."ERROR: "..COLOR_RESET..dbg.pretty(err))
+--     -- dbg(level, "dbg.error()")
+--     error()--'err', level)
+-- end
 
 
--- Works like error(), but invokes the debugger.
-function dbg.bp()
-    -- level = 1
-    -- dbg_writeln(COLOR_RED.."ERROR: "..COLOR_RESET..dbg.pretty(err))
-    -- dbg(level, "dbg.error()")
-    error()--'err', level)
-end
+-- local lua_error, lua_assert = error, assert
+-- -- Works like error(), but invokes the debugger.
+-- function dbg.error(err, level)
+--     level = level or 1
+--     -- dbg_writeln(COLOR_RED.."ERROR: "..COLOR_RESET..dbg.pretty(err))
+--     dbg(level, "dbg.error()")
+--     lua_error(err, level)
+-- end
 
-
-local lua_error, lua_assert = error, assert
--- Works like error(), but invokes the debugger.
-function dbg.error(err, level)
-    level = level or 1
-    -- dbg_writeln(COLOR_RED.."ERROR: "..COLOR_RESET..dbg.pretty(err))
-    dbg(level, "dbg.error()")
-    lua_error(err, level)
-end
-
-
--------------------------------------------------------------------------
---- xxx
--- @param xxx xxxx
--- @return desc
 -- -- Breakpoint now. Was dbg().
 -- dbg.bp = function()
 
@@ -815,28 +694,6 @@ end
 --     _stack_top = top_offset
 --     debug.sethook(hook_next(1, source or "dbg()"), "crl")
 -- end
-
--- error(message [, level])
--- Raises an error (see §2.3) with message as the error object. This function never returns.
-
--- Usually, error adds some information about the error position at the beginning of the message, if the message is a string.
--- The level argument specifies how to get the error position. With level 1 (the default), the error position is 
--- where the error function was called. Level 2 points the error to where the function that called error was called; and so on.
--- Passing a level 0 avoids the addition of error position information to the message.
-
-
--- dbg = setmetatable({}, {
---     __call = function(_, condition, top_offset, source)
---         if condition then return end
-
---         top_offset = (top_offset or 0)
---         stack_inspect_offset = top_offset
---         stack_top = top_offset
-
---         debug.sethook(hook_next(1, source or "dbg()"), "crl")
---         return
---     end,
--- })
 
 
 return dbg

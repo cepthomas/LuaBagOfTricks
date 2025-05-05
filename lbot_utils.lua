@@ -13,7 +13,7 @@ local M = {}
 -----------------------------------------------------------------------------
 
 -----------------------------------------------------------------------------
---- Replacement for print(...) with caller file and line added. TODOD
+--- Replacement for print(...) with caller file and line added.
 function printex(...)
     local res = {}
     local arg = {...}
@@ -88,7 +88,7 @@ function M.execute_and_capture(cmd)
 end
 
 -----------------------------------------------------------------------------
---- Gets the file and line of the caller. TODOD
+--- Gets the file and line of the caller.
 -- @param level How deep to look:
 --    0 is the debug.getinfo() itself
 --    1 is the function that called debug.getinfo() - this function
@@ -109,7 +109,7 @@ function M.get_caller_info(level)
 end
 
 -----------------------------------------------------------------------------
---- Gets the file and line of the caller. TODOD
+--- Gets the file and line of the caller.
 -- @param level see get_caller_info()
 -- @return string of file and line
 function M.get_caller_info_str(level)
