@@ -17,10 +17,25 @@ local ut = require('lbot_utils')
 local sx = require('stringex')
 local tx = require("tableex")
 
--- Wee version differences
+-- Wee version differences TODOD
 local unpack = unpack or table.unpack
 local pack = function(...) return {n = select('#', ...), ...} end
+-- local function compile_chunk(block, env)
+--     if _VERSION <= 'Lua 5.1' then
+--         chunk = loadstring(block, source)
+--         if chunk then setfenv(chunk, env) end
+--     else
+--         -- The Lua 5.2 way is a bit cleaner
+--         chunk = load(block, source, 't', env)
+--     end
+-- local function local_bindings(offset, include_globals)
+--         -- In Lua 5.2, you have to get the environment table from the function's locals.
+--         local env = (_VERSION <= 'Lua 5.1' and getfenv(func) or bindings._ENV)
+--         return setmetatable(bindings, {__index = env or _G})
 
+
+
+-- The module himself.
 local dbg -- = {}
 
 
@@ -31,7 +46,6 @@ local dbg -- = {}
 
 -- Forward ref.
 local repl
--- local replXX
 
 -- Cache.
 local _last_cmd = false
@@ -63,7 +77,7 @@ local Color = {
     TODOD = 92, -- green
     TRACE = 96, -- cyan
     PROMPT = 94, -- blue
-    TBD = 5
+    TBD = 5 -- blinking
 }
 setmetatable(Color, { __index = function(_, key) error('Invalid color: '..key) end })
 
@@ -74,14 +88,18 @@ local pretty_depth = 1
 local auto_where = 3 -- was false
 local auto_eval = false -- ??
 local use_ansi_color = true
-
 local _trace = false
 
 ------------------------------------------------------------------------------------
 ----------------------------- Infrastructure ---------------------------------------
 ------------------------------------------------------------------------------------
 
-------------------------------------------------------------------------------------
+-------------------------------------------------------------------------
+--- Format for humans.
+-- @param obj xxxx
+-- @param name xxxx
+-- @param depth xxxx
+-- @return desc
 local function pretty(obj, name, depth)
     if type(obj) == 'string' then
         return string.format('%q', obj)
@@ -98,7 +116,10 @@ local function exit(err) os.exit(err) end
 ----------------------------- IO ---------------------------------------------------
 ------------------------------------------------------------------------------------
 
-------------------------------------------------------------------------------------
+-------------------------------------------------------------------------
+--- xxx
+-- @param xxx xxxx
+-- @return desc
 -- Default dbg.write function
 local function dbg_write(str, color)
 
@@ -112,13 +133,19 @@ local function dbg_write(str, color)
     end
 end
 
-------------------------------------------------------------------------------------
+-------------------------------------------------------------------------
+--- xxx
+-- @param xxx xxxx
+-- @return desc
 -- Default dbg.writeln function
 local function dbg_writeln(str, color)
     dbg_write(str..MDEL, color)
 end
 
-------------------------------------------------------------------------------------
+-------------------------------------------------------------------------
+--- xxx
+-- @param xxx xxxx
+-- @return desc
 -- Default dbg.read function
 local function dbg_read(prompt)
     dbg_write(prompt, Color.PROMPT)
@@ -126,13 +153,25 @@ local function dbg_read(prompt)
     return io.read()
 end
 
+------------------------------------------------------------------------------------
+-- Expose the debugger's IO functions.
+-- dbg.read = dbg_read
+-- dbg.write = dbg_write
+-- dbg.exit = function(err) os.exit(err) end
+-- dbg.pretty = pretty
+-- dbg.writeln = dbg_writeln
+
+dbg
 
 ------------------------------------------------------------------------------------
 ----------------------------- repl, hooks internals --------------------------------
 ------------------------------------------------------------------------------------
 
 
-------------------------------------------------------------------------------------
+-------------------------------------------------------------------------
+--- xxx
+-- @param xxx xxxx
+-- @return desc
 local function format_stack_frame_info(info)
 
     -- local function format_loc(file, line) return file..':'..line end
@@ -151,7 +190,10 @@ local function format_stack_frame_info(info)
     end
 end
 
-------------------------------------------------------------------------------------
+-------------------------------------------------------------------------
+--- xxx
+-- @param xxx xxxx
+-- @return desc
 -- Return false for stack frames without source - C frames, Lua bytecode, and `loadstring` functions.
 local function frame_has_line(info)
 
@@ -163,21 +205,20 @@ local function frame_has_line(info)
     return info.currentline >= 0
 end
 
-------------------------------------------------------------------------------------
+-------------------------------------------------------------------------
+--- xxx
+-- @param xxx xxxx
+-- @return desc
 local function hook_factory(repl_threshold)
     return function(offset, reason)
 
         if not reason then
-            dbg_writeln('!!! reason is nil!!'  ..debug.traceback(), Color.ERROR)
+            dbg_writeln('!!! reason is nil!!'  ..debug.traceback(), Color.TRACE)
         end
 
-       reason = reason or 'unreasonable'
 
         return function(event, _)
             -- Skip events that don't have line information.
-            -- local info = debug.getinfo(2)
-            -- dbg_writeln(tx.dump_table(info, 'info'), Color.TRACE)
-
             if not frame_has_line(debug.getinfo(2)) then return end
 
             -- Tail calls are specifically ignored since they also will have tail returns to balance out.
@@ -186,12 +227,18 @@ local function hook_factory(repl_threshold)
             elseif event == 'return' and offset > repl_threshold then
                 offset = offset - 1
             elseif event == 'line' and offset <= repl_threshold then
+                -- step and next don't supply reason
+                reason = reason or 'no-reason'
                 repl(reason)
             end
         end
     end
 end
 
+------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------
 local hook_step = hook_factory(1)
 local hook_next = hook_factory(0)
@@ -202,7 +249,10 @@ local hook_finish = hook_factory(-1)
 ----------------------------- cmd internals ----------------------------------------
 ------------------------------------------------------------------------------------
 
-------------------------------------------------------------------------------------
+-------------------------------------------------------------------------
+--- xxx
+-- @param xxx xxxx
+-- @return desc
 -- Create a table of all the locally accessible variables.
 -- Globals are not included when running the locals command, but are when running the print command.
 local function local_bindings(offset, include_globals)
@@ -242,10 +292,13 @@ local function local_bindings(offset, include_globals)
         return setmetatable(bindings, {__index = env or _G})
     else
         return bindings
-    end 
+    end
 end
 
-------------------------------------------------------------------------------------
+-------------------------------------------------------------------------
+--- xxx
+-- @param xxx xxxx
+-- @return desc
 -- Used as a __newindex metamethod to modify variables in cmd_eval().
 local function mutate_bindings(_, name, value)
     local FUNC_STACK_OFFSET = 3 -- Stack depth of this function.
@@ -256,7 +309,7 @@ local function mutate_bindings(_, name, value)
         local var = debug.getlocal(level, i)
         if name == var then
             dbg_writeln('Set local variable '..name, Color.TODOD)
-            return debug.setlocal(level, i, value) -- was level + luajit_local_fix
+            return debug.setlocal(level, i, value)
         end
         i = i + 1
     until var == nil end
@@ -277,7 +330,10 @@ local function mutate_bindings(_, name, value)
     _G[name] = value
 end
 
-------------------------------------------------------------------------------------
+-------------------------------------------------------------------------
+--- xxx
+-- @param xxx xxxx
+-- @return desc
 -- Compile an expression with the given variable bindings.
 local function compile_chunk(block, env)
     local source = 'debugex.lua REPL'
@@ -298,7 +354,10 @@ local function compile_chunk(block, env)
     return chunk
 end
 
-------------------------------------------------------------------------------------
+-------------------------------------------------------------------------
+--- xxx
+-- @param xxx xxxx
+-- @return desc
 local function where(info, context_lines)
     dbg_writeln('where()  '..tx.dump_table(info)..' '..context_lines, Color.TRACE)
     local source = _source_cache[info.source]
@@ -335,26 +394,38 @@ end
 ----------------------------- all the cmd_* ----------------------------------------
 ------------------------------------------------------------------------------------
 
-------------------------------------------------------------------------------------
+-------------------------------------------------------------------------
+--- xxx
+-- @param xxx xxxx
+-- @return desc
 local function cmd_step()
     _stack_inspect_offset = _stack_top
     return true, hook_step
 end
 
-------------------------------------------------------------------------------------
+-------------------------------------------------------------------------
+--- xxx
+-- @param xxx xxxx
+-- @return desc
 local function cmd_next()
     _stack_inspect_offset = _stack_top
     return true, hook_next
 end
 
-------------------------------------------------------------------------------------
+-------------------------------------------------------------------------
+--- xxx
+-- @param xxx xxxx
+-- @return desc
 local function cmd_finish()
     local offset = _stack_top - _stack_inspect_offset
     _stack_inspect_offset = _stack_top
     return true, offset < 0 and hook_factory(offset - 1) or hook_finish
 end
 
-------------------------------------------------------------------------------------
+-------------------------------------------------------------------------
+--- xxx
+-- @param xxx xxxx
+-- @return desc
 local function cmd_print(expr)
     local env = local_bindings(1, true)
     local chunk = compile_chunk('return '..expr, env)
@@ -379,7 +450,10 @@ local function cmd_print(expr)
     return false
 end
 
-------------------------------------------------------------------------------------
+-------------------------------------------------------------------------
+--- xxx
+-- @param xxx xxxx
+-- @return desc
 local function cmd_eval(code)
     local env = local_bindings(1, true)
     local mutable_env = setmetatable({}, {
@@ -399,7 +473,10 @@ local function cmd_eval(code)
     return false
 end
 
-------------------------------------------------------------------------------------
+-------------------------------------------------------------------------
+--- xxx
+-- @param xxx xxxx
+-- @return desc
 local function cmd_down()
     local offset = _stack_inspect_offset
     local info
@@ -421,7 +498,10 @@ local function cmd_down()
     return false
 end
 
-------------------------------------------------------------------------------------
+-------------------------------------------------------------------------
+--- xxx
+-- @param xxx xxxx
+-- @return desc
 local function cmd_up()
     local offset = _stack_inspect_offset
     local info
@@ -444,7 +524,10 @@ local function cmd_up()
     return false
 end
 
-------------------------------------------------------------------------------------
+-------------------------------------------------------------------------
+--- xxx
+-- @param xxx xxxx
+-- @return desc
 local function cmd_inspect(offset)
     offset = _stack_top + tonumber(offset)
     local info = debug.getinfo(offset + CMD_STACK_LEVEL)
@@ -456,14 +539,20 @@ local function cmd_inspect(offset)
     end
 end
 
-------------------------------------------------------------------------------------
+-------------------------------------------------------------------------
+--- xxx
+-- @param xxx xxxx
+-- @return desc
 local function cmd_where(context_lines)
     local info = debug.getinfo(_stack_inspect_offset + CMD_STACK_LEVEL)
     -- dbg_writeln('cmd_where()', tonumber(context_lines), auto_where, Color.TRACE)
     return (info and where(info, tonumber(context_lines) or auto_where))
 end
 
-------------------------------------------------------------------------------------
+-------------------------------------------------------------------------
+--- xxx
+-- @param xxx xxxx
+-- @return desc
 local function cmd_trace()
     dbg_writeln('Inspecting frame '..(_stack_inspect_offset - _stack_top), Color.TODOD)
     local i = 0; while true do
@@ -484,7 +573,10 @@ local function cmd_trace()
     return false
 end
 
-------------------------------------------------------------------------------------
+-------------------------------------------------------------------------
+--- xxx
+-- @param xxx xxxx
+-- @return desc
 local function cmd_locals()
     local bindings = local_bindings(1, false)
 
@@ -531,7 +623,10 @@ local command_descs =
     'q(uit) halt execution'
 }
 
-------------------------------------------------------------------------------------
+-------------------------------------------------------------------------
+--- xxx
+-- @param xxx xxxx
+-- @return desc
 local function cmd_help()
     for _, v in ipairs(command_descs) do dbg_writeln('  '..v, Color.DEFAULT) end
     return false
@@ -555,7 +650,10 @@ local commands = {
     ["^q$"] = function() exit(0); return true end,
 }
 
-------------------------------------------------------------------------------------
+-------------------------------------------------------------------------
+--- xxx
+-- @param xxx xxxx
+-- @return desc
 -- Run a command line
 -- Returns true if the repl should exit, hook function factory
 local function run_command(line)
@@ -565,13 +663,20 @@ local function run_command(line)
     if line == '' then line = _last_cmd or 'h' end
 
     -- Return the matching command and capture argument.
-    local function match_command(line)
-        for pat, func in pairs(commands) do
-            if line:find(pat) then return func, line:match(pat) end
+    -- local function match_command()
+    --     for pat, func in pairs(commands) do
+    --         if line:find(pat) then return func, line:match(pat) end
+    --     end
+    -- end
+    -- local command, command_arg = match_command()
+
+    local command, command_arg
+    for pat, func in pairs(commands) do
+        if line:find(pat) then
+            command = func
+            command_arg = line:match(pat)
         end
     end
-
-    local command, command_arg = match_command(line)
 
     if command then
         _last_cmd = line
@@ -585,49 +690,12 @@ local function run_command(line)
     end
 end
 
-------------------------------------------------------------------------------------
--- replXX = function(reason)
-
---     -- Skip frames without source info.
---     -- while not frame_has_line(debug.getinfo(_stack_inspect_offset + CMD_STACK_LEVEL - 3)) do
---     --     _stack_inspect_offset = _stack_inspect_offset + 1
---     --     dbg_writeln('_stack_inspect_offset', _stack_inspect_offset, Color.TRACE)
---     -- end
-
---     dbg_writeln('repl() _stack_inspect_offset=', _stack_inspect_offset, Color.TRACE)
---     dbg_writeln('repl()', debug.traceback(), Color.TRACE)
-
---     local done = false
---     while not done do
---         dbg_writeln('offset=', _stack_inspect_offset + CMD_STACK_LEVEL - 3, '_stack_inspect_offset=', _stack_inspect_offset, Color.TRACE)
---         local info = debug.getinfo(_stack_inspect_offset + CMD_STACK_LEVEL - 3)
---         -- dbg_writeln(tx.dump_table(info), Color.TRACE)
---         done = frame_has_line(info)
---         _stack_inspect_offset = _stack_inspect_offset + 1
---     end
---     dbg_writeln('repl() done', Color.TRACE)
-
---     local info = debug.getinfo(_stack_inspect_offset + CMD_STACK_LEVEL - 3)
-
---     dbg_writeln('break via '..reason..' '..format_stack_frame_info(info), Color.TBD)
-
---     where(info, dbg.auto_where)
-
---     repeat
---         local success, done, hook = pcall(run_command, dbg_read('TODOD>>> '))
-
---         if success then
---             debug.sethook(hook and hook(0), 'crl')
---         else
---             local msg = 'Fatal internal lua error: '..done
---             dbg_writeln(msg, Color.ERROR)
---             error(msg)
---         end
---     until done
--- end
 
 
-
+-------------------------------------------------------------------------
+--- xxx
+-- @param xxx xxxx
+-- @return desc
 repl = function(reason)
     -- Skip frames without source info.
     while not frame_has_line(debug.getinfo(_stack_inspect_offset + CMD_STACK_LEVEL - 3)) do
@@ -653,44 +721,22 @@ repl = function(reason)
         if success then
             debug.sethook(hook and hook(0), "crl")
         else
-            local message = "INTERNAL DEBUGGER.LUA ERROR. ABORTING\n:".." "..done
-            dbg_writeln(message, Color.ERROR)
-            error(message)
+            local msg = 'Fatal internal lua error: '..done
+            dbg_writeln(msg, Color.ERROR)
+            error(msg)
         end
     until done
 end
 
 
-
--- original
--- repl = function(reason)
---     -- Skip frames without source info.
---     while not frame_has_line(debug.getinfo(stack_inspect_offset + CMD_STACK_LEVEL - 3)) do
---         stack_inspect_offset = stack_inspect_offset + 1
---     end
-
---     local info = debug.getinfo(stack_inspect_offset + CMD_STACK_LEVEL - 3)
---     reason = reason and (COLOR_YELLOW.."break via "..COLOR_RED..reason..GREEN_CARET) or ""
---     dbg_writeln(reason..format_stack_frame_info(info))
-
---     if tonumber(dbg.auto_where) then where(info, dbg.auto_where) end
-
---     repeat
---         local success, done, hook = pcall(run_command, dbg.read(COLOR_RED.."debugger.lua> "..COLOR_RESET))
---         if success then
---             debug.sethook(hook and hook(0), "crl")
---         else
---             local message = COLOR_RED.."INTERNAL DEBUGGER.LUA ERROR. ABORTING\n:"..COLOR_RESET.." "..done
---             dbg_writeln(message)
---             error(message)
---         end
---     until done
--- end
-
 ------------------------------------------------------------------------------------
 ----------------------------- api --------------------------------------------------
 ------------------------------------------------------------------------------------
 
+-------------------------------------------------------------------------
+--- xxx
+-- @param xxx xxxx
+-- @return desc
 -- Make the debugger object callable like a function.
 dbg = setmetatable({}, {
     __call = function(_, condition, top_offset, source)
@@ -709,11 +755,14 @@ dbg = setmetatable({}, {
 })
 
 
-------------------------------------------------------------------------------------
+-------------------------------------------------------------------------
+--- xxx
+-- @param xxx xxxx
+-- @return desc
 -- Works like pcall(), but invokes the debugger on an error.
 dbg.call = function(f, ...)
     -- Protected call the function and catch any error().
-    dbg_writeln('dbg.call() '..unpack(arg(...)), Color.TRACE)
+    -- dbg_writeln('dbg.call() '..unpack(arg(...)), Color.TRACE)
 
     local ok, msg = xpcall(f,
         function(...)
@@ -736,7 +785,10 @@ end
 --     end, ...)
 -- end
 
-------------------------------------------------------------------------------------
+-------------------------------------------------------------------------
+--- xxx
+-- @param xxx xxxx
+-- @return desc
 -- -- Breakpoint now. Was dbg().
 -- dbg.bp = function()
 
@@ -767,14 +819,6 @@ end
 --         return
 --     end,
 -- })
-
-------------------------------------------------------------------------------------
--- Expose the debugger's IO functions.
--- dbg.read = dbg_read
--- dbg.write = dbg_write
--- dbg.exit = function(err) os.exit(err) end
--- dbg.pretty = pretty
--- dbg.writeln = dbg_writeln
 
 
 return dbg
