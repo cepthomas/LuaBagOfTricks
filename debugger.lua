@@ -531,7 +531,7 @@ dbg.pretty_depth = 3
 dbg.pretty = pretty
 dbg.pp = function(value, depth) dbg_writeln(dbg.pretty(value, depth)) end
 
-dbg.auto_where = false
+dbg.auto_where = 3 -- was false
 dbg.auto_eval = false
 
 dbg.enable = true

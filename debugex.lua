@@ -13,6 +13,12 @@
 -- TODOD enable color explicitly?
 -- TODOD something like py tracer?
 
+-- TODOD holding tank
+-- local _trace = sx.strsplit(debug.traceback(), '\n')
+-- table.remove(_trace, 1)
+
+
+
 local ut = require('lbot_utils')
 local sx = require('stringex')
 local tx = require("tableex")
@@ -35,7 +41,7 @@ local pack = function(...) return {n = select('#', ...), ...} end
 
 
 
--- The module himself.
+-- The module itself.
 local dbg = {}
 
 
@@ -43,8 +49,9 @@ local dbg = {}
 ----------------------------- Definitions -------------------------------
 -------------------------------------------------------------------------
 
--- Forward ref.
+-- Forward refs.
 local repl
+local _commands
 
 -- Cache.
 local _last_cmd = false
@@ -87,7 +94,7 @@ local pretty_depth = 1
 local auto_where = 3 -- was false
 local auto_eval = false -- ??
 local use_ansi_color = true
-local _trace = false
+local _trace = true
 
 -------------------------------------------------------------------------
 ----------------------------- Infrastructure ----------------------------
@@ -108,11 +115,6 @@ local function pretty(obj, name, depth)
         return tostring(obj)
     end
 end
-
--------------------------------------------------------------------------
---- Hook for final processing?
--- @param obj err code
-local function exit(err) os.exit(err) end
 
 
 -------------------------------------------------------------------------
@@ -153,7 +155,7 @@ local function dbg_read(prompt)
 end
 
 -------------------------------------------------------------------------
--- Expose the debugger's IO functions. TODOD not necessary? Maybe for sockets.
+-- Expose the debugger's IO functions. TODOD not necessary? Maybe useful for socket flavor?
 -- dbg.read = dbg_read
 -- dbg.write = dbg_write
 -- dbg.exit = function(err) os.exit(err) end
@@ -161,7 +163,7 @@ end
 -- dbg.writeln = dbg_writeln
 
 -------------------------------------------------------------------------
---- Convenience for host to inject in write stream.
+--- Convenience for host to inject into write stream.
 -- @param xxx xxxx
 -- @return desc
 function dbg.print(str)
@@ -174,22 +176,13 @@ end
 -------------------------------------------------------------------------
 
 -------------------------------------------------------------------------
---- xxx
--- @param xxx xxxx
--- @return desc
-local function format_stack_frame_info(info)
-
-    -- local function format_loc(file, line) return file..':'..line end
-    -- local filename = info.source:match('^@(.*)')
-    -- local source = filename or info.short_src
-    -- local namewhat = (info.namewhat == '' and 'chunk at' or info.namewhat)
-    -- local name = info.name or format_loc(source, info.linedefined)
-    -- -- local name = (info.name and '''..COLOR_BLUE..info.name..COLOR_RESET..''' or format_loc(source, info.linedefined))
-    -- return format_loc(source, info.currentline)..' in '..namewhat..' '..name
-
+--- Print where we are for humans.
+-- @param info from this
+-- @return string
+local function format_frame(info)
     local filename = info.source:match('^@(.*)')
     if info.what == 'Lua' then
-        return string.format('[Lua] %s(%d) in %s %s', filename, info.currentline, info.namewhat, info.name)
+        return string.format('%s(%d) in %s %s', filename, info.currentline, info.namewhat, info.name)
     else
         return '['..info.what..']'
     end
@@ -204,25 +197,21 @@ local function frame_has_line(info)
 
     if not info then
         dbg_writeln('frame_has_line() !!! info is nil!!  '..debug.traceback(), Color.ERROR)
-        -- return false
     end
 
     return info.currentline >= 0
 end
 
 -------------------------------------------------------------------------
---- xxx
--- @param xxx xxxx
--- @return desc
+--- Hook function factory.
+-- @param repl_threshold xxxx
+-- @return hook function
 local function hook_factory(repl_threshold)
+
     return function(offset, reason)
 
-        if not reason then
-            dbg_writeln('!!! reason is nil!!'  ..debug.traceback(), Color.TRACE)
-        end
-
-
-        return function(event, _)
+        --  The hook is called for event type.
+        return function(event, line_num)
             -- Skip events that don't have line information.
             if not frame_has_line(debug.getinfo(2)) then return end
 
@@ -233,6 +222,7 @@ local function hook_factory(repl_threshold)
                 offset = offset - 1
             elseif event == 'line' and offset <= repl_threshold then
                 -- step and next don't supply reason
+                -- dbg_writeln(tostring(line_num), Color.TRACE)
                 reason = reason or 'no-reason'
                 repl(reason)
             end
@@ -364,7 +354,7 @@ end
 -- @param xxx xxxx
 -- @return desc
 local function where(info, context_lines)
-    dbg_writeln('where()  '..tx.dump_table(info)..' '..context_lines, Color.TRACE)
+    -- dbg_writeln('where()  '..tx.dump_table(info)..' '..context_lines, Color.TRACE)
     local source = _source_cache[info.source]
     if not source then
         source = {}
@@ -376,6 +366,9 @@ local function where(info, context_lines)
         end
         _source_cache[info.source] = source
     end
+
+    dbg_writeln('=> '..format_frame(info), Color.FAINT)
+
 
     if source and source[info.currentline] then
         for i = info.currentline - context_lines, info.currentline + context_lines do
@@ -403,7 +396,7 @@ end
 --- xxx
 -- @param xxx xxxx
 -- @return desc
-local function cmd_step()
+local function cmd_step() -- TODOD don't step into this file funcs.
     _stack_inspect_offset = _stack_top
     return true, hook_step
 end
@@ -493,7 +486,7 @@ local function cmd_down()
 
     if info then
         _stack_inspect_offset = offset
-        dbg_writeln('Inspecting frame: '..format_stack_frame_info(info))
+        dbg_writeln('Inspecting frame: '..format_frame(info))
         where(info, auto_where)
     else
         info = debug.getinfo(_stack_inspect_offset + CMD_STACK_LEVEL)
@@ -519,7 +512,7 @@ local function cmd_up()
 
     if info then
         _stack_inspect_offset = offset
-        dbg_writeln('Inspecting frame: '..format_stack_frame_info(info))
+        dbg_writeln('Inspecting frame: '..format_frame(info))
         where(info, auto_where)
     else
         info = debug.getinfo(_stack_inspect_offset + CMD_STACK_LEVEL)
@@ -538,7 +531,7 @@ local function cmd_inspect(offset)
     local info = debug.getinfo(offset + CMD_STACK_LEVEL)
     if info then
         _stack_inspect_offset = offset
-        dbg_writeln('Inspecting frame: '..format_stack_frame_info(info))
+        dbg_writeln('Inspecting frame: '..format_frame(info))
     else
         dbg_writeln('Invalid stack frame index', Color.ERROR)
     end
@@ -558,7 +551,7 @@ end
 --- xxx
 -- @param xxx xxxx
 -- @return desc
-local function cmd_trace()
+local function cmd_stack()
     dbg_writeln('Inspecting frame '..(_stack_inspect_offset - _stack_top))
     local i = 0; while true do
         local info = debug.getinfo(_stack_top + CMD_STACK_LEVEL + i)
@@ -567,9 +560,9 @@ local function cmd_trace()
         local is_current_frame = (i + _stack_top == _stack_inspect_offset)
 
         if is_current_frame then
-            dbg_writeln(i..' => '..format_stack_frame_info(info), Color.DEFAULT)
+            dbg_writeln(i..' => '..format_frame(info), Color.DEFAULT)
         else
-            dbg_writeln(i..'    '..format_stack_frame_info(info), Color.FAINT)
+            dbg_writeln(i..'    '..format_frame(info), Color.FAINT)
         end
 
         i = i + 1
@@ -585,7 +578,7 @@ end
 local function cmd_locals()
     local bindings = local_bindings(1, false)
 
-    -- Get all the variable binding names and sort them. TODOD gets noisy with large tables.
+    -- Get all the variable binding names and sort them.
     local keys = {}
     for k, _ in pairs(bindings) do
         table.insert(keys, k)
@@ -603,82 +596,79 @@ local function cmd_locals()
     return false
 end
 
+-------------------------------------------------------------------------
+--- xxx
+-- @param xxx xxxx
+-- @return desc
+local function cmd_continue()
+    return true
+end
 
 -------------------------------------------------------------------------
------------------------------ command processor -------------------------
--------------------------------------------------------------------------
-
--------------------------------------------------------------------------
-local command_descs =
-{
-    '<return> re-run last command',
-    'c(ontinue) continue execution',
-    's(tep) step forward by one line (into functions)',
-    'n(ext) step forward by one line (skipping over functions)',
-    'f(inish) step forward until exiting the current function',
-    'u(p) move up the stack by one frame',
-    'd(own) move down the stack by one frame',
-    'i(nspect) [index] move to a specific stack frame',
-    'w(here) [line count] print source code around the current line',
-    'e(val) [statement] execute the statement',
-    'p(rint) [expression] execute the expression and print the result',
-    't(race) print the stack trace',
-    'l(ocals) print the function arguments, locals and upvalues.',
-    'h(elp) print this message',
-    'q(uit) halt execution'
-}
+--- Normal exit.
+-- @param xxx xxxx
+-- @return desc
+local function cmd_quit()
+    os.exit(0)
+    return true
+end
 
 -------------------------------------------------------------------------
 --- xxx
 -- @param xxx xxxx
 -- @return desc
 local function cmd_help()
-    for _, v in ipairs(command_descs) do dbg_writeln('  '..v) end
+    for _, v in ipairs(_commands) do dbg_writeln('  '..v[3]) end
     return false
 end
 
 -------------------------------------------------------------------------
-local _commands = {
-    ["^c$"] = function() return true end,
-    ["^s$"] = cmd_step,
-    ["^n$"] = cmd_next,
-    ["^f$"] = cmd_finish,
-    ["^p%s+(.*)$"] = cmd_print,
-    ["^e%s+(.*)$"] = cmd_eval,
-    ["^u$"] = cmd_up,
-    ["^d$"] = cmd_down,
-    ["i%s*(%d+)"] = cmd_inspect,
-    ["^w%s*(%d*)$"] = cmd_where,
-    ["^t$"] = cmd_trace,
-    ["^l$"] = cmd_locals,
-    ["^h$"] = cmd_help,
-    ["^q$"] = function() exit(0); return true end,
+_commands = {
+    { "^c$",         cmd_continue,  'c continue execution' },
+    { "^s$",         cmd_step,      's step forward by one line (into functions)' },
+    { "^n$",         cmd_next,      'n step forward by one line (skipping over functions)' },
+    { "^f$",         cmd_finish,    'f step forward until exiting the current function' },
+    { "^p%s+(.*)$",  cmd_print,     'p [expression] execute the expression and print the result' },
+    { "^e%s+(.*)$",  cmd_eval,      'e [statement] execute the statement' },
+    { "^u$",         cmd_up,        'u move up the stack by one frame' },
+    { "^d$",         cmd_down,      'd move down the stack by one frame' },
+    { "i%s*(%d+)",   cmd_inspect,   'i index move to and inspect a specific stack frame' },
+    { "^w%s*(%d*)$", cmd_where,     'w [line count] print source code around the current line' },
+    { "^t$",         cmd_stack,     't print the stack' },
+    { "^l$",         cmd_locals,    'l print the function arguments, locals and upvalues.' },
+    { "^h$",         cmd_help,      'h print this message' },
+    { "^q$",         cmd_quit,      'q halt execution' }
 }
 
+
 -------------------------------------------------------------------------
---- xxx
--- @param xxx xxxx
--- @return desc
--- Run a command line
--- Returns true if the repl should exit, hook function factory
+----------------------------- command processor -------------------------
+-------------------------------------------------------------------------
+
+-------------------------------------------------------------------------
+--- Run a command line
+-- @param line input string to process
+-- @return true if the repl should exit, optional hook
 local function run_command(line)
-    if line == nil then exit(1); return true end
+    if line == nil then
+        error('missing input line')
+    end
 
     -- Re-execute the last command if you press return.
     if line == '' then line = _last_cmd or 'h' end
 
-    local command, command_arg
-    for pat, func in pairs(_commands) do
-        if line:find(pat) then
-            command = func
-            command_arg = line:match(pat)
+    local cmd, arg
+    for _, v in ipairs(_commands) do
+        if line:find(v[1]) then
+            cmd = v[2]
+            arg = line:match(v[1])
         end
     end
 
-    if command then
+    if cmd then
         _last_cmd = line
         -- unpack({...}) prevents tail call elimination so the stack frame indices are predictable.
-        return unpack({command(command_arg)})
+        return unpack({cmd(arg)})
     elseif auto_eval then
         return unpack({cmd_eval(line)})
     else
@@ -688,31 +678,36 @@ local function run_command(line)
 end
 
 
-
 -------------------------------------------------------------------------
---- xxx
--- @param xxx xxxx
--- @return desc
+--- The human interface.
+-- @param reason What triggered this. Dubious usefulness, nil for some commands (s/n/?)
+-- @return the repl function
+-- local function repl(reason)
 repl = function(reason)
+
     -- Skip frames without source info.
-    while not frame_has_line(debug.getinfo(_stack_inspect_offset + CMD_STACK_LEVEL - 3)) do
-        dbg_writeln('offset='..(_stack_inspect_offset + CMD_STACK_LEVEL - 3)..'  _stack_inspect_offset='.._stack_inspect_offset, Color.TRACE)
-        -- dbg_writeln('offset='..tostring(_stack_inspect_offset + CMD_STACK_LEVEL - 3)..'  _stack_inspect_offset='..tostring(_stack_inspect_offset), Color.TRACE)
-        _stack_inspect_offset = _stack_inspect_offset + 1
+    local info
+    local done = false
+    while not done do
+        info = debug.getinfo(_stack_inspect_offset + CMD_STACK_LEVEL - 3)
+        if frame_has_line(info) then
+            done = true
+        else
+            _stack_inspect_offset = _stack_inspect_offset + 1
+        end
     end
 
-    dbg_writeln('repl() _stack_inspect_offset='.._stack_inspect_offset, Color.TRACE)
-    dbg_writeln('repl()  '..debug.traceback(), Color.TRACE)
-
-    local info = debug.getinfo(_stack_inspect_offset + CMD_STACK_LEVEL - 3)
-
-    reason = reason and ("...break via "..reason) or "not-reason"
-
-    dbg_writeln(reason..format_stack_frame_info(info))
+    -- orig:
+    -- while not frame_has_line(debug.getinfo(_stack_inspect_offset + CMD_STACK_LEVEL - 3)) do
+    --     _stack_inspect_offset = _stack_inspect_offset + 1
+    -- end
+    -- local info = debug.getinfo(_stack_inspect_offset + CMD_STACK_LEVEL - 3)
+    -- reason = reason and ("...break via "..reason) or "not-reason"
+    -- dbg_writeln(reason..format_frame(info))
 
     where(info, auto_where)
-    -- if tonumber(auto_where) then where(info, auto_where) end
 
+    -- Do the repl loop.
     repeat
         local success, done, hook = pcall(run_command, dbg_read("debugex.lua> "))
         if success then
@@ -736,11 +731,9 @@ end
 -- @return desc
 -- dbg = setmetatable({}, {
 setmetatable(dbg, {
-    __call = function(_, condition, top_offset, source)
+    __call = function(_, top_offset, source)
 
-        dbg_writeln(string.format('__call condition:%d top_offset:%d source:%s', condition or -1, top_offset or -1, source or 'nil'), Color.TRACE)
-
-        if condition then return end
+        dbg_writeln(string.format('__call top_offset:%d source:%s', top_offset or -1, source or 'nil'), Color.TRACE)
 
         top_offset = (top_offset or 0)
         _stack_inspect_offset = top_offset
@@ -753,23 +746,30 @@ setmetatable(dbg, {
 
 
 -------------------------------------------------------------------------
---- xxx
+--- Works like plain pcall(), but invokes the debugger on error().
 -- @param xxx xxxx
 -- @return desc
--- Works like pcall(), but invokes the debugger on an error.
-dbg.call = function(f, ...)
-    -- Protected call the function and catch any error().
-    -- dbg_writeln('dbg.call() '..unpack(arg(...)), Color.TRACE)
-
+dbg.pcall = function(f, ...)
+        dbg_writeln('XXX '..debug.traceback(), Color.TRACE)
     local ok, msg = xpcall(f,
         function(...)
-            -- local _trace = sx.strsplit(debug.traceback(), '\n')
-            -- table.remove(_trace, 1)
             -- Start debugger.
-            dbg(false, 1, "dbg.call()")
+            dbg_writeln('dbg.pcall() AAA ', Color.TRACE)
+
+            -- dbg(1, "dbg.pcall()")
+
+            local top_offset = 1-- (top_offset or 0)
+            _stack_inspect_offset = top_offset
+            _stack_top = top_offset
+
+            debug.sethook(hook_next(1, 'dbg.pcall()'), 'crl')
+
+
             return ...
         end,
         ...)
+        dbg_writeln('ZZZ '..tostring(msg), Color.TRACE)
+        dbg_writeln('ZZZ '..debug.traceback(), Color.TRACE)
 
     return ok, msg
 end
@@ -777,10 +777,31 @@ end
 -- -- Works like pcall(), but invokes the debugger on an error.
 -- function dbg.call(f, ...)
 --     return xpcall(f, function(err)
---         dbg(false, 1, "dbg.call()")
+--         dbg(1, "dbg.call()")
 --         return err
 --     end, ...)
 -- end
+
+
+
+-- Works like error(), but invokes the debugger.
+function dbg.bp()
+    -- level = 1
+    -- dbg_writeln(COLOR_RED.."ERROR: "..COLOR_RESET..dbg.pretty(err))
+    -- dbg(level, "dbg.error()")
+    error()--'err', level)
+end
+
+
+local lua_error, lua_assert = error, assert
+-- Works like error(), but invokes the debugger.
+function dbg.error(err, level)
+    level = level or 1
+    -- dbg_writeln(COLOR_RED.."ERROR: "..COLOR_RESET..dbg.pretty(err))
+    dbg(level, "dbg.error()")
+    lua_error(err, level)
+end
+
 
 -------------------------------------------------------------------------
 --- xxx
