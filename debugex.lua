@@ -16,7 +16,7 @@ TODOD something like py tracer?
 
 -- local ut = require('lbot_utils')
 -- local sx = require('stringex')
-local tx = require("tableex")
+-- local tx = require("tableex")
 
 
 -------------------------------------------------------------------------
@@ -64,43 +64,103 @@ local CMD_STACK_LEVEL = 6
 
 -- Convenience enum for writeln.
 local Color = {
-    DEFAULT = 0, -- reset
-    FAINT = 90, -- gray
-    ERROR = 91, -- red
-    WARN = 93, -- yellow
-    PRINT = 92, -- green
-    TRACE = 96, -- cyan
-    PROMPT = 94, -- blue
-    TBD = 5 -- blinking
+    DEFAULT = 15, -- white
+    FAINT   = 246, -- light gray
+    ERROR   = 9, -- red
+    FOCUS   = 11, -- yellow
+    PRINT   = 40, -- green
+    TRACE   = 216, -- pink
+    TABLE   = 39, -- blue
+    TBD     = 05  -- blinking
 }
 setmetatable(Color, { __index = function(_, key) error('Invalid color: '..key) end })
 
+-- local Color = {
+--     DEFAULT = 00, -- reset
+--     FAINT   = 90, -- light gray
+--     ERROR   = 91, -- red
+--     FOCUS   = 93, -- yellow
+--     PRINT   = 92, -- green
+--     TRACE   = 96, -- cyan
+--     TABLE   = 94, -- blue
+--     TBD     = 05  -- blinking
+-- }
 
 
--- TODOD need better config setting - args or public?
-local _pretty_depth = 1
-local _auto_where = 3 -- was false
-local _use_ansi_color = true
-local _trace = true
+-- Config settings. TODOD some?
+dbg.pretty_depth = 3
+dbg.auto_where = 3 -- was false
+dbg.ansi_color = true
+dbg.trace = true
 
 -------------------------------------------------------------------------
 ----------------------------- Infrastructure ----------------------------
 -------------------------------------------------------------------------
 
 -------------------------------------------------------------------------
---- Format for humans. Returns the string. TODOD port dump_table()
+--- Format for humans. Returns the string.
 local function pretty(obj, name, depth)
-    if type(obj) == 'string' then
-        return string.format('%q', obj)
-    elseif type(obj) == 'table' then
-        return tx.dump_table(obj, name, depth)
-    else
-        return tostring(obj)
+
+    depth = depth or dbg.pretty_depth
+    local res = {}
+
+    local function table_count(tbl)
+        local num = 0
+        for _, _ in pairs(tbl) do num = num + 1 end
+        return num
     end
+
+    -- Worker function. object
+    local function _worker(_obj, _name, _level)
+        local sindent = string.rep('    ', _level)
+
+        if type(_obj) == "table" then
+
+            if (getmetatable(_obj) and getmetatable(_obj).__tostring) then
+                -- tostring() can fail if there is an error in a __tostring metamethod.
+                local ok, val = pcall(function() return tostring(_obj) end)
+                if ok then
+                    table.insert(res, string.format('%s%s:%q', sindent, _name, val))
+                else
+                    error(_name..' __tostring metamethod failed')
+                end
+            else
+                table.insert(res, string.format('%s%s:', sindent, _name))
+                -- Do contents.
+                if table_count(_obj) == 0 then
+                    table.insert(res, sindent..'    '..'<empty>')
+                elseif _level >= depth then -- this stops recursion
+                    table.insert(res, sindent..'    '..'<more>')
+                else
+                    for k, v in pairs(_obj) do
+                        _worker(v, k, _level + 1) -- recursion!
+                    end
+                end
+            end
+
+        elseif type(_obj) == "string" then
+            -- Dump the string so that escape sequences are printed.
+            table.insert(res, string.format('%s%s:%q', sindent, _name, _obj))
+
+        elseif math.type(_obj) == "integer" then
+            table.insert(res, string.format('%s%s:%d', sindent, _name, _obj))
+
+        elseif type(_obj) == "number" then
+            table.insert(res, string.format('%s%s:%f', sindent, _name, _obj))
+
+        elseif type(_obj) == "function" then
+            table.insert(res, string.format('%s%s:<function>', sindent, _name))
+
+        elseif type(_obj) == "boolean" then
+            table.insert(res, string.format('%s%s:%q', sindent, _name, _obj))
+        end
+    end
+
+    -- Go.
+    _worker(obj, name, 0)
+    local s = table.concat(res, '\n')
+    return s
 end
-
-
--- local pack = function(...) return { n = select('#', ...), ... } end
 
 
 -------------------------------------------------------------------------
@@ -110,11 +170,11 @@ end
 -------------------------------------------------------------------------
 -- Default dbg.write function
 local function dbg_write(str, color)
-    if color == Color.TRACE and not _trace then return end
+    if color == Color.TRACE and not dbg.trace then return end
 
-    if _use_ansi_color then
+    if dbg.ansi_color then
         color = color or Color.DEFAULT
-        io.write(ESC..'['..color..'m'..str..ESC..'[0m')
+        io.write(ESC..'[38;5;'..color..'m'..str..ESC..'[0m')
     else -- plain
         io.write(str)
     end
@@ -129,7 +189,7 @@ end
 -------------------------------------------------------------------------
 -- Default dbg.read function
 local function dbg_read(prompt)
-    dbg_write(prompt, Color.PROMPT)
+    dbg_write(prompt)
     io.flush()
     return io.read()
 end
@@ -161,7 +221,7 @@ end
 local function frame_has_line(info)
 
     if not info then
-        dbg_writeln('frame_has_line() !!! info is nil!!  '..debug.traceback(), Color.ERROR)
+        dbg_writeln('frame_has_line() info is nil'..debug.traceback(), Color.ERROR)
     end
 
     return info.currentline >= 0
@@ -171,7 +231,7 @@ end
 -- Hook function factory.
 local function hook_factory(repl_threshold)
 
-    return function(offset, reason)
+    return function(offset, origin)
 
         --  The hook is called for event type.
         return function(event, line_num)
@@ -185,8 +245,8 @@ local function hook_factory(repl_threshold)
                 offset = offset - 1
             elseif event == 'line' and offset <= repl_threshold then
                 -- Step and next don't supply this.
-                reason = reason or ('line:'..line_num)
-                repl(reason)
+                origin = origin or ('line:'..line_num)
+                repl(origin)
             end
         end
     end
@@ -276,10 +336,9 @@ end
 
 -------------------------------------------------------------------------
 -- Compile an expression with the given variable bindings.
-local function compile_chunk(block, env)
+local function compile_chunk(block, env, origin)
 
-    local source = 'debugex.lua REPL'
-    local chunk = load(block, source, 't', env)
+    local chunk = load(block, origin, 't', env)
 
     if not chunk then
         dbg_writeln('Could not compile block:', Color.ERROR)
@@ -293,7 +352,7 @@ end
 -- Print info about the source.
 local function where(info, context_lines)
 
-    context_lines = context_lines or _auto_where
+    context_lines = context_lines or dbg.auto_where
 
     local source = _source_cache[info.source]
     if not source then
@@ -307,14 +366,14 @@ local function where(info, context_lines)
         _source_cache[info.source] = source
     end
 
-    dbg_writeln('=> '..format_frame(info), Color.FAINT)
+    dbg_writeln('=> '..format_frame(info), Color.FOCUS)
 
     if source and source[info.currentline] then
         for i = info.currentline - context_lines, info.currentline + context_lines do
             local line = source[i]
             if line then
                 if i == info.currentline then
-                    dbg_writeln(i..' => '..line, Color.DEFAULT)
+                    dbg_writeln(i..' => '..line, Color.FOCUS)
                 else
                     dbg_writeln(i..'    '..line, Color.FAINT)
                 end
@@ -330,7 +389,7 @@ end
 -------------------------------------------------------------------------
 
 -------------------------------------------------------------------------
-local function cmd_step() -- TODOD don't step into this file funcs.
+local function cmd_step() -- TODOD don't step into dbg() funcs. See cmd_locals().
     _stack_inspect_offset = _stack_top
 
     return true, hook_step
@@ -354,7 +413,7 @@ end
 -------------------------------------------------------------------------
 local function cmd_print(expr)
     local env = local_bindings(1, true)
-    local chunk = compile_chunk('return '..expr, env)
+    local chunk = compile_chunk('return '..expr, env, 'cmd_print')
     if chunk ~= nil then
         -- Call the chunk and collect the results.
         local results = table.pack(pcall(chunk, table.unpack(rawget(env, '...') or {})))
@@ -365,7 +424,7 @@ local function cmd_print(expr)
         else
             local output = ''
             for i = 2, results.n do
-                output = output..(i ~= 2 and ', ' or '')..pretty(results[i], 'res'..tostring(i -1), _pretty_depth)
+                output = output..(i ~= 2 and ', ' or '')..pretty(results[i], 'res'..tostring(i -1))
             end
 
             if output == '' then output = 'no_result' end
@@ -379,12 +438,13 @@ end
 -------------------------------------------------------------------------
 local function cmd_eval(code)
     local env = local_bindings(1, true)
-    local mutable_env = setmetatable({}, {
+    local mutable_env = setmetatable({},
+    {
         __index = env,
         __newindex = mutate_bindings,
     })
 
-    local chunk = compile_chunk(code, mutable_env)
+    local chunk = compile_chunk(code, mutable_env, 'cmd_eval')
     if chunk ~= nil then
         -- Call the chunk and collect the results.
         local success, err = pcall(chunk, table.unpack(rawget(env, '...') or {}))
@@ -473,7 +533,7 @@ local function cmd_stack()
         local is_current_frame = (i + _stack_top == _stack_inspect_offset)
 
         if is_current_frame then
-            dbg_writeln(i..' => '..format_frame(info), Color.DEFAULT)
+            dbg_writeln(i..' => '..format_frame(info), Color.FOCUS)
         else
             dbg_writeln(i..'    '..format_frame(info), Color.FAINT)
         end
@@ -488,23 +548,41 @@ end
 local function cmd_locals()
     local bindings = local_bindings(1, false)
 
-    -- Get all the variable binding names and sort them.
-    local keys = {}
-    for k, _ in pairs(bindings) do
-        table.insert(keys, k)
-    end
-    table.sort(keys)
-
-    for _, k in ipairs(keys) do
-        local v = bindings[k]
-        -- Skip the debugger object itself, '(*internal)' values, and Lua 5.2's _ENV object.
+    -- Get all the variables. Skip the debugger object itself, '(*internal)' values, and _ENV object.
+    local vis = {}
+    for k, v in pairs(bindings) do
         if not rawequal(v, dbg) and k ~= '_ENV' and not k:match('%(.*%)') then
-            dbg_writeln('  '..k..' => '..pretty(v, 'locals', _pretty_depth))
+            vis[k] = v
         end
     end
 
+    dbg_writeln(pretty(vis, 'locals'), Color.TABLE)
+
     return false
 end
+
+-- -------------------------------------------------------------------------
+-- local function cmd_locals_XXX()
+--     local bindings = local_bindings(1, false)
+
+--     -- Get all the variable binding names and sort them.
+--     local keys = {}
+--     for k, _ in pairs(bindings) do
+--         table.insert(keys, k)
+--     end
+--     table.sort(keys)
+
+--     for _, k in ipairs(keys) do
+--         local v = bindings[k]
+--         -- Skip the debugger object itself, '(*internal)' values, and Lua 5.2's _ENV object.
+--         if not rawequal(v, dbg) and k ~= '_ENV' and not k:match('%(.*%)') then
+--             -- dbg_writeln(pretty(v, 'locals'))
+--             dbg_writeln('  '..k..' => '..pretty(v, 'locals'))
+--         end
+--     end
+
+--     return false
+-- end
 
 -------------------------------------------------------------------------
 local function cmd_continue()
@@ -580,8 +658,8 @@ end
 
 -------------------------------------------------------------------------
 -- The human interface repl function.
-repl = function(reason)
-    -- reason - What triggered this.
+repl = function(origin)
+    -- origin - What triggered this.
 
     local info
     -- Skip frames without source info.
@@ -599,7 +677,7 @@ repl = function(reason)
     -- reason = reason and (COLOR_YELLOW.."break via "..COLOR_RED..reason..GREEN_CARET) or ""
     -- dbg_writeln(reason..format_stack_frame_info(info))
 
-    dbg_writeln('====== break via '..reason)
+    dbg_writeln('Break via '..origin, Color.FOCUS)
 
     where(info)
 
@@ -607,7 +685,7 @@ repl = function(reason)
     repeat
         local success, done, hook = pcall(run_command, dbg_read('>>> '))
 
-        print('repl:', success, done, hook)
+        -- print('repl:', success, done, hook)
 
         if success then
             debug.sethook(hook and hook(0), 'crl')
@@ -628,15 +706,15 @@ end
 -- Make the debugger object callable like a function.
 -- dbg = setmetatable({}, {
 setmetatable(dbg, {
-    __call = function(_, top_offset, source)
+    __call = function(_, top_offset, origin)
 
-        dbg_writeln(string.format('__call top_offset:%d source:%s', top_offset or -1, source or 'nil'), Color.TRACE)
+        dbg_writeln(string.format('__call top_offset:%d origin:%s', top_offset or -1, origin or 'nil'), Color.TRACE)
 
         top_offset = (top_offset or 0)
         _stack_inspect_offset = top_offset
         _stack_top = top_offset
 
-        debug.sethook(hook_next(1, source or 'dbg()'), 'crl')
+        debug.sethook(hook_next(1, origin or 'dbg()'), 'crl')
         -- return
     end,
 })
@@ -649,13 +727,12 @@ dbg.pcall = function(func, ...)
     local ok, msg = xpcall(func,
         function(...)
             -- Start debugger.
-            dbg_writeln('dbg.pcall() AAA ', Color.TRACE)
-
-            -- dbg(1, "dbg.pcall()") TODOD or...
-            local top_offset = 1-- (top_offset or 0)
-            _stack_inspect_offset = top_offset
-            _stack_top = top_offset
-            debug.sethook(hook_next(1, 'dbg.pcall()'), 'crl')
+            dbg(1, "error()") -- TODOD disable s/n/c, allow stack nav and l/w/etc
+            -- TODOD or...
+            -- local top_offset = 1-- (top_offset or 0)
+            -- _stack_inspect_offset = top_offset
+            -- _stack_top = top_offset
+            -- debug.sethook(hook_next(1, 'error()'), 'crl')
 
             return ...
         end,
