@@ -4,6 +4,8 @@ A lot stolen from :
 https://github.com/slembcke/debugger.lua/blob/master/README.md
 https://www.slembcke.net/blog/DebuggerLua/
 
+Plain lua 5.2+ only.
+
 TODOD-orig Print short function arguments as part of stack location.
 TODOD-orig Properly handle being reentrant due to coroutines.
 TODOD You can't add breakpoints to a running program or remove them - must use dbg.run().
@@ -12,8 +14,8 @@ TODOD something like py tracer?
 
 ]]
 
-local ut = require('lbot_utils')
-local sx = require('stringex')
+-- local ut = require('lbot_utils')
+-- local sx = require('stringex')
 local tx = require("tableex")
 
 
@@ -78,7 +80,6 @@ setmetatable(Color, { __index = function(_, key) error('Invalid color: '..key) e
 -- TODOD need better config setting - args or public?
 local _pretty_depth = 1
 local _auto_where = 3 -- was false
-local _auto_eval = false -- ??
 local _use_ansi_color = true
 local _trace = true
 
@@ -87,7 +88,7 @@ local _trace = true
 -------------------------------------------------------------------------
 
 -------------------------------------------------------------------------
---- Format for humans. Returns the string.
+--- Format for humans. Returns the string. TODOD port dump_table()
 local function pretty(obj, name, depth)
     if type(obj) == 'string' then
         return string.format('%q', obj)
@@ -99,10 +100,7 @@ local function pretty(obj, name, depth)
 end
 
 
--- Handle lua version differences.
-local unpack = unpack or table.unpack
-
-local pack = function(...) return { n = select('#', ...), ... } end
+-- local pack = function(...) return { n = select('#', ...), ... } end
 
 
 -------------------------------------------------------------------------
@@ -186,9 +184,8 @@ local function hook_factory(repl_threshold)
             elseif event == 'return' and offset > repl_threshold then
                 offset = offset - 1
             elseif event == 'line' and offset <= repl_threshold then
-                -- step and next don't supply reason
-                -- dbg_writeln(tostring(line_num), Color.TRACE)
-                reason = reason or 'no-reason'
+                -- Step and next don't supply this.
+                reason = reason or ('line:'..line_num)
                 repl(reason)
             end
         end
@@ -239,9 +236,7 @@ local function local_bindings(offset, include_globals)
     if #varargs > 0 then bindings['...'] = varargs end
 
     if include_globals then
-        -- In Lua 5.2, you have to get the environment table from the function's locals.
-        local env = (_VERSION <= 'Lua 5.1' and getfenv(func) or bindings._ENV)
-        return setmetatable(bindings, {__index = env or _G})
+        return setmetatable(bindings, {__index = bindings._ENV or _G})
     else
         return bindings
     end
@@ -282,28 +277,24 @@ end
 -------------------------------------------------------------------------
 -- Compile an expression with the given variable bindings.
 local function compile_chunk(block, env)
-    local source = 'debugex.lua REPL'
-    local chunk = nil
 
-    if _VERSION <= 'Lua 5.1' then
-        chunk = loadstring(block, source)
-        if chunk then setfenv(chunk, env) end
-    else
-        -- The Lua 5.2 way is a bit cleaner
-        chunk = load(block, source, 't', env)
-    end
+    local source = 'debugex.lua REPL'
+    local chunk = load(block, source, 't', env)
 
     if not chunk then
         dbg_writeln('Could not compile block:', Color.ERROR)
         dbg_writeln(block)
     end
+
     return chunk
 end
 
 -------------------------------------------------------------------------
 -- Print info about the source.
 local function where(info, context_lines)
-    -- dbg_writeln('where()  '..tx.dump_table(info)..' '..context_lines, Color.TRACE)
+
+    context_lines = context_lines or _auto_where
+
     local source = _source_cache[info.source]
     if not source then
         source = {}
@@ -332,8 +323,6 @@ local function where(info, context_lines)
     else
         dbg_writeln('Source not available for '..info.short_src, Color.ERROR);
     end
-
-    return false
 end
 
 -------------------------------------------------------------------------
@@ -343,12 +332,14 @@ end
 -------------------------------------------------------------------------
 local function cmd_step() -- TODOD don't step into this file funcs.
     _stack_inspect_offset = _stack_top
+
     return true, hook_step
 end
 
 -------------------------------------------------------------------------
 local function cmd_next()
     _stack_inspect_offset = _stack_top
+
     return true, hook_next
 end
 
@@ -356,6 +347,7 @@ end
 local function cmd_finish()
     local offset = _stack_top - _stack_inspect_offset
     _stack_inspect_offset = _stack_top
+
     return true, offset < 0 and hook_factory(offset - 1) or hook_finish
 end
 
@@ -363,22 +355,22 @@ end
 local function cmd_print(expr)
     local env = local_bindings(1, true)
     local chunk = compile_chunk('return '..expr, env)
-    if chunk == nil then return false end
+    if chunk ~= nil then
+        -- Call the chunk and collect the results.
+        local results = table.pack(pcall(chunk, table.unpack(rawget(env, '...') or {})))
 
-    -- Call the chunk and collect the results.
-    local results = pack(pcall(chunk, unpack(rawget(env, '...') or {})))
+        -- The first result is the pcall error.
+        if not results[1] then
+            dbg_writeln(results[2], Color.ERROR)
+        else
+            local output = ''
+            for i = 2, results.n do
+                output = output..(i ~= 2 and ', ' or '')..pretty(results[i], 'res'..tostring(i -1), _pretty_depth)
+            end
 
-    -- The first result is the pcall error.
-    if not results[1] then
-        dbg_writeln(results[2], Color.ERROR)
-    else
-        local output = ''
-        for i = 2, results.n do
-            output = output..(i ~= 2 and ', ' or '')..pretty(results[i], 'res'..tostring(i -1), _pretty_depth)
+            if output == '' then output = 'no_result' end
+            dbg_writeln(expr..' => '..output)
         end
-
-        if output == '' then output = 'no_result' end
-        dbg_writeln(expr..' => '..output)
     end
 
     return false
@@ -393,12 +385,12 @@ local function cmd_eval(code)
     })
 
     local chunk = compile_chunk(code, mutable_env)
-    if chunk == nil then return false end
-
-    -- Call the chunk and collect the results.
-    local success, err = pcall(chunk, unpack(rawget(env, '...') or {}))
-    if not success then
-        dbg_writeln(tostring(err), Color.ERROR)
+    if chunk ~= nil then
+        -- Call the chunk and collect the results.
+        local success, err = pcall(chunk, table.unpack(rawget(env, '...') or {}))
+        if not success then
+            dbg_writeln(tostring(err), Color.ERROR)
+        end
     end
 
     return false
@@ -417,7 +409,7 @@ local function cmd_down()
     if info then
         _stack_inspect_offset = offset
         dbg_writeln('Inspecting frame: '..format_frame(info))
-        where(info, _auto_where)
+        where(info)
     else
         info = debug.getinfo(_stack_inspect_offset + CMD_STACK_LEVEL)
         dbg_writeln('Already at the bottom of the stack.')
@@ -440,7 +432,7 @@ local function cmd_up()
     if info then
         _stack_inspect_offset = offset
         dbg_writeln('Inspecting frame: '..format_frame(info))
-        where(info, _auto_where)
+        where(info)
     else
         info = debug.getinfo(_stack_inspect_offset + CMD_STACK_LEVEL)
         dbg_writeln('Already at the top of the stack.')
@@ -459,13 +451,16 @@ local function cmd_inspect(offset)
     else
         dbg_writeln('Invalid stack frame index', Color.ERROR)
     end
+
+    return false
 end
 
 -------------------------------------------------------------------------
 local function cmd_where(context_lines)
     local info = debug.getinfo(_stack_inspect_offset + CMD_STACK_LEVEL)
-    -- dbg_writeln('cmd_where()', tonumber(context_lines), _auto_where, Color.TRACE)
-    return (info and where(info, tonumber(context_lines) or _auto_where))
+    where(info, tonumber(context_lines))
+
+    return false
 end
 
 -------------------------------------------------------------------------
@@ -519,12 +514,12 @@ end
 -------------------------------------------------------------------------
 local function cmd_quit()
     os.exit(0)
-    return true
 end
 
 -------------------------------------------------------------------------
 local function cmd_help()
     for _, v in ipairs(_commands) do dbg_writeln('  '..v[3]) end
+
     return false
 end
 
@@ -554,30 +549,30 @@ _commands = {
 
 -------------------------------------------------------------------------
 -- Run a command input line. Returns true if the repl should exit, optional hook
-local function run_command(line)
-    if line == nil then
-        error('missing input line')
+local function run_command(scmd)
+    if scmd == nil then
+        error('missing input scmd')
     end
 
     -- Re-execute the last command if you press return.
-    if line == '' then line = _last_cmd or 'h' end
+    if scmd == '' then
+        scmd = _last_cmd or 'h'
+    end
 
     local cmd, arg
     for _, v in ipairs(_commands) do
-        if line:find(v[1]) then
+        if scmd:find(v[1]) then
             cmd = v[2]
-            arg = line:match(v[1])
+            arg = scmd:match(v[1])
         end
     end
 
     if cmd then
-        _last_cmd = line
-        -- unpack({...}) prevents tail call elimination so the stack frame indices are predictable.
-        return unpack({cmd(arg)})
-    elseif _auto_eval then
-        return unpack({cmd_eval(line)})
+        _last_cmd = scmd
+        -- table.unpack({...}) prevents tail call elimination so the stack frame indices are predictable.
+        return table.unpack({cmd(arg)})
     else
-        dbg_writeln('Invalid command '..line, Color.ERROR)
+        dbg_writeln('Invalid command', Color.ERROR)
         return false
     end
 end
@@ -585,28 +580,37 @@ end
 
 -------------------------------------------------------------------------
 -- The human interface repl function.
--- reason - What triggered this. Dubious usefulness, nil for some commands (s/n/?)
 repl = function(reason)
+    -- reason - What triggered this.
 
-    -- Skip frames without source info.
     local info
-    local done = false
-    while not done do
+    -- Skip frames without source info.
+    local skip = true
+    while skip do
         info = debug.getinfo(_stack_inspect_offset + CMD_STACK_LEVEL - 3)
         if frame_has_line(info) then
-            done = true
+            skip = false
         else
             _stack_inspect_offset = _stack_inspect_offset + 1
         end
     end
 
-    where(info, _auto_where)
+    -- local info = debug.getinfo(stack_inspect_offset + CMD_STACK_LEVEL - 3)
+    -- reason = reason and (COLOR_YELLOW.."break via "..COLOR_RED..reason..GREEN_CARET) or ""
+    -- dbg_writeln(reason..format_stack_frame_info(info))
+
+    dbg_writeln('====== break via '..reason)
+
+    where(info)
 
     -- Do the repl loop.
     repeat
-        local success, done, hook = pcall(run_command, dbg_read("> "))
+        local success, done, hook = pcall(run_command, dbg_read('>>> '))
+
+        print('repl:', success, done, hook)
+
         if success then
-            debug.sethook(hook and hook(0), "crl")
+            debug.sethook(hook and hook(0), 'crl')
         else
             local msg = 'Fatal internal lua error: '..done
             dbg_writeln(msg, Color.ERROR)
