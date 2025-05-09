@@ -1,8 +1,9 @@
 --[[
 
-A lot stolen from :
+A lot of this stolen from :
 https://github.com/slembcke/debugger.lua/blob/master/README.md
 https://www.slembcke.net/blog/DebuggerLua/
+
 
 Plain lua 5.2+ only.
 
@@ -11,17 +12,9 @@ TODOD-orig Properly handle being reentrant due to coroutines.
 TODOD You can't add breakpoints to a running program or remove them - must use dbg.run().
 TODOD something like py tracer?
 
-
 ]]
 
--------------------------------------------------------------------------
--- Expose the debugger's IO functions. Probably not necessary? Maybe useful for socket flavor?
--- dbg.read = dbg_read
--- dbg.write = dbg_write
--- dbg.exit = function(err) os.exit(err) end
--- dbg.pretty = pretty
--- dbg.writeln = dbg_writeln
-
+-- local socket = require("socket") or nil
 
 
 -- The module.
@@ -73,81 +66,33 @@ local Cat = {
 }
 setmetatable(Cat, { __index = function(_, key) error('Invalid color: '..key) end })
 
-
--- Default config settings.
-dbg.pretty_depth = 1
-dbg.auto_where = 3
-dbg.ansi_color = true
-dbg.trace = false
-
 -------------------------------------------------------------------------
------------------------------ Infrastructure ----------------------------
--------------------------------------------------------------------------
+-- Socket stuff
+local PORT = 59120
+local ADDR = '127.0.0.1' -- or '*'
+local inited = false
+local running = false
+local server = nil -- local
+local client = nil -- remote
 
--------------------------------------------------------------------------
---- Format for humans. Returns the string.
-local function pretty(obj, name, depth)
+local my_io
 
-    depth = depth or dbg.pretty_depth
-    local res = {}
-
-    local function table_count(tbl)
-        local num = 0
-        for _, _ in pairs(tbl) do num = num + 1 end
-        return num
-    end
-
-    -- Worker function. object
-    local function _worker(_obj, _name, _level)
-        local sindent = string.rep('    ', _level)
-
-        if type(_obj) == "table" then
-
-            if (getmetatable(_obj) and getmetatable(_obj).__tostring) then
-                -- tostring() can fail if there is an error in a __tostring metamethod.
-                local ok, val = pcall(function() return tostring(_obj) end)
-                if ok then
-                    table.insert(res, string.format('%s%s:%q', sindent, _name, val))
-                else
-                    error(_name..' __tostring metamethod failed')
-                end
-            else
-                table.insert(res, string.format('%s%s:', sindent, _name))
-                -- Do contents.
-                if table_count(_obj) == 0 then
-                    table.insert(res, sindent..'    '..'<empty>')
-                elseif _level >= depth then -- this stops recursion
-                    table.insert(res, sindent..'    '..'<more>')
-                else
-                    for k, v in pairs(_obj) do
-                        _worker(v, k, _level + 1) -- recursion!
-                    end
-                end
-            end
-
-        elseif type(_obj) == "string" then
-            -- Dump the string so that escape sequences are printed.
-            table.insert(res, string.format('%s%s:%q', sindent, _name, _obj))
-
-        elseif math.type(_obj) == "integer" then
-            table.insert(res, string.format('%s%s:%d', sindent, _name, _obj))
-
-        elseif type(_obj) == "number" then
-            table.insert(res, string.format('%s%s:%f', sindent, _name, _obj))
-
-        elseif type(_obj) == "function" then
-            table.insert(res, string.format('%s%s:<function>', sindent, _name))
-
-        elseif type(_obj) == "boolean" then
-            table.insert(res, string.format('%s%s:%q', sindent, _name, _obj))
-        end
-    end
-
-    -- Go.
-    _worker(obj, name, 0)
-    local s = table.concat(res, '\n')
-    return s
+local has_mod, mod = pcall(require, "socket")
+if has_mod then
+    my_io = mod
+    -- Init the local server. Connect comes later.
+    server = socket.bind(ADDR, PORT)
+    -- OK - find out which port the OS chose for us
+    local ip, port = server:getsockname()
+    print(ip, port)
+    server:settimeout(0.1)
+else
+    my_io = require('io')
 end
+
+-------------------------------------------------------------------------
+
+
 
 
 -------------------------------------------------------------------------
@@ -155,36 +100,104 @@ end
 -------------------------------------------------------------------------
 
 -------------------------------------------------------------------------
--- Default dbg.write function
-local function dbg_write(str, color)
+-- CL write function.
+local function client_write(str, color)
     if color == Cat.TRACE and not dbg.trace then return end
 
     if dbg.ansi_color then
         color = color or Cat.DEFAULT
-        io.write(ESC..'[38;5;'..color..'m'..str..ESC..'[0m')
-    else -- plain
-        io.write(str)
+        str = ESC..'[38;5;'..color..'m'..str..ESC..'[0m'..MDEL
+    end
+    local res, err_msg = my_io.write(str)
+end
+
+-- -------------------------------------------------------------------------
+-- -- Default dbg.writeln function
+-- local function client_writeln(str, color)
+--     client_write(str..MDEL, color)
+-- end
+
+-------------------------------------------------------------------------
+-- CL read function.
+local function client_read(prompt)
+    -- client_write(prompt)
+    local res, err_msg = my_io.write(prompt)
+    my_io.flush()
+    res, err_msg = my_io.read()
+end
+
+
+
+
+
+-- local server = assert(socket.bind("*", 0))
+-- local ip, port = server:getsockname()
+-- while 1 do
+--   local client = server:accept()
+--   client:settimeout(10) -- seconds
+--   local line, err = client:receive()
+--   if not err then client:send(line .. "\n") end
+--   client:close()
+-- end
+
+
+
+
+-------------------------------------------------------------------------
+-- Try to connect if not already so.
+local function socket2me_try_connect()
+    while not client do
+        local res, msg = server:accept()
+        if not res then
+            if msg == 'timeout' then
+                -- normal
+            else
+                do_error(msg)
+            end
+        else
+            client = res
+        end
     end
 end
 
--------------------------------------------------------------------------
--- Default dbg.writeln function
-local function dbg_writeln(str, color)
-    dbg_write(str..MDEL, color)
-end
+-- local client = server:accept()
+-- client:settimeout(10) -- seconds
 
 -------------------------------------------------------------------------
--- Default dbg.read function
-local function dbg_read(prompt)
-    dbg_write(prompt)
-    io.flush()
-    return io.read()
+-- Write whole line. This blocks until the client picks it up. TODOD retries?
+local function socket2me_write(str)
+
+    local done = false
+    while not done do
+
+        socket2me_try_connect()
+
+        if client then
+            local res, msg = client:send(str)
+
+            if not res then
+                if msg == 'timeout' then
+                    -- normal
+                elseif msg == 'closed' then
+                    -- normal
+                else
+                    do_error(msg)
+                end
+            else
+                done = true
+            end
+        end
+    end
+
+    return true
 end
 
+
 -------------------------------------------------------------------------
--- Convenience for host to inject into write stream.
-function dbg.print(str)
-    dbg_writeln(str, Cat.PRINT)
+-- Blocking read line. Or timeout or '' or ...
+local function socket2me_read()
+
+    return '???'
 end
 
 
@@ -207,7 +220,7 @@ end
 -- Return false for stack frames without source - C frames, Lua bytecode, and `loadstring` functions.
 local function frame_has_line(info)
     if not info then
-        dbg_writeln('frame_has_line() info is nil'..debug.traceback(), Cat.ERROR)
+        client_write('frame_has_line() info is nil'..debug.traceback(), Cat.ERROR)
     end
     return info.currentline >= 0
 end
@@ -301,7 +314,7 @@ local function mutate_bindings(_, name, value)
     do local i = 1; repeat
         local var = debug.getlocal(level, i)
         if name == var then
-            dbg_writeln('Set local variable '..name)
+            client_write('Set local variable '..name)
             return debug.setlocal(level, i, value)
         end
         i = i + 1
@@ -312,14 +325,14 @@ local function mutate_bindings(_, name, value)
     do local i = 1; repeat
         local var = debug.getupvalue(func, i)
         if name == var then
-            dbg_writeln('Set upvalue '..name)
+            client_write('Set upvalue '..name)
             return debug.setupvalue(func, i, value)
         end
         i = i + 1
     until var == nil end
 
     -- Set a global.
-    dbg_writeln('Set global variable '..name)
+    client_write('Set global variable '..name)
     _G[name] = value
 end
 
@@ -330,8 +343,8 @@ local function compile_chunk(block, env, origin)
     local chunk = load(block, origin, 't', env)
 
     if not chunk then
-        dbg_writeln('Could not compile block:', Cat.ERROR)
-        dbg_writeln(block)
+        client_write('Could not compile block:', Cat.ERROR)
+        client_write(block)
     end
 
     return chunk
@@ -354,22 +367,87 @@ local function where(info, context_lines)
         _source_cache[info.source] = source
     end
 
-    dbg_writeln('Frame: '..format_frame(info), Cat.FOCUS)
+    client_write('Frame: '..format_frame(info), Cat.FOCUS)
 
     if source and source[info.currentline] then
         for i = info.currentline - context_lines, info.currentline + context_lines do
             local line = source[i]
             if line then
                 if i == info.currentline then
-                    dbg_writeln(i..' => '..line, Cat.FOCUS)
+                    client_write(i..' => '..line, Cat.FOCUS)
                 else
-                    dbg_writeln(i..'    '..line, Cat.FAINT)
+                    client_write(i..'    '..line, Cat.FAINT)
                 end
             end
         end
     else
-        dbg_writeln('Source not available for '..info.short_src, Cat.ERROR);
+        client_write('Source not available for '..info.short_src, Cat.ERROR);
     end
+end
+
+-------------------------------------------------------------------------
+--- Format for humans. Returns the string.
+local function pretty(obj, name, depth)
+
+    depth = depth or dbg.pretty_depth
+    local res = {}
+
+    local function table_count(tbl)
+        local num = 0
+        for _, _ in pairs(tbl) do num = num + 1 end
+        return num
+    end
+
+    -- Worker function. object
+    local function _worker(_obj, _name, _level)
+        local sindent = string.rep('    ', _level)
+
+        if type(_obj) == "table" then
+
+            if (getmetatable(_obj) and getmetatable(_obj).__tostring) then
+                -- tostring() can fail if there is an error in a __tostring metamethod.
+                local res, val = pcall(function() return tostring(_obj) end)
+                if res then
+                    table.insert(res, string.format('%s%s:%q', sindent, _name, val))
+                else
+                    error(_name..' __tostring metamethod failed')
+                end
+            else
+                table.insert(res, string.format('%s%s:', sindent, _name))
+                -- Do contents.
+                if table_count(_obj) == 0 then
+                    table.insert(res, sindent..'    '..'<empty>')
+                elseif _level >= depth then -- this stops recursion
+                    table.insert(res, sindent..'    '..'<more>')
+                else
+                    for k, v in pairs(_obj) do
+                        _worker(v, k, _level + 1) -- recursion!
+                    end
+                end
+            end
+
+        elseif type(_obj) == "string" then
+            -- Dump the string so that escape sequences are printed.
+            table.insert(res, string.format('%s%s:%q', sindent, _name, _obj))
+
+        elseif math.type(_obj) == "integer" then
+            table.insert(res, string.format('%s%s:%d', sindent, _name, _obj))
+
+        elseif type(_obj) == "number" then
+            table.insert(res, string.format('%s%s:%f', sindent, _name, _obj))
+
+        elseif type(_obj) == "function" then
+            table.insert(res, string.format('%s%s:<function>', sindent, _name))
+
+        elseif type(_obj) == "boolean" then
+            table.insert(res, string.format('%s%s:%q', sindent, _name, _obj))
+        end
+    end
+
+    -- Go.
+    _worker(obj, name, 0)
+    local s = table.concat(res, '\n')
+    return s
 end
 
 
@@ -378,13 +456,13 @@ end
 -------------------------------------------------------------------------
 
 -------------------------------------------------------------------------
-local function cmd_step()
+local function cmd_step() -- TODOD don't step into this module.
     if not _in_error then
         _stack_inspect_offset = _stack_top
         return true, hook_step
     end
 
-    dbg_writeln('Can\'t execute in error condition', Cat.INFO);
+    client_write('Can\'t step: in error', Cat.INFO);
     return false
 end
 
@@ -395,7 +473,7 @@ local function cmd_next()
         return true, hook_next
     end
 
-    dbg_writeln('Can\'t execute in error condition', Cat.INFO);
+    client_write('Can\'t next: in error', Cat.INFO);
     return false
 end
 
@@ -405,7 +483,7 @@ local function cmd_continue()
         return true
     end
 
-    dbg_writeln('Can\'t execute in error condition', Cat.INFO);
+    client_write('Can\'t continue: in error', Cat.INFO);
     return false
 end
 
@@ -417,7 +495,7 @@ local function cmd_finish()
         return true, offset < 0 and hook_factory(offset - 1) or hook_finish
     end
 
-    dbg_writeln('Can\'t execute in error condition', Cat.INFO);
+    client_write('Can\'t finish: in error', Cat.INFO);
     return false
 
 end
@@ -432,7 +510,7 @@ local function cmd_print(expr)
 
         -- The first result is the pcall error.
         if not results[1] then
-            dbg_writeln(results[2], Cat.ERROR)
+            client_write(results[2], Cat.ERROR)
         else
             local output = ''
             for i = 2, results.n do
@@ -440,7 +518,7 @@ local function cmd_print(expr)
             end
 
             if output == '' then output = 'no_result' end
-            dbg_writeln(expr..' => '..output)
+            client_write(expr..' => '..output)
         end
     end
 
@@ -461,7 +539,7 @@ local function cmd_eval(code)
         -- Call the chunk and collect the results.
         local success, err = pcall(chunk, table.unpack(rawget(env, '...') or {}))
         if not success then
-            dbg_writeln(tostring(err), Cat.ERROR)
+            client_write(tostring(err), Cat.ERROR)
         end
     end
 
@@ -480,11 +558,11 @@ local function cmd_down()
 
     if info then
         _stack_inspect_offset = offset
-        dbg_writeln('Inspecting frame: '..format_frame(info))
+        client_write('Inspecting frame: '..format_frame(info))
         where(info)
     else
         info = debug.getinfo(_stack_inspect_offset + CMD_STACK_LEVEL)
-        dbg_writeln('Already at the bottom of the stack.')
+        client_write('Already at the bottom of the stack.')
     end
 
     return false
@@ -503,11 +581,11 @@ local function cmd_up()
 
     if info then
         _stack_inspect_offset = offset
-        dbg_writeln('Inspecting frame: '..format_frame(info))
+        client_write('Inspecting frame: '..format_frame(info))
         where(info)
     else
         info = debug.getinfo(_stack_inspect_offset + CMD_STACK_LEVEL)
-        dbg_writeln('Already at the top of the stack.')
+        client_write('Already at the top of the stack.')
     end
 
     return false
@@ -519,9 +597,9 @@ local function cmd_inspect(offset)
     local info = debug.getinfo(offset + CMD_STACK_LEVEL)
     if info then
         _stack_inspect_offset = offset
-        dbg_writeln('Inspecting frame: '..format_frame(info))
+        client_write('Inspecting frame: '..format_frame(info))
     else
-        dbg_writeln('Invalid stack frame index', Cat.ERROR)
+        client_write('Invalid stack frame index', Cat.ERROR)
     end
 
     return false
@@ -537,7 +615,7 @@ end
 
 -------------------------------------------------------------------------
 local function cmd_stack()
-    dbg_writeln('Inspecting frame '..(_stack_inspect_offset - _stack_top))
+    client_write('Inspecting frame '..(_stack_inspect_offset - _stack_top))
     local i = 0; while true do
         local info = debug.getinfo(_stack_top + CMD_STACK_LEVEL + i)
         if not info then break end
@@ -545,9 +623,9 @@ local function cmd_stack()
         local is_current_frame = (i + _stack_top == _stack_inspect_offset)
 
         if is_current_frame then
-            dbg_writeln(i..' => '..format_frame(info), Cat.FOCUS)
+            client_write(i..' => '..format_frame(info), Cat.FOCUS)
         else
-            dbg_writeln(i..'    '..format_frame(info), Cat.FAINT)
+            client_write(i..'    '..format_frame(info), Cat.FAINT)
         end
 
         i = i + 1
@@ -568,7 +646,7 @@ local function cmd_locals()
         end
     end
 
-    dbg_writeln(pretty(vis, 'locals'), Cat.INFO)
+    client_write(pretty(vis, 'locals'), Cat.INFO)
 
     return false
 end
@@ -580,7 +658,7 @@ end
 
 -------------------------------------------------------------------------
 local function cmd_help()
-    for _, v in ipairs(_commands) do dbg_writeln('  '..v[3]) end
+    for _, v in ipairs(_commands) do client_write('  '..v[3]) end
 
     return false
 end
@@ -611,14 +689,10 @@ _commands = {
 -------------------------------------------------------------------------
 -- Run a command input line. Returns true if the repl should exit, optional hook
 local function run_command(scmd)
-    if scmd == nil then
-        error('missing input scmd')
-    end
+    -- if scmd == nil then error('missing input scmd') end
 
-    -- Re-execute the last command if you press return.
-    if scmd == '' then
-        scmd = _last_cmd or 'h'
-    end
+    -- Re-execute the last command if you <cr>.
+    if scmd == '' then scmd = _last_cmd or 'h' end
 
     local cmd, arg
     for _, v in ipairs(_commands) do
@@ -630,10 +704,10 @@ local function run_command(scmd)
 
     if cmd then
         _last_cmd = scmd
-        -- table.unpack({...}) prevents tail call elimination so the stack frame indices are predictable.
+        -- orig: table.unpack({...}) prevents tail call elimination so the stack frame indices are predictable.
         return table.unpack({cmd(arg)})
     else
-        dbg_writeln('Invalid command', Cat.ERROR)
+        client_write('Invalid command', Cat.ERROR)
         return false
     end
 end
@@ -654,17 +728,17 @@ repl = function(origin)
         end
     end
 
-    dbg_writeln('Break via '..origin, Cat.FOCUS)
+    client_write('Break via '..origin, Cat.FOCUS)
     where(info)
 
     -- Do the repl loop.
     repeat
-        local success, done, hook = pcall(run_command, dbg_read('>>> '))
+        local success, done, hook = pcall(run_command, client_read('>>> '))
         if success then
             debug.sethook(hook and hook(0), 'crl')
         else
             local msg = 'Fatal internal lua error: '..done
-            dbg_writeln(msg, Cat.ERROR)
+            client_write(msg, Cat.ERROR)
             error(msg)
         end
     until done
@@ -673,6 +747,15 @@ end
 -------------------------------------------------------------------------
 ----------------------------- api ---------------------------------------
 -------------------------------------------------------------------------
+
+
+-- Default config settings.
+dbg.pretty_depth = 1
+dbg.auto_where = 3
+dbg.ansi_color = true
+dbg.trace = false
+dbg.use_socket = false
+
 
 -------------------------------------------------------------------------
 -- Make the debugger object callable like a function.
@@ -693,7 +776,7 @@ setmetatable(dbg,
 -- Works like plain pcall() but invokes the debugger on error().
 dbg.pcall = function(func, ...)
 
-    local ok, msg = xpcall(func,
+    local res, msg = xpcall(func,
         function(...)
             -- From error() - start debugger.
             _in_error = true
@@ -702,7 +785,13 @@ dbg.pcall = function(func, ...)
         end,
         ...)
 
-    return ok, msg
+    return res, msg
+end
+
+-------------------------------------------------------------------------
+-- Convenience for host/applicationn to add to write stream.
+function dbg.print(str)
+    client_write(str, Cat.PRINT)
 end
 
 
