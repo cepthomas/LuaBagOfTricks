@@ -1,21 +1,20 @@
 --[[
 
+Put in doc:
 A lot of this stolen from :
-https://github.com/slembcke/debugger.lua/blob/master/README.md
-https://www.slembcke.net/blog/DebuggerLua/
-
+https://github.com/slembcke/debugger.lua
+https://www.slembcke.net/blog/DebuggerLua
 
 Plain lua 5.2+ only.
 
-TODOD-orig Print short function arguments as part of stack location.
-TODOD-orig Properly handle being reentrant due to coroutines.
-TODOD You can't add breakpoints to a running program or remove them - must use dbg.run().
-TODOD something like py tracer?
+You can't add breakpoints to a running program or remove them - must use dbg.run().
+
+orig Properly handle being reentrant due to coroutines.
+
 
 ]]
 
--- local socket = require("socket") or nil
-
+-- TODOD something like py tracer?
 
 -- The module.
 local dbg = {}
@@ -27,6 +26,8 @@ local dbg = {}
 
 -- Forward refs.
 local repl
+local my_io
+local socket_io
 local _commands
 
 -- Cache.
@@ -66,41 +67,13 @@ local Cat = {
 }
 setmetatable(Cat, { __index = function(_, key) error('Invalid color: '..key) end })
 
--------------------------------------------------------------------------
--- Socket stuff
-local PORT = 59120
-local ADDR = '127.0.0.1' -- or '*'
-local inited = false
-local running = false
-local server = nil -- local
-local client = nil -- remote
-
-local my_io
-
-local has_mod, mod = pcall(require, "socket")
-if has_mod then
-    my_io = mod
-    -- Init the local server. Connect comes later.
-    server = socket.bind(ADDR, PORT)
-    -- OK - find out which port the OS chose for us
-    local ip, port = server:getsockname()
-    print(ip, port)
-    server:settimeout(0.1)
-else
-    my_io = require('io')
-end
-
--------------------------------------------------------------------------
-
-
-
 
 -------------------------------------------------------------------------
 ----------------------------- IO ----------------------------------------
 -------------------------------------------------------------------------
 
 -------------------------------------------------------------------------
--- CL write function.
+-- Common client write function.
 local function client_write(str, color)
     if color == Cat.TRACE and not dbg.trace then return end
 
@@ -108,84 +81,50 @@ local function client_write(str, color)
         color = color or Cat.DEFAULT
         str = ESC..'[38;5;'..color..'m'..str..ESC..'[0m'..MDEL
     end
-    local res, err_msg = my_io.write(str)
+    local res, msg = my_io.write(str)
+    return res, msg
 end
 
--- -------------------------------------------------------------------------
--- -- Default dbg.writeln function
--- local function client_writeln(str, color)
---     client_write(str..MDEL, color)
--- end
-
 -------------------------------------------------------------------------
--- CL read function.
+-- Common client read function.
 local function client_read(prompt)
     -- client_write(prompt)
-    local res, err_msg = my_io.write(prompt)
+    local res, msg = my_io.write(prompt)
     my_io.flush()
-    res, err_msg = my_io.read()
+    res, msg = my_io.read()
+    if not res then client_write('Read error: '..msg, Cat.ERROR) end
+    return res, msg
 end
 
-
-
-
-
--- local server = assert(socket.bind("*", 0))
--- local ip, port = server:getsockname()
--- while 1 do
---   local client = server:accept()
---   client:settimeout(10) -- seconds
---   local line, err = client:receive()
---   if not err then client:send(line .. "\n") end
---   client:close()
--- end
-
-
-
+-------------------------------------------------------------------------
+-- Socket IO. https://lunarmodules.github.io/luasocket/reference.html
+socket_io = {
+    server = nil, -- local
+    client = nil, -- remote
+    flush = function() end, -- Noop.
+}
 
 -------------------------------------------------------------------------
--- Try to connect if not already so.
-local function socket2me_try_connect()
-    while not client do
-        local res, msg = server:accept()
-        if not res then
-            if msg == 'timeout' then
-                -- normal
-            else
-                do_error(msg)
-            end
-        else
-            client = res
-        end
-    end
-end
-
--- local client = server:accept()
--- client:settimeout(10) -- seconds
-
--------------------------------------------------------------------------
--- Write whole line. This blocks until the client picks it up. TODOD retries?
-local function socket2me_write(str)
-
+-- Write whole line. This blocks until the client picks it up.
+function socket_io.write(str)
     local done = false
     while not done do
+        if socket_io.client == nil then
+            socket_io.client = socket_io.server:accept()
+        end
 
-        socket2me_try_connect()
+        local res, msg = socket_io.client:send(str..'\n')
 
-        if client then
-            local res, msg = client:send(str)
-
-            if not res then
-                if msg == 'timeout' then
-                    -- normal
-                elseif msg == 'closed' then
-                    -- normal
-                else
-                    do_error(msg)
-                end
+        if not res then
+            if msg == 'closed' or msg == 'timeout' then
+                -- can happen, try open next time.
+                socket_io.client:close()
+                socket_io.client = nil
             else
-                done = true
+                error('Fatal send error but no ui to show it: '..msg)
             end
+        else
+            done = true
         end
     end
 
@@ -194,11 +133,35 @@ end
 
 
 -------------------------------------------------------------------------
--- Blocking read line. Or timeout or '' or ...
-local function socket2me_read()
+-- Blocking read line. This blocks until the client sends something.
+function socket_io.read()
+    local done = false
+    local line
+    while not done do
+        if socket_io.client == nil then
+            socket_io.client = socket_io.server:accept()
+        end
 
-    return '???'
+        local res, msg = socket_io.client:receive()
+
+        if not res then
+            if msg == 'closed' or msg == 'timeout' then
+                -- can happen, try open next time.
+                socket_io.client:close()
+                socket_io.client = nil
+            else
+                error('Fatal receive error but no ui to show it: '..msg)
+            end
+        else
+            done = true
+            line = res
+        end
+    end
+
+    return line
 end
+
+-------------------------------------------------------------------------
 
 
 -------------------------------------------------------------------------
@@ -286,7 +249,7 @@ local function local_bindings(offset, include_globals)
         bindings[name] = value
         i = i + 1
     end end
-  
+
     -- Retrieve the varargs (works in Lua 5.2 and LuaJIT)
     local varargs = {}
     do local i = 1; while true do
@@ -390,7 +353,7 @@ end
 local function pretty(obj, name, depth)
 
     depth = depth or dbg.pretty_depth
-    local res = {}
+    local spretty = {}
 
     local function table_count(tbl)
         local num = 0
@@ -398,7 +361,7 @@ local function pretty(obj, name, depth)
         return num
     end
 
-    -- Worker function. object
+    -- Worker function.
     local function _worker(_obj, _name, _level)
         local sindent = string.rep('    ', _level)
 
@@ -408,17 +371,17 @@ local function pretty(obj, name, depth)
                 -- tostring() can fail if there is an error in a __tostring metamethod.
                 local res, val = pcall(function() return tostring(_obj) end)
                 if res then
-                    table.insert(res, string.format('%s%s:%q', sindent, _name, val))
+                    table.insert(spretty, string.format('%s%s:%q', sindent, _name, val))
                 else
                     error(_name..' __tostring metamethod failed')
                 end
             else
-                table.insert(res, string.format('%s%s:', sindent, _name))
+                table.insert(spretty, string.format('%s%s:', sindent, _name))
                 -- Do contents.
                 if table_count(_obj) == 0 then
-                    table.insert(res, sindent..'    '..'<empty>')
+                    table.insert(spretty, sindent..'    '..'<empty>')
                 elseif _level >= depth then -- this stops recursion
-                    table.insert(res, sindent..'    '..'<more>')
+                    table.insert(spretty, sindent..'    '..'<more>')
                 else
                     for k, v in pairs(_obj) do
                         _worker(v, k, _level + 1) -- recursion!
@@ -428,35 +391,35 @@ local function pretty(obj, name, depth)
 
         elseif type(_obj) == "string" then
             -- Dump the string so that escape sequences are printed.
-            table.insert(res, string.format('%s%s:%q', sindent, _name, _obj))
+            table.insert(spretty, string.format('%s%s:%q', sindent, _name, _obj))
 
         elseif math.type(_obj) == "integer" then
-            table.insert(res, string.format('%s%s:%d', sindent, _name, _obj))
+            table.insert(spretty, string.format('%s%s:%d', sindent, _name, _obj))
 
         elseif type(_obj) == "number" then
-            table.insert(res, string.format('%s%s:%f', sindent, _name, _obj))
+            table.insert(spretty, string.format('%s%s:%f', sindent, _name, _obj))
 
         elseif type(_obj) == "function" then
-            table.insert(res, string.format('%s%s:<function>', sindent, _name))
+            table.insert(spretty, string.format('%s%s:<function>', sindent, _name))
 
         elseif type(_obj) == "boolean" then
-            table.insert(res, string.format('%s%s:%q', sindent, _name, _obj))
+            table.insert(spretty, string.format('%s%s:%q', sindent, _name, _obj))
         end
     end
 
     -- Go.
     _worker(obj, name, 0)
-    local s = table.concat(res, '\n')
+    local s = table.concat(spretty, '\n')
     return s
 end
 
 
 -------------------------------------------------------------------------
------------------------------ all the cmd_* -----------------------------
+----------------------------- all the cmd_s -----------------------------
 -------------------------------------------------------------------------
 
 -------------------------------------------------------------------------
-local function cmd_step() -- TODOD don't step into this module.
+local function cmd_step() -- TODOD don't step into this module. Or builtin, required, ???
     if not _in_error then
         _stack_inspect_offset = _stack_top
         return true, hook_step
@@ -680,7 +643,7 @@ _commands = {
     { "^d$",         cmd_down,      'd move down the stack by one frame' },
     { "i%s*(%d+)",   cmd_inspect,   'i [index] move to and inspect a specific stack frame' },
     { "^w%s*(%d*)$", cmd_where,     'w (count) print source code around the current line' },
-    { "^k$",         cmd_stack,     'k print the stack' },
+    { "^t$",         cmd_stack,     't print the stack' },
     { "^l$",         cmd_locals,    'l print the function arguments, locals and upvalues.' },
     { "^h$",         cmd_help,      'h print help' },
     { "^q$",         cmd_quit,      'q halt execution' }
@@ -689,9 +652,9 @@ _commands = {
 -------------------------------------------------------------------------
 -- Run a command input line. Returns true if the repl should exit, optional hook
 local function run_command(scmd)
-    -- if scmd == nil then error('missing input scmd') end
+    if scmd == nil then error('missing input scmd') end
 
-    -- Re-execute the last command if you <cr>.
+    -- Re-execute the last command if return.
     if scmd == '' then scmd = _last_cmd or 'h' end
 
     local cmd, arg
@@ -745,16 +708,16 @@ repl = function(origin)
 end
 
 -------------------------------------------------------------------------
------------------------------ api ---------------------------------------
+----------------------------- API ---------------------------------------
 -------------------------------------------------------------------------
 
 
--- Default config settings.
+-- Default config settings. Host can override.
 dbg.pretty_depth = 1
 dbg.auto_where = 3
 dbg.ansi_color = true
 dbg.trace = false
-dbg.use_socket = false
+dbg.port = nil
 
 
 -------------------------------------------------------------------------
@@ -794,6 +757,29 @@ function dbg.print(str)
     client_write(str, Cat.PRINT)
 end
 
+
+-------------------------------------------------------------------------
+----------------------------- Finish init  ------------------------------
+-------------------------------------------------------------------------
+
+-- Init the user IO.
+my_io = nil
+-- Maybe use socket.
+if dbg.port ~= nil then
+    local has_mod, mod = pcall(require, "socket")
+    if has_mod then
+        my_io = socket_io
+        -- Init the local _server. Connect comes later.
+        socket_io.server = mod.bind('*', dbg.port) -- '127.0.0.1'
+        -- local ip, port = _server:getsockname()
+        socket_io.server:settimeout(nil) -- block forever
+    end
+end
+
+-- Otherwise use local/stdio.
+if my_io == nil then
+    my_io = require('io')
+end
 
 -------------------------------------------------------------------------
 return dbg
