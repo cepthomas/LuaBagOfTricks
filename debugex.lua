@@ -11,7 +11,6 @@ You can't add breakpoints to a running program or remove them - must use dbg.run
 
 orig Properly handle being reentrant due to coroutines.
 
-
 ]]
 
 -- TODOD something like py tracer?
@@ -29,6 +28,9 @@ local repl
 local my_io
 local socket_io
 local _commands
+
+-- Port number if using sockets else local cli.
+local _port = nil
 
 -- Cache.
 local _last_cmd = false
@@ -712,12 +714,11 @@ end
 -------------------------------------------------------------------------
 
 
--- Default config settings. Host can override.
+-- Default config settings. Host can override or change at runtime.
 dbg.pretty_depth = 1
 dbg.auto_where = 3
 dbg.ansi_color = true
 dbg.trace = false
-dbg.port = nil
 
 
 -------------------------------------------------------------------------
@@ -725,6 +726,8 @@ dbg.port = nil
 setmetatable(dbg,
 {
     __call = function(_, top_offset, origin)
+        if my_io == nil then error('ERROR: debugex.init() has not been called') end
+
         top_offset = top_offset or 0
         _stack_inspect_offset = top_offset
         _stack_top = top_offset
@@ -736,8 +739,35 @@ setmetatable(dbg,
 })
 
 -------------------------------------------------------------------------
+-- Init the user IO.
+dbg.init = function(port)
+    _port = port
+    my_io = nil
+    -- Maybe use socket.
+    if _port ~= nil then
+        local has_mod, mod = pcall(require, "socket")
+print(port, has_mod, mod)
+        if has_mod then
+            client_write('Using socket')
+            my_io = socket_io
+            -- Init the local _server. Connect comes later.
+            socket_io.server = mod.bind('*', _port) -- '127.0.0.1'
+            -- local ip, port = _server:getsockname()
+            socket_io.server:settimeout(nil) -- block forever
+        end
+    end
+
+    -- Otherwise use local/stdio.
+    if my_io == nil then
+        my_io = require('io')
+        client_write('Using stdio')
+    end
+end
+
+-------------------------------------------------------------------------
 -- Works like plain pcall() but invokes the debugger on error().
 dbg.pcall = function(func, ...)
+    if my_io == nil then error('ERROR: debugex.init() has not been called') end
 
     local res, msg = xpcall(func,
         function(...)
@@ -754,31 +784,8 @@ end
 -------------------------------------------------------------------------
 -- Convenience for host/applicationn to add to write stream.
 function dbg.print(str)
+    if my_io == nil then error('ERROR: debugex.init() has not been called') end
     client_write(str, Cat.PRINT)
-end
-
-
--------------------------------------------------------------------------
------------------------------ Finish init  ------------------------------
--------------------------------------------------------------------------
-
--- Init the user IO.
-my_io = nil
--- Maybe use socket.
-if dbg.port ~= nil then
-    local has_mod, mod = pcall(require, "socket")
-    if has_mod then
-        my_io = socket_io
-        -- Init the local _server. Connect comes later.
-        socket_io.server = mod.bind('*', dbg.port) -- '127.0.0.1'
-        -- local ip, port = _server:getsockname()
-        socket_io.server:settimeout(nil) -- block forever
-    end
-end
-
--- Otherwise use local/stdio.
-if my_io == nil then
-    my_io = require('io')
 end
 
 -------------------------------------------------------------------------
