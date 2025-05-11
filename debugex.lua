@@ -26,7 +26,7 @@ local dbg = {}
 -- Forward refs.
 local repl
 local my_io
-local socket_io
+-- local socket_io
 local _commands
 
 -- Port number if using sockets else local cli.
@@ -49,9 +49,6 @@ local _in_error = false
 
 -- ANSI formatting.
 local ESC = string.char(27)
-
--- Delimiter for message lines.
-local MDEL = '\n'
 
 -- The stack level that cmd_* functions use to access locals or info. The structure of the code very carefully ensures this.
 local CMD_STACK_LEVEL = 6
@@ -81,17 +78,16 @@ local function client_write(str, color)
 
     if dbg.ansi_color then
         color = color or Cat.DEFAULT
-        str = ESC..'[38;5;'..color..'m'..str..ESC..'[0m' --..MDEL
+        str = ESC..'[38;5;'..color..'m'..str..ESC..'[0m'
     end
-    local res, msg = my_io.write(str)
+    local res, msg = my_io.write(str, true)
     return res, msg
 end
 
 -------------------------------------------------------------------------
 -- Common client read function.
 local function client_read(prompt)
-    -- client_write(prompt)
-    local res, msg = my_io.write(prompt)
+    local res, msg = my_io.write(prompt, false)
     my_io.flush()
     res, msg = my_io.read()
     if not res then client_write('Read error: '..msg, Cat.ERROR) end
@@ -99,111 +95,166 @@ local function client_read(prompt)
 end
 
 -------------------------------------------------------------------------
--- Socket IO. https://lunarmodules.github.io/luasocket/reference.html
-socket_io = {
-    server = nil, -- local
-    client = nil, -- remote
-    flush = function() end, -- Noop.
+-- Local IO.
+local local_io = {
+    flush = function() io.flush() end,
+    write = function(str, term) io.write(str) if term then io.write('\n') end end,
+    read = function() return io.read() end,
 }
 
+
+
+
+
 -------------------------------------------------------------------------
--- (re)connect?
-function socket_io.ensure_connect()
-    if not socket_io.client then
-        res, msg = socket_io.server:accept()
+-- Socket IO. https://lunarmodules.github.io/luasocket/reference.html
+local server = nil -- local
+local client = nil -- remote
+local function ensure_connect()
+    -- (re)connect?
+    if not client then
+        local res = server:accept()
         if res then
-            socket_io.client = res
+            client = res
         end
     end
 end
-
-
-        if socket_io.client then
-            res, msg = socket_io.client:receive()
-
-            if not res then
-                if msg == 'timeout' then
-                    -- can happen, try again.
-                elseif msg == 'closed' then
-                    -- can happen, try reconnect.
-                    socket_io.client:close()
-                    socket_io.client = nil
-                else
-                    error('Fatal receive error but no ui to show it: '..msg)
-                end
-            else
-                done = true
-                line = res
-            end
-        end
 
 -------------------------------------------------------------------------
--- Write whole line. Blocks until the client receives it.
-function socket_io.write(str)
-    local done = false
-
-    while not done do
-        local res, msg
-
-        socket_io.ensure_connect()
-
-        -- Send payload.
-        if socket_io.client then
-            res, msg = socket_io.client:send(str..'\n')
-            -- How did we do.
-            if not res then
-                if msg == 'timeout' then
-                    -- can happen, try again.
-                elseif msg == 'closed' then
-                    -- can happen, try reconnect.
-                    socket_io.client:close()
-                    socket_io.client = nil
+local socket_io = {
+    flush = function() end, -- Noop.
+    write = function(str, term)
+        local done, res, msg
+        while not done do
+            ensure_connect()
+            -- Send payload.
+            if client then
+                res, msg = client:send(str)
+                -- How did we do.
+                if not res then
+                    if msg == 'timeout' then
+                        -- can happen, try again.
+                    elseif msg == 'closed' then
+                        -- can happen, try reconnect.
+                        client:close()
+                        client = nil
+                    else
+                        error('Fatal send error but no ui to show it: '..msg)
+                    end
                 else
-                    error('Fatal send error but no ui to show it: '..msg)
+                    done = true
                 end
-            else
-                done = true
             end
         end
-    end
 
-    return true
-end
+        return true
+    end,
+    read = function()
+        local done, res, msg, line
+        while not done do
+            ensure_connect()
+            if client then
+                res, msg = client:receive()
 
-
--------------------------------------------------------------------------
--- Read line. Blocks until the client sends something.
-function socket_io.read()
-    local done = false
-    local line
-
-    while not done do
-        local res, msg
-
-        socket_io.ensure_connect()
-
-        if socket_io.client then
-            res, msg = socket_io.client:receive()
-
-            if not res then
-                if msg == 'timeout' then
-                    -- can happen, try again.
-                elseif msg == 'closed' then
-                    -- can happen, try reconnect.
-                    socket_io.client:close()
-                    socket_io.client = nil
+                if not res then
+                    if msg == 'timeout' then
+                        -- can happen, try again.
+                    elseif msg == 'closed' then
+                        -- can happen, try reconnect.
+                        client:close()
+                        client = nil
+                    else
+                        error('Fatal receive error but no ui to show it: '..msg)
+                    end
                 else
-                    error('Fatal receive error but no ui to show it: '..msg)
+                    done = true
+                    line = res
                 end
-            else
-                done = true
-                line = res
             end
         end
-    end
 
-    return line
-end
+        return line
+    end
+}
+
+-- -------------------------------------------------------------------------
+-- -- Write whole line. Blocks until the client receives it.
+-- function socket_io.write(str)
+--     local done = false
+
+--     while not done do
+--         local res, msg
+
+--         -- (re)connect?
+--         if not socket_io.client then
+--             res, msg = socket_io.server:accept()
+--             if res then
+--                 socket_io.client = res
+--             end
+--         end
+
+--         -- Send payload.
+--         if socket_io.client then
+--             res, msg = socket_io.client:send(str)
+--             -- How did we do.
+--             if not res then
+--                 if msg == 'timeout' then
+--                     -- can happen, try again.
+--                 elseif msg == 'closed' then
+--                     -- can happen, try reconnect.
+--                     socket_io.client:close()
+--                     socket_io.client = nil
+--                 else
+--                     error('Fatal send error but no ui to show it: '..msg)
+--                 end
+--             else
+--                 done = true
+--             end
+--         end
+--     end
+
+--     return true
+-- end
+
+-- -------------------------------------------------------------------------
+-- -- Read line. Blocks until the client sends something.
+-- function socket_io.read()
+--     local done = false
+--     local line
+
+--     while not done do
+--         local res, msg
+
+--         -- (re)connect?
+--         if not socket_io.client then
+--             res, msg = socket_io.server:accept()
+--             if res then
+--                 socket_io.client = res
+--             end
+--         end
+
+--         if socket_io.client then
+--             res, msg = socket_io.client:receive()
+
+--             if not res then
+--                 if msg == 'timeout' then
+--                     -- can happen, try again.
+--                 elseif msg == 'closed' then
+--                     -- can happen, try reconnect.
+--                     socket_io.client:close()
+--                     socket_io.client = nil
+--                 else
+--                     error('Fatal receive error but no ui to show it: '..msg)
+--                 end
+--             else
+--                 done = true
+--                 line = res
+--             end
+--         end
+--     end
+
+--     return line
+-- end
 
 
 -------------------------------------------------------------------------
@@ -231,7 +282,7 @@ local function frame_has_line(info)
 end
 
 -------------------------------------------------------------------------
--- Hook function factory. TODOD Not sure what 'repl_threshold' means.
+-- Hook function factory.
 local function hook_factory(repl_threshold)
 
     -- The hook. Step/next don't supply origin.
@@ -461,7 +512,10 @@ end
 -------------------------------------------------------------------------
 
 -------------------------------------------------------------------------
-local function cmd_step() -- TODOD don't step into this module. Or builtin, required, ???
+local function cmd_step()
+-- TODOD don't step into this module. Or builtin, required, ???
+-- local info = debug.getinfo(offset + CMD_STACK_LEVEL)
+-- client_write('Frame: '..format_frame(info), Cat.FOCUS)
     if not _in_error then
         _stack_inspect_offset = _stack_top
         return true, hook_step
@@ -798,8 +852,8 @@ dbg.init = function(port)
 
     -- Otherwise use local/stdio.
     if my_io == nil then
-        my_io = require('io')
-        client_write('Using stdio')
+        my_io = local_io
+        client_write('Using local')
     end
 end
 
