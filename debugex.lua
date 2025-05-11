@@ -81,7 +81,7 @@ local function client_write(str, color)
 
     if dbg.ansi_color then
         color = color or Cat.DEFAULT
-        str = ESC..'[38;5;'..color..'m'..str..ESC..'[0m'..MDEL
+        str = ESC..'[38;5;'..color..'m'..str..ESC..'[0m' --..MDEL
     end
     local res, msg = my_io.write(str)
     return res, msg
@@ -107,26 +107,63 @@ socket_io = {
 }
 
 -------------------------------------------------------------------------
--- Write whole line. This blocks until the client picks it up.
-function socket_io.write(str)
-    local done = false
-    while not done do
-        if socket_io.client == nil then
-            socket_io.client = socket_io.server:accept()
+-- (re)connect?
+function socket_io.ensure_connect()
+    if not socket_io.client then
+        res, msg = socket_io.server:accept()
+        if res then
+            socket_io.client = res
+        end
+    end
+end
+
+
+        if socket_io.client then
+            res, msg = socket_io.client:receive()
+
+            if not res then
+                if msg == 'timeout' then
+                    -- can happen, try again.
+                elseif msg == 'closed' then
+                    -- can happen, try reconnect.
+                    socket_io.client:close()
+                    socket_io.client = nil
+                else
+                    error('Fatal receive error but no ui to show it: '..msg)
+                end
+            else
+                done = true
+                line = res
+            end
         end
 
-        local res, msg = socket_io.client:send(str..'\n')
+-------------------------------------------------------------------------
+-- Write whole line. Blocks until the client receives it.
+function socket_io.write(str)
+    local done = false
 
-        if not res then
-            if msg == 'closed' or msg == 'timeout' then
-                -- can happen, try open next time.
-                socket_io.client:close()
-                socket_io.client = nil
+    while not done do
+        local res, msg
+
+        socket_io.ensure_connect()
+
+        -- Send payload.
+        if socket_io.client then
+            res, msg = socket_io.client:send(str..'\n')
+            -- How did we do.
+            if not res then
+                if msg == 'timeout' then
+                    -- can happen, try again.
+                elseif msg == 'closed' then
+                    -- can happen, try reconnect.
+                    socket_io.client:close()
+                    socket_io.client = nil
+                else
+                    error('Fatal send error but no ui to show it: '..msg)
+                end
             else
-                error('Fatal send error but no ui to show it: '..msg)
+                done = true
             end
-        else
-            done = true
         end
     end
 
@@ -135,35 +172,38 @@ end
 
 
 -------------------------------------------------------------------------
--- Blocking read line. This blocks until the client sends something.
+-- Read line. Blocks until the client sends something.
 function socket_io.read()
     local done = false
     local line
+
     while not done do
-        if socket_io.client == nil then
-            socket_io.client = socket_io.server:accept()
-        end
+        local res, msg
 
-        local res, msg = socket_io.client:receive()
+        socket_io.ensure_connect()
 
-        if not res then
-            if msg == 'closed' or msg == 'timeout' then
-                -- can happen, try open next time.
-                socket_io.client:close()
-                socket_io.client = nil
+        if socket_io.client then
+            res, msg = socket_io.client:receive()
+
+            if not res then
+                if msg == 'timeout' then
+                    -- can happen, try again.
+                elseif msg == 'closed' then
+                    -- can happen, try reconnect.
+                    socket_io.client:close()
+                    socket_io.client = nil
+                else
+                    error('Fatal receive error but no ui to show it: '..msg)
+                end
             else
-                error('Fatal receive error but no ui to show it: '..msg)
+                done = true
+                line = res
             end
-        else
-            done = true
-            line = res
         end
     end
 
     return line
 end
-
--------------------------------------------------------------------------
 
 
 -------------------------------------------------------------------------
@@ -191,7 +231,7 @@ local function frame_has_line(info)
 end
 
 -------------------------------------------------------------------------
--- Hook function factory. Not sure what 'repl_threshold' means.
+-- Hook function factory. TODOD Not sure what 'repl_threshold' means.
 local function hook_factory(repl_threshold)
 
     -- The hook. Step/next don't supply origin.
@@ -746,14 +786,13 @@ dbg.init = function(port)
     -- Maybe use socket.
     if _port ~= nil then
         local has_mod, mod = pcall(require, "socket")
-print(port, has_mod, mod)
         if has_mod then
-            client_write('Using socket')
             my_io = socket_io
             -- Init the local _server. Connect comes later.
             socket_io.server = mod.bind('*', _port) -- '127.0.0.1'
-            -- local ip, port = _server:getsockname()
-            socket_io.server:settimeout(nil) -- block forever
+            socket_io.server:settimeout(1)
+            local ip, port = _server:getsockname()
+            client_write('Using socket '..ip..':'..port)
         end
     end
 
