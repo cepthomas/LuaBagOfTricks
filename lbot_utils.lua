@@ -34,28 +34,30 @@ end
 
 -----------------------------------------------------------------------------
 --- Check global space for intruders aka you-forgot-local-again.
--- @param app_glob list of app specific globals
--- @return list of extraneous globals, list of unused globals
+-- @param app_glob list of app specific global names
+-- @return table of extraneous globals, table of unused globals
 function M.check_globals(app_glob)
     lt.val_table(app_glob)
     local extra = {}
 
     -- Expect to see these normal globals.
-    local expected = {'_G', '_VERSION', 'assert', 'collectgarbage', 'coroutine', 'debug', 'dofile', 'error',
-        'getmetatable', 'io', 'ipairs', 'load', 'loadfile', 'math', 'next', 'os', 'package', 'pairs', 'pcall',
-        'print', 'rawequal', 'rawget', 'rawlen', 'rawset', 'require', 'select', 'setmetatable', 'string',
-        'table', 'tonumber', 'tostring', 'type', 'utf8', 'warn', 'xpcall',
+    local globals = { '_G', '_VERSION', 'arg', 'assert', 'collectgarbage', 'dofile', 'error',
+        'getmetatable', 'ipairs', 'load', 'loadfile', 'next', 'pairs', 'pcall',
+        'print', 'rawequal', 'rawget', 'rawlen', 'rawset', 'require', 'select', 'setmetatable',
+        'tonumber', 'tostring', 'type', 'warn', 'xpcall',
         -- standard modules:
-        'coroutine', 'debug', 'io', 'math', 'os', 'package', 'string', 'table', 'utf8',
-        'arg' }
+        'coroutine', 'debug', 'io', 'math', 'os', 'package', 'string', 'table', 'utf8' }
 
-        for k, v in pairs(expected) do app_glob[k] = v end
+    -- Make a lookup.
+    local expected = {}
+    for i, v in ipairs(globals) do expected[v] = i end
+    for i, v in ipairs(app_glob) do expected[v] = i end
 
     for k, _ in pairs(_G) do
-        if not expected[k] then
+        if expected[k] then
             expected[k] = nil -- remove
         else
-            table.insert(extra, k)
+            extra[k] = 0
         end
     end
 
@@ -113,7 +115,7 @@ end
 -- @param level see get_caller_info()
 -- @return string of file and line
 function M.get_caller_info_str(level)
-    local fpath, line, dir = M.get_caller_info(level)
+    local fpath, line, _ = M.get_caller_info(level)
     return tostring(level)..':'.. fpath..'('..tostring(line)..')'
 end
 

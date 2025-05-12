@@ -160,15 +160,15 @@ function M.UT_STR_EQUAL(val1, val2, info)
     M.num_cases_run = M.num_cases_run + 1
 
     if type(val1) ~= 'string' then
-        local msg = tostring(val1)..' is not a string'
+        local msg = '['..tostring(val1)..'] is not a string'
         case_failed(msg, info)
         pass = false
     elseif type(val2) ~= 'string' then
-        local msg = tostring(val2)..' is not a string'
+        local msg = '['..tostring(val2)..'] is not a string'
         case_failed(msg, info)
         pass = false
     elseif val1 ~= val2 then
-        local msg = val1..' is not equal to '..val2
+        local msg = '['..val1..'] is not equal to ['..val2..']'
         case_failed(msg, info)
         pass = false
     end
@@ -186,15 +186,15 @@ function M.UT_STR_NOT_EQUAL(val1, val2, info)
     M.num_cases_run = M.num_cases_run + 1
 
     if type(val1) ~= 'string' then
-        local msg = tostring(val1)..' is not a string'
+        local msg = '['..tostring(val1)..'] is not a string'
         case_failed(msg, info)
         pass = false
     elseif type(val2) ~= 'string' then
-        local msg = tostring(val2)..' is not a string'
+        local msg = '['..tostring(val2)..'] is not a string'
         case_failed(msg, info)
         pass = false
     elseif val1 == val2 then
-        local msg = val1..' is equal to '..val2
+        local msg = '['..val1..'] is equal to ['..val2..']'
         case_failed(msg, info)
         pass = false
     end
@@ -212,15 +212,15 @@ function M.UT_STR_CONTAINS(val, phrase, info)
     M.num_cases_run = M.num_cases_run + 1
 
     if type(val) ~= 'string' then
-        local msg = tostring(val)..' is not a string'
+        local msg = '['..tostring(val)..'] is not a string'
         case_failed(msg, info)
         pass = false
     elseif type(phrase) ~= 'string' then
-        local msg = tostring(phrase)..' is not a string'
+        local msg = '['..tostring(phrase)..'] is not a string'
         case_failed(msg, info)
         pass = false
     elseif not sx.contains(val, phrase) then
-        local msg = val..' does not contain '..phrase
+        local msg = '['..val..'] does not contain ['..phrase..']'
         case_failed(msg, info)
         pass = false
     end
@@ -237,7 +237,7 @@ function M.UT_EQUAL(val1, val2, info)
     local pass = true
     M.num_cases_run = M.num_cases_run + 1
     if val1 ~= val2 then
-        local msg = tostring(val1)..' is not equal to '..tostring(val2)
+        local msg = '['..tostring(val1)..'] is not equal to ['..tostring(val2)..']'
         case_failed(msg, info)
         pass = false
     end
@@ -253,7 +253,7 @@ function M.UT_NOT_EQUAL(val1, val2, info)
     local pass = true
     M.num_cases_run = M.num_cases_run + 1
     if val1 == val2 then
-        local msg = tostring(val1)..' is equal to '..tostring(val2)
+        local msg = '['..tostring(val1)..'] is equal to ['..tostring(val2)..']'
         case_failed(msg, info)
         pass = false
     end
@@ -269,7 +269,7 @@ function M.UT_LESS(val1, val2, info)
     local pass = true
     M.num_cases_run = M.num_cases_run + 1
     if not(val1 < val2) then
-        local msg = tostring(val1)..' is not less than '..tostring(val2)
+        local msg = '['..tostring(val1)..'] is not less than ['..tostring(val2)..']'
         case_failed(msg, info)
         pass = false
     end
@@ -285,7 +285,7 @@ function M.UT_LESS_OR_EQUAL(val1, val2, info)
     local pass = true
     M.num_cases_run = M.num_cases_run + 1
     if not(val1 <= val2) then
-        local msg = tostring(val1)..' is not less than or equal to '..tostring(val2)
+        local msg = '['..tostring(val1)..'] is not less than or equal to ['..tostring(val2)..']'
         case_failed(msg, info)
         pass = false
     end
@@ -301,7 +301,7 @@ function M.UT_GREATER(val1, val2, info)
     local pass = true
     M.num_cases_run = M.num_cases_run + 1
     if not(val1 > val2) then
-        local msg = tostring(val1)..' is not greater than '..tostring(val2)
+        local msg = '['..tostring(val1)..'] is not greater than ['..tostring(val2)..']'
         case_failed(msg, info)
         pass = false
     end
@@ -317,7 +317,7 @@ function M.UT_GREATER_OR_EQUAL(val1, val2, info)
     local pass = true
     M.num_cases_run = M.num_cases_run + 1
     if not(val1 >= val2) then
-        local msg = tostring(val1)..' is not greater than or equal to '..tostring(val2)
+        local msg = '['..tostring(val1)..'] is not greater than or equal to ['..tostring(val2)..']'
         case_failed(msg, info)
         pass = false
     end
@@ -334,7 +334,7 @@ function M.UT_CLOSE(val1, val2, tol, info)
     local pass = true
     M.num_cases_run = M.num_cases_run + 1
     if math.abs(val1 - val2) > tol then
-        local msg = tostring(val1)..' is not close to '..tostring(val2)
+        local msg = '['..tostring(val1)..'] is not close to ['..tostring(val2)..']'
         case_failed(msg, info)
         pass = false
     end
@@ -353,7 +353,7 @@ function M.UT_RAISES(func, args, exp_msg, info)
 
     local ok, msgcall = pcall(func, table.unpack(args))
     if ok then
-        local msg = 'function did not raise expected error()'
+        local msg = 'function did not raise expected error() with ['..exp_msg..']'
         case_failed(msg, info)
         pass = false
     elseif sx.contains(msgcall, exp_msg) then

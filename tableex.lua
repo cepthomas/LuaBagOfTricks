@@ -72,7 +72,7 @@ end
 --- Diagnostic.
 -- @param tbl What to dump.
 -- @param name Visual optional
--- @param depth How deep to go in recursion. 0 (default) means just this level.
+-- @param depth How deep to go in recursion. 0 or nil means just this level.
 -- @return string of contents
 function M.dump_table(tbl, name, depth)
     lt.val_table(tbl)
