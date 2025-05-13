@@ -531,6 +531,14 @@ local function cmd_step()
 -- TODOD don't step into this module. Or builtin, required, ???
 -- local info = debug.getinfo(offset + CMD_STACK_LEVEL)
 -- client_write('Frame: '..format_frame(info), Cat.FOCUS)
+
+
+    -- local info = debug.getinfo(_stack_inspect_offset + CMD_STACK_LEVEL)
+    -- print('>>>', _stack_inspect_offset, _stack_inspect_offset + CMD_STACK_LEVEL)
+    local info = debug.getinfo(1)
+    print('>>>', format_frame(info))
+
+
     if not _in_error then
         _stack_inspect_offset = _stack_top
         return true, hook_step

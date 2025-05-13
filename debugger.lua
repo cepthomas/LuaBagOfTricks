@@ -24,7 +24,7 @@
 
     ***1 indicates -> Removed some support for older lua versions.
     
-    TODO from original:
+    From original:
     - Print short function arguments as part of stack location.
     - Properly handle being reentrant due to coroutines.
     - You can't add breakpoints to a running program or remove them - must use dbg().

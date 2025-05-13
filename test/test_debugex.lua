@@ -18,14 +18,6 @@ dbg.print('Loading test_debugex.lua')
 -- Vars.
 local counter = 100
 
--- go.cmd
--- echo off
--- cls
--- set TERM=1
--- set LUA_PATH=?.lua;C:\Dev\Libs\LbotImpl\LBOT\?.lua;%APPDATA%\luarocks\share\lua\5.4\?.lua;;
--- set LUA_CPATH=%APPDATA%\luarocks\lib\lua\5.4\?.dll;;
--- lua test_debugex.lua
-
 
 -----------------------------------------------------------------------------
 local function do_command(cmd, arg)

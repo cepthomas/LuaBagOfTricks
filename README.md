@@ -42,7 +42,7 @@ In general, all failures at this level are considered fatal and call `error()`.
 - Support for breaking on `error()`.
 - Remote client via socket - useful for debugging embedded scripts. This needs `require('socket')`.
 - Note that if you are using Visual Studio, you can coerce WinForms to provide a console for
-  debugging - see https://github.com/cepthomas/LuaInterop/tree/main/CppCli.
+  debugging - [complete example](https://github.com/cepthomas/LuaInterop/tree/main/CppCli).
 
 Caveats:
 - Plain lua 5.2+ only.
