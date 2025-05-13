@@ -41,5 +41,11 @@ In general, all failures at this level are considered fatal and call `error()`.
 `debugex.lua` is an extensively modified version of `debugger.lua`. It adds:
 - Support for breaking on `error()`.
 - Remote client via socket - useful for debugging embedded scripts. This needs `require('socket')`.
-  Note that if you are using Visual Studio, you can coerce WinForms to provide a console for
+- Note that if you are using Visual Studio, you can coerce WinForms to provide a console for
   debugging - see https://github.com/cepthomas/LuaInterop/tree/main/CppCli.
+
+Caveats:
+- Plain lua 5.2+ only.
+- Apparently doesn't handle being reentrant due to coroutines.
+- You can't add breakpoints to a running program or remove them - must use dbg().
+

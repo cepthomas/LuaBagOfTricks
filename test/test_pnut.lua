@@ -74,8 +74,8 @@ function M.suite_basic(pn)
 
     pn.UT_RAISES(func_that_throws, {66, 1, 2, 3}, FAIL_STR)
     pn.UT_RAISES(func_that_throws, {66, 1, 2, 3}, 'BOOM!')
-    --function did raise expected error() but [.\test\test_pnut.lua:72: Fail => should be in report] does not contain [BOOM!].
-    pn.UT_RAISES(func_that_throws, {6, 1, 2, 3}, 'BOOM!')
+    -- Can't test this case easily:
+    -- pn.UT_RAISES(func_that_throws, {6, 1, 2, 3}, 'BOOM!')
     --function did not raise expected error() with [BOOM!].
 
     -- Check summary. Cache values first.

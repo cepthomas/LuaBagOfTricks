@@ -1,5 +1,7 @@
 -- Unit tests for Dictionary.lua.
 
+---@diagnostic disable: undefined-global
+
 local tx = require("tableex")
 -- local ut = require("lbot_utils")
 local Dictionary = require("Dictionary")
@@ -70,15 +72,10 @@ function M.suite_fail(pn)
     d1 = Dictionary.new()
     pn.UT_RAISES(d1.add_range, { self, { aa=100, bb=200, cc=300, dd=co, ee=500 }}, 'Invalid value type: thread')
 
-    -- TODOL use UT_RAISES()
-    d1 = Dictionary.new()
-    d1:add_range({ aa=100, bb=200, cc=300, dd=400, ee=500 })
-    -- d1[co] = 123 --> 'Invalid key type: thread'  
-
-    d1 = Dictionary.new()
-    d1:add_range({ aa=100, bb=200, cc=300, dd=400, ee=500 })
-    -- d1.dd = nil --> 'Invalid value type: nil'
-
+    -- Can't test this case easily:
+    -- d1 = Dictionary.new()
+    -- pn.UT_RAISES(d1.add_range, { self, { aa=100, bb=200, cc=300, dd=nil, ee=500 }}, 'Invalid value type: nil')
+    -- ! C:\Dev\Libs\LuaBagOfTricks\test\test_dictionary.lua:82 function did not raise expected error() with [Invalid value type: nil].
 end
 
 -----------------------------------------------------------------------------

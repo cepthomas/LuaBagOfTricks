@@ -1,13 +1,7 @@
 --[[
 
-Plain lua 5.2+ only.
-
 TODOD something like py tracer?
-
-From original:
-TODOF Print short function arguments as part of stack location.
-TODOF Properly handle being reentrant due to coroutines.
-TODOF You can't add breakpoints to a running program or remove them - must use dbg().
+TODOD remove debugger.lua.
 
 
 The guts of this is based on https://github.com/slembcke/debugger.lua.
@@ -695,6 +689,8 @@ end
 
 -------------------------------------------------------------------------
 local function cmd_stack()
+    -- ?? Print short function arguments as part of stack location.
+
     client_write('Inspecting frame '..(_stack_inspect_offset - _stack_top))
     local i = 0; while true do
         local info = debug.getinfo(_stack_top + CMD_STACK_LEVEL + i)

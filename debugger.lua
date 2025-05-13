@@ -24,15 +24,13 @@
 
     ***1 indicates -> Removed some support for older lua versions.
     
-    From original:
-    TODOF Print short function arguments as part of stack location.
-    TODOF Properly handle being reentrant due to coroutines.
-    TODOF You can't add breakpoints to a running program or remove them - must use dbg().
+    TODO from original:
+    - Print short function arguments as part of stack location.
+    - Properly handle being reentrant due to coroutines.
+    - You can't add breakpoints to a running program or remove them - must use dbg().
 ]]
 
 local dbg
-
--- ====================== TODOD delete when debugex done.
 
 
 -- Use ANSI color codes in the prompt by default.
