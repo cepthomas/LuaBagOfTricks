@@ -5,7 +5,7 @@ local lt = require('lbot_types')
 local M = {}
 
 ---------------------------------------------------------------
--- Simple interpolated string function. Stolen/modified from http://lua-users.org/wiki/StringInterpolation.
+-- Simple interpolated string function. Modified from http://lua-users.org/wiki/StringInterpolation.
 -- ex: interp( [[Hello {name}, welcome to {company}.]], { name = name, company = get_company_name() } )
 -- @param str Source string.
 -- @param vars Replacement values dict.
@@ -22,7 +22,7 @@ end
 -----------------------------------------------------------------------------
 -- Concat the contents of the parameter list, separated by the string delimiter.
 -- Example: strjoin(", ", {"Anna", "Bob", "Charlie", "Dolores"})
--- Borrowed from http://lua-users.org/wiki/SplitJoin.
+-- Modified from http://lua-users.org/wiki/SplitJoin.
 -- @param delimiter Delimiter.
 -- @param list The pieces parts.
 -- @return string Concatenated list.
@@ -38,7 +38,7 @@ function M.strjoin(delimiter, list)
 end
 
 -----------------------------------------------------------------------------
--- Split text into a list. Borrowed from http://lua-users.org/wiki/SplitJoin.
+-- Split text into a list. Modified from http://lua-users.org/wiki/SplitJoin.
 -- Consisting of the strings in text, separated by strings matching delimiter (which may be a pattern).
 --   Example: strsplit(",%s*", "Anna, Bob, Charlie,Dolores")
 -- @param text The string to split.
@@ -48,7 +48,7 @@ end
 function M.strsplit(text, delimiter, trim)
     lt.val_string(text)
     lt.val_string(delimiter)
-    trim = trim or true
+    trim = trim or false
     local list = {}
     local pos = 1
 
@@ -83,7 +83,7 @@ end
 
 -----------------------------------------------------------------------------
 -- Trims whitespace from both ends of a string.
--- Borrowed from http://lua-users.org/wiki/SplitJoin.
+-- Modified from http://lua-users.org/wiki/SplitJoin.
 -- @param s The string to clean up.
 -- @return string Cleaned up input string.
 function M.strtrim(s)

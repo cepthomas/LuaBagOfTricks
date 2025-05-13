@@ -18,6 +18,7 @@ Appglob3 = 333
 -----------------------------------------------------------------------------
 function M.suite_system(pn)
 
+    ---@diagnostic disable-next-line: lowercase-global
     accidental_global = 0
 
     local extraneous, unused = ut.check_globals({ 'Appglob1', 'Appglob2', 'Appglob3'})
@@ -30,11 +31,10 @@ function M.suite_system(pn)
     pn.UT_NIL(unused['Appglob1'])
 
     ut.fix_lua_path('/mypath')
-    -- print(package.path)
     pn.UT_STR_CONTAINS(package.path, 'mypath')
 
     local res = ut.execute_and_capture('dir')
-    pn.UT_STR_CONTAINS(res, 'lbot_utils.lua')
+    pn.UT_STR_CONTAINS(res, 'test_utils.lua')
     pn.UT_STR_CONTAINS(res, '<DIR>          ..')
 
     local fpath, line, dir = ut.get_caller_info(2)

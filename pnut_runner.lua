@@ -26,7 +26,6 @@ function M.do_tests(...)
     -- Indicates an error in the user script.
     local script_fail = false
 
-
     for i = 1, #func_arg do
         local scrfn = func_arg[i]
 

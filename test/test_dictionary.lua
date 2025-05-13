@@ -27,7 +27,7 @@ function M.suite_success(pn)
     pn.UT_EQUAL(d1.bb, 200)
 
     local s = d1:dump()
-    pn.UT_STR_CONTAINS(s, 'bb(number)[200]')
+    pn.UT_STR_CONTAINS(s, 'bb[S]:200[N]')
 
     pn.UT_STR_EQUAL(d1:class(), 'Dictionary')
     pn.UT_STR_EQUAL(d1:name(), 'green dragon')

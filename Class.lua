@@ -1,6 +1,7 @@
 
 -- Simple class model. See test_class.lua for implementation.
 -- Based on http://lua-users.org/wiki/SimpleLuaClasses. See that url for design details.
+
 function Class(base, init)
     local c = {} -- a new class instance
     if not init and type(base) == 'function' then

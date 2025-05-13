@@ -399,7 +399,7 @@ end
 local function cmd_locals()
     local bindings = local_bindings(1, false)
 
-    -- Get all the variable binding names and sort them. TODOF gets noisy with large tables.
+    -- Get all the variable binding names and sort them.
     local keys = {}
     for k, _ in pairs(bindings) do table.insert(keys, k) end
     table.sort(keys)
@@ -618,7 +618,6 @@ function dbg.enable_color()
     GREEN_CARET = string.char(27) .. "[92m => "..COLOR_RESET
 end
 
--- TODOF enable color explicitly?
 local color_maybe_supported = (stdout_isatty and os.getenv("TERM") and os.getenv("TERM") ~= "dumb")
 if color_maybe_supported and not os.getenv("DBG_NOCOLOR") then
     dbg.enable_color()

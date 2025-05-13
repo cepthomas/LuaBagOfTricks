@@ -1,19 +1,18 @@
 --[[
 
-Put in doc:
-A lot of this stolen from :
-https://github.com/slembcke/debugger.lua
-https://www.slembcke.net/blog/DebuggerLua
-
 Plain lua 5.2+ only.
 
-You can't add breakpoints to a running program or remove them - must use dbg.run().
+TODOD something like py tracer?
 
-orig Properly handle being reentrant due to coroutines.
+From original:
+TODOF Print short function arguments as part of stack location.
+TODOF Properly handle being reentrant due to coroutines.
+TODOF You can't add breakpoints to a running program or remove them - must use dbg().
 
-]]
 
---[[
+The guts of this is based on https://github.com/slembcke/debugger.lua.
+https://www.slembcke.net/blog/DebuggerLua   
+
 Copyright (c) 2024 Scott Lembcke and Howling Moon Software
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -36,7 +35,6 @@ SOFTWARE.
 ]]
 
 
--- TODOD something like py tracer?
 
 -- The module.
 local dbg = {}

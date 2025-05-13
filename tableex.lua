@@ -1,4 +1,4 @@
-local sx = require("stringex")
+local sx = require('stringex')
 local lt = require('lbot_types')
 
 local M = {}

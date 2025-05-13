@@ -1,4 +1,5 @@
--- LBOT type support. Some parts are lifted from or inspired by https://github.com/lunarmodules/Penlight.
+-- LuaBagOfTricks type support.
+-- Some parts are lifted from or inspired by https://github.com/lunarmodules/Penlight.
 
 local M = {}
 
