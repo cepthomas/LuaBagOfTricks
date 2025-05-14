@@ -76,9 +76,8 @@ function M.suite_success(pn)
     pn.UT_EQUAL(#s, 148)
 
     tc = tx.deep_copy(tt)
-    s = tx.dump_table(tc)
-    -- TODOD fails, makes shallow copy.
-    pn.UT_EQUAL(#s, 392)
+    s = tx.dump_table(tc, 'depthc', 4)
+    pn.UT_EQUAL(#s, 336) -- same as 'depth4'
 
     -- sequence-like tables
     local tl = {'aaa', 'bbb', 'ccc', 'ddd', 'eee'}

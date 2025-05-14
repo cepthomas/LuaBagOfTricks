@@ -8,10 +8,11 @@ dbg.pretty_depth = 4
 dbg.auto_where = 4
 dbg.ansi_color = true
 dbg.trace = false
+dbg.prompt = '# '
 
 -- Initialize it.
--- dbg.init(59120)
-dbg.init()
+dbg.init(59120)
+-- dbg.init()
 
 dbg.print('Loading test_debugex.lua')
 
@@ -64,7 +65,7 @@ local function nest_1(some_arg)
     }
 
     dbg.print('nest_1() was called: '..some_arg)
-    dbg()
+    dbg(#some_arg > 1)
     nest_2(some_arg..'_1')
 end
 

@@ -1,33 +1,17 @@
 --[[
 
-TODOD something like py tracer?
-TODOD remove debugger.lua.
-
-
 The guts of this is based on https://github.com/slembcke/debugger.lua.
 https://www.slembcke.net/blog/DebuggerLua   
-
 Copyright (c) 2024 Scott Lembcke and Howling Moon Software
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+TODOD remove debugger.lua.
+TODOD debug socket
 
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
+TODO don't allow step into the debugex module. Probably have to step in, see where we
+     are, step out. See hook_factory. User could supply list of other modules to ignore.
+TODO break on function/line entry? something like py tracer?
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
 ]]
-
 
 
 -- The module.
@@ -40,8 +24,7 @@ local dbg = {}
 
 -- Forward refs.
 local repl
-local my_io
--- local socket_io
+local _my_io
 local _commands
 
 -- Port number if using sockets else local cli.
@@ -77,9 +60,8 @@ local Cat = {
     PRINT   =  40, -- green
     TRACE   = 216, -- pink
     INFO    =  39, -- blue
-    TBD     =  05  -- blinking
 }
-setmetatable(Cat, { __index = function(_, key) error('Invalid color: '..key) end })
+setmetatable(Cat, { __index = function(_, key) error('Invalid category: '..key) end })
 
 
 -------------------------------------------------------------------------
@@ -87,25 +69,29 @@ setmetatable(Cat, { __index = function(_, key) error('Invalid color: '..key) end
 -------------------------------------------------------------------------
 
 -------------------------------------------------------------------------
--- Common client write function.
-local function client_write(str, color)
-    if color == Cat.TRACE and not dbg.trace then return end
+-- Common IO write function.
+local function write_line(str, cat)
+    if cat == Cat.TRACE and not dbg.trace then return end
+
+    -- Tweak some lines.
+    if cat == Cat.ERROR then str = 'ERROR '..str end
+    if cat == Cat.PRINT then str = 'SCR> '..str end
 
     if dbg.ansi_color then
-        color = color or Cat.DEFAULT
-        str = ESC..'[38;5;'..color..'m'..str..ESC..'[0m'
+        cat = cat or Cat.DEFAULT
+        str = ESC..'[38;5;'..cat..'m'..str..ESC..'[0m'
     end
-    local res, msg = my_io.write(str, true)
+    local res, msg = _my_io.write(str..'\n')
     return res, msg
 end
 
 -------------------------------------------------------------------------
--- Common client read function.
-local function client_read(prompt)
-    local res, msg = my_io.write(prompt, false)
-    my_io.flush()
-    res, msg = my_io.read()
-    if not res then client_write('Read error: '..msg, Cat.ERROR) end
+-- Common IO read function.
+local function read_line(prompt)
+    local res, msg = _my_io.write(prompt)
+    _my_io.flush()
+    res, msg = _my_io.read()
+    if not res then write_line('Read error: '..msg, Cat.ERROR) end
     return res, msg
 end
 
@@ -113,24 +99,20 @@ end
 -- Local IO.
 local local_io = {
     flush = function() io.flush() end,
-    write = function(str, term) io.write(str) if term then io.write('\n') end end,
+    write = function(str) io.write(str) end,
     read = function() return io.read() end,
 }
 
-
-
-
-
 -------------------------------------------------------------------------
 -- Socket IO. https://lunarmodules.github.io/luasocket/reference.html
-local server = nil -- local
-local client = nil -- remote
+local _server = nil -- local
+local _client = nil -- remote
 local function ensure_connect()
     -- (re)connect?
-    if not client then
-        local res = server:accept()
+    if not _client then
+        local res = _server:accept()
         if res then
-            client = res
+            _client = res
         end
     end
 end
@@ -138,21 +120,21 @@ end
 -------------------------------------------------------------------------
 local socket_io = {
     flush = function() end, -- Noop.
-    write = function(str, term)
+    write = function(str)
         local done, res, msg
         while not done do
             ensure_connect()
             -- Send payload.
-            if client then
-                res, msg = client:send(str)
+            if _client then
+                res, msg = _client:send(str)
                 -- How did we do.
                 if not res then
                     if msg == 'timeout' then
                         -- can happen, try again.
                     elseif msg == 'closed' then
                         -- can happen, try reconnect.
-                        client:close()
-                        client = nil
+                        _client:close()
+                        _client = nil
                     else
                         error('Fatal send error but no ui to show it: '..msg)
                     end
@@ -168,16 +150,16 @@ local socket_io = {
         local done, res, msg, line
         while not done do
             ensure_connect()
-            if client then
-                res, msg = client:receive()
+            if _client then
+                res, msg = _client:receive()
 
                 if not res then
                     if msg == 'timeout' then
                         -- can happen, try again.
                     elseif msg == 'closed' then
                         -- can happen, try reconnect.
-                        client:close()
-                        client = nil
+                        _client:close()
+                        _client = nil
                     else
                         error('Fatal receive error but no ui to show it: '..msg)
                     end
@@ -192,85 +174,6 @@ local socket_io = {
     end
 }
 
--- -------------------------------------------------------------------------
--- -- Write whole line. Blocks until the client receives it.
--- function socket_io.write(str)
---     local done = false
-
---     while not done do
---         local res, msg
-
---         -- (re)connect?
---         if not socket_io.client then
---             res, msg = socket_io.server:accept()
---             if res then
---                 socket_io.client = res
---             end
---         end
-
---         -- Send payload.
---         if socket_io.client then
---             res, msg = socket_io.client:send(str)
---             -- How did we do.
---             if not res then
---                 if msg == 'timeout' then
---                     -- can happen, try again.
---                 elseif msg == 'closed' then
---                     -- can happen, try reconnect.
---                     socket_io.client:close()
---                     socket_io.client = nil
---                 else
---                     error('Fatal send error but no ui to show it: '..msg)
---                 end
---             else
---                 done = true
---             end
---         end
---     end
-
---     return true
--- end
-
--- -------------------------------------------------------------------------
--- -- Read line. Blocks until the client sends something.
--- function socket_io.read()
---     local done = false
---     local line
-
---     while not done do
---         local res, msg
-
---         -- (re)connect?
---         if not socket_io.client then
---             res, msg = socket_io.server:accept()
---             if res then
---                 socket_io.client = res
---             end
---         end
-
---         if socket_io.client then
---             res, msg = socket_io.client:receive()
-
---             if not res then
---                 if msg == 'timeout' then
---                     -- can happen, try again.
---                 elseif msg == 'closed' then
---                     -- can happen, try reconnect.
---                     socket_io.client:close()
---                     socket_io.client = nil
---                 else
---                     error('Fatal receive error but no ui to show it: '..msg)
---                 end
---             else
---                 done = true
---                 line = res
---             end
---         end
---     end
-
---     return line
--- end
-
 
 -------------------------------------------------------------------------
 ----------------------------- repl, hooks internals ---------------------
@@ -281,7 +184,8 @@ local socket_io = {
 local function format_frame(info)
     local filename = info.source:match('^@(.*)')
     if info.what == 'Lua' then
-        return string.format('%s(%d) in %s %s', filename, info.currentline, info.namewhat, info.name)
+        return string.format('%s(%d) in %s(%s)', filename, info.currentline, info.name, info.namewhat)
+        -- other_module.lua(8) in field add
     else
         return '['..info.what..']'
     end
@@ -291,7 +195,7 @@ end
 -- Return false for stack frames without source - C frames, Lua bytecode, and `loadstring` functions.
 local function frame_has_line(info)
     if not info then
-        client_write('frame_has_line() info is nil'..debug.traceback(), Cat.ERROR)
+        write_line('frame_has_line() info is nil'..debug.traceback(), Cat.ERROR)
     end
     return info.currentline >= 0
 end
@@ -300,7 +204,7 @@ end
 -- Hook function factory.
 local function hook_factory(repl_threshold)
 
-    -- The hook. Step/next don't supply origin.
+    -- The hook. Step and next don't supply origin.
     return function(offset, origin)
 
         --  The hook is called for hook event type.
@@ -308,6 +212,8 @@ local function hook_factory(repl_threshold)
             -- Skip events that don't have line information.
             local info = debug.getinfo(2)
             if not frame_has_line(info) then return end
+
+            -- write_line(event..': '..format_frame(info), Cat.INFO)
 
             -- Tail calls are specifically ignored since they also will have tail returns to balance out.
             if event == 'call' then
@@ -385,7 +291,7 @@ local function mutate_bindings(_, name, value)
     do local i = 1; repeat
         local var = debug.getlocal(level, i)
         if name == var then
-            client_write('Set local variable '..name)
+            write_line('Set local variable '..name)
             return debug.setlocal(level, i, value)
         end
         i = i + 1
@@ -396,14 +302,14 @@ local function mutate_bindings(_, name, value)
     do local i = 1; repeat
         local var = debug.getupvalue(func, i)
         if name == var then
-            client_write('Set upvalue '..name)
+            write_line('Set upvalue '..name)
             return debug.setupvalue(func, i, value)
         end
         i = i + 1
     until var == nil end
 
     -- Set a global.
-    client_write('Set global variable '..name)
+    write_line('Set global variable '..name)
     _G[name] = value
 end
 
@@ -412,10 +318,9 @@ end
 local function compile_chunk(block, env, origin)
 
     local chunk = load(block, origin, 't', env)
-
     if not chunk then
-        client_write('Could not compile block:', Cat.ERROR)
-        client_write(block)
+        write_line('Could not compile block:', Cat.ERROR)
+        write_line(block)
     end
 
     return chunk
@@ -438,21 +343,22 @@ local function where(info, context_lines)
         _source_cache[info.source] = source
     end
 
-    client_write('Frame: '..format_frame(info), Cat.FOCUS)
+    -- write_line('In '..info.source:match('^@(.*)'), Cat.FOCUS)
+    write_line('In: '..format_frame(info), Cat.FOCUS)
 
     if source and source[info.currentline] then
         for i = info.currentline - context_lines, info.currentline + context_lines do
             local line = source[i]
             if line then
                 if i == info.currentline then
-                    client_write(i..' => '..line, Cat.FOCUS)
+                    write_line(i..' => '..line, Cat.FOCUS)
                 else
-                    client_write(i..'    '..line, Cat.FAINT)
+                    write_line(i..'    '..line, Cat.FAINT)
                 end
             end
         end
     else
-        client_write('Source not available for '..info.short_src, Cat.ERROR);
+        write_line('Source not available for '..info.short_src, Cat.ERROR);
     end
 end
 
@@ -528,23 +434,12 @@ end
 
 -------------------------------------------------------------------------
 local function cmd_step()
--- TODOD don't step into this module. Or builtin, required, ???
--- local info = debug.getinfo(offset + CMD_STACK_LEVEL)
--- client_write('Frame: '..format_frame(info), Cat.FOCUS)
-
-
-    -- local info = debug.getinfo(_stack_inspect_offset + CMD_STACK_LEVEL)
-    -- print('>>>', _stack_inspect_offset, _stack_inspect_offset + CMD_STACK_LEVEL)
-    local info = debug.getinfo(1)
-    print('>>>', format_frame(info))
-
-
     if not _in_error then
         _stack_inspect_offset = _stack_top
         return true, hook_step
     end
 
-    client_write('Can\'t step: in error', Cat.INFO);
+    write_line('Can\'t step: in error', Cat.INFO);
     return false
 end
 
@@ -555,7 +450,7 @@ local function cmd_next()
         return true, hook_next
     end
 
-    client_write('Can\'t next: in error', Cat.INFO);
+    write_line('Can\'t next: in error', Cat.INFO);
     return false
 end
 
@@ -565,7 +460,7 @@ local function cmd_continue()
         return true
     end
 
-    client_write('Can\'t continue: in error', Cat.INFO);
+    write_line('Can\'t continue: in error', Cat.INFO);
     return false
 end
 
@@ -577,7 +472,7 @@ local function cmd_finish()
         return true, offset < 0 and hook_factory(offset - 1) or hook_finish
     end
 
-    client_write('Can\'t finish: in error', Cat.INFO);
+    write_line('Can\'t finish: in error', Cat.INFO);
     return false
 
 end
@@ -592,7 +487,7 @@ local function cmd_print(expr)
 
         -- The first result is the pcall error.
         if not results[1] then
-            client_write(results[2], Cat.ERROR)
+            write_line(results[2], Cat.ERROR)
         else
             local output = ''
             for i = 2, results.n do
@@ -600,7 +495,7 @@ local function cmd_print(expr)
             end
 
             if output == '' then output = 'no_result' end
-            client_write(expr..' => '..output)
+            write_line(expr..' => '..output)
         end
     end
 
@@ -621,7 +516,7 @@ local function cmd_eval(code)
         -- Call the chunk and collect the results.
         local success, err = pcall(chunk, table.unpack(rawget(env, '...') or {}))
         if not success then
-            client_write(tostring(err), Cat.ERROR)
+            write_line(tostring(err), Cat.ERROR)
         end
     end
 
@@ -640,11 +535,11 @@ local function cmd_down()
 
     if info then
         _stack_inspect_offset = offset
-        client_write('Inspecting frame: '..format_frame(info))
+        write_line('Inspecting frame: '..format_frame(info))
         where(info)
     else
         info = debug.getinfo(_stack_inspect_offset + CMD_STACK_LEVEL)
-        client_write('Already at the bottom of the stack.')
+        write_line('Already at the bottom of the stack.')
     end
 
     return false
@@ -663,11 +558,11 @@ local function cmd_up()
 
     if info then
         _stack_inspect_offset = offset
-        client_write('Inspecting frame: '..format_frame(info))
+        write_line('Inspecting frame: '..format_frame(info))
         where(info)
     else
         info = debug.getinfo(_stack_inspect_offset + CMD_STACK_LEVEL)
-        client_write('Already at the top of the stack.')
+        write_line('Already at the top of the stack.')
     end
 
     return false
@@ -679,9 +574,9 @@ local function cmd_inspect(offset)
     local info = debug.getinfo(offset + CMD_STACK_LEVEL)
     if info then
         _stack_inspect_offset = offset
-        client_write('Inspecting frame: '..format_frame(info))
+        write_line('Inspecting frame: '..format_frame(info))
     else
-        client_write('Invalid stack frame index', Cat.ERROR)
+        write_line('Invalid stack frame index', Cat.ERROR)
     end
 
     return false
@@ -697,9 +592,7 @@ end
 
 -------------------------------------------------------------------------
 local function cmd_stack()
-    -- ?? Print short function arguments as part of stack location.
-
-    client_write('Inspecting frame '..(_stack_inspect_offset - _stack_top))
+    write_line('Inspecting frame '..(_stack_inspect_offset - _stack_top))
     local i = 0; while true do
         local info = debug.getinfo(_stack_top + CMD_STACK_LEVEL + i)
         if not info then break end
@@ -707,9 +600,9 @@ local function cmd_stack()
         local is_current_frame = (i + _stack_top == _stack_inspect_offset)
 
         if is_current_frame then
-            client_write(i..' => '..format_frame(info), Cat.FOCUS)
+            write_line(i..' => '..format_frame(info), Cat.FOCUS)
         else
-            client_write(i..'    '..format_frame(info), Cat.FAINT)
+            write_line(i..'    '..format_frame(info), Cat.FAINT)
         end
 
         i = i + 1
@@ -730,7 +623,7 @@ local function cmd_locals()
         end
     end
 
-    client_write(pretty(vis, 'locals'), Cat.INFO)
+    write_line(pretty(vis, 'locals'), Cat.INFO)
 
     return false
 end
@@ -742,7 +635,15 @@ end
 
 -------------------------------------------------------------------------
 local function cmd_help()
-    for _, v in ipairs(_commands) do client_write('  '..v[3]) end
+    write_line('commands:')
+    for _, v in ipairs(_commands) do write_line('  '..v[3]) end
+
+    -- extras
+    local sc = {}
+    for k, v in pairs(Cat) do table.insert(sc, ESC..'[38;5;'..v..'m'..k..ESC..'[0m') end
+    write_line('legend: '..table.concat(sc, ' '))
+
+    write_line('config: port='..(_port or 'local')..' ansi_color='..tostring(dbg.ansi_color)..' trace='..tostring(dbg.trace))
 
     return false
 end
@@ -791,7 +692,7 @@ local function run_command(scmd)
         -- orig: table.unpack({...}) prevents tail call elimination so the stack frame indices are predictable.
         return table.unpack({cmd(arg)})
     else
-        client_write('Invalid command', Cat.ERROR)
+        write_line('Invalid command', Cat.ERROR)
         return false
     end
 end
@@ -812,17 +713,17 @@ repl = function(origin)
         end
     end
 
-    client_write('Break via '..origin, Cat.FOCUS)
+    write_line('Break via '..origin, Cat.FOCUS)
     where(info)
 
     -- Do the repl loop.
     repeat
-        local success, done, hook = pcall(run_command, client_read('>>> '))
+        local success, done, hook = pcall(run_command, read_line(dbg.prompt))
         if success then
             debug.sethook(hook and hook(0), 'crl')
         else
             local msg = 'Fatal internal lua error: '..done
-            client_write(msg, Cat.ERROR)
+            write_line(msg, Cat.ERROR)
             error(msg)
         end
     until done
@@ -838,21 +739,23 @@ dbg.pretty_depth = 2
 dbg.auto_where = 3
 dbg.ansi_color = true
 dbg.trace = false
+dbg.prompt = '> '
 
 
 -------------------------------------------------------------------------
 -- Make the debugger object callable like a function.
 setmetatable(dbg,
 {
-    __call = function(_, top_offset, origin)
-        if my_io == nil then error('ERROR: debugex.init() has not been called') end
+    __call = function(_, condition, top_offset, origin)
+        if _my_io == nil then error('You forgot to call debugex.init()') end
+        if condition then return end
 
         top_offset = top_offset or 0
         _stack_inspect_offset = top_offset
         _stack_top = top_offset
+        origin = origin or 'dbg()'
 
-        -- From dbg() - start debugger.
-        debug.sethook(hook_next(1, origin or 'dbg()'), 'crl')
+        debug.sethook(hook_next(1, origin), 'crl')
         -- return
     end
 })
@@ -861,37 +764,38 @@ setmetatable(dbg,
 -- Init the user IO.
 dbg.init = function(port)
     _port = port
-    my_io = nil
+    _my_io = nil
+
     -- Maybe use socket.
     if _port ~= nil then
         local has_mod, mod = pcall(require, "socket")
         if has_mod then
-            my_io = socket_io
-            -- Init the local _server. Connect comes later.
-            socket_io.server = mod.bind('*', _port) -- '127.0.0.1'
-            socket_io.server:settimeout(1)
-            local ip, port = _server:getsockname()
-            client_write('Using socket '..ip..':'..port)
+            _my_io = socket_io
+            -- Init the local server. Connect comes later.
+            _server = mod.bind('*', _port) -- '127.0.0.1'
+            _server:settimeout(1)
+            local sel_ip, sel_port = _server:getsockname()
+            write_line('Using socket IO '..sel_ip..':'..sel_port)
         end
     end
 
     -- Otherwise use local/stdio.
-    if my_io == nil then
-        my_io = local_io
-        client_write('Using local')
+    if _my_io == nil then
+        _my_io = local_io
+        write_line('Using local IO')
     end
 end
 
 -------------------------------------------------------------------------
 -- Works like plain pcall() but invokes the debugger on error().
 dbg.pcall = function(func, ...)
-    if my_io == nil then error('ERROR: debugex.init() has not been called') end
+    if _my_io == nil then error('You forgot to call debugex.init()') end
 
     local res, msg = xpcall(func,
         function(...)
             -- From error() - start debugger.
             _in_error = true
-            dbg(1, "error()")
+            dbg(false, 1, "error()")
             return ...
         end,
         ...)
@@ -902,9 +806,10 @@ end
 -------------------------------------------------------------------------
 -- Convenience for host/applicationn to add to write stream.
 function dbg.print(str)
-    if my_io == nil then error('ERROR: debugex.init() has not been called') end
-    client_write(str, Cat.PRINT)
+    if _my_io == nil then error('You forgot to call debugex.init()') end
+    write_line(str, Cat.PRINT)
 end
+
 
 -------------------------------------------------------------------------
 return dbg

@@ -14,7 +14,7 @@ local M = {}
 -----------------------------------------------------------------------------
 
 -----------------------------------------------------------------------------
---- Replacement for print(...) with caller file and line added.
+--- Replacement for print(...) with caller file/line added, visual arg separators.
 function printex(...)
     local res = {}
     local arg = {...}
