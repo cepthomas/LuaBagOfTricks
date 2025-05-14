@@ -4,7 +4,6 @@ The guts of this is based on https://github.com/slembcke/debugger.lua.
 https://www.slembcke.net/blog/DebuggerLua   
 Copyright (c) 2024 Scott Lembcke and Howling Moon Software
 
-TODOD remove debugger.lua.
 TODOD debug socket
 
 TODO don't allow step into the debugex module. Probably have to step in, see where we
@@ -107,12 +106,14 @@ local local_io = {
 -- Socket IO. https://lunarmodules.github.io/luasocket/reference.html
 local _server = nil -- local
 local _client = nil -- remote
+
 local function ensure_connect()
     -- (re)connect?
     if not _client then
         local res = _server:accept()
         if res then
             _client = res
+            _client:settimeout(1)
         end
     end
 end
@@ -120,6 +121,7 @@ end
 -------------------------------------------------------------------------
 local socket_io = {
     flush = function() end, -- Noop.
+
     write = function(str)
         local done, res, msg
         while not done do
@@ -146,12 +148,14 @@ local socket_io = {
 
         return true
     end,
+
     read = function()
         local done, res, msg, line
         while not done do
             ensure_connect()
             if _client then
                 res, msg = _client:receive()
+                print('rcv', res, msg)
 
                 if not res then
                     if msg == 'timeout' then

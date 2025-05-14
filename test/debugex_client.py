@@ -33,7 +33,7 @@ class DebugexClient(object):
         self.server_response_time = 200  # 100?
 
         # User command read queue.
-        self.cmdQ = queue.Queue()
+        self.cmd_q = queue.Queue()
 
         # Last command time. Non zero implies waiting for a response.
         self.sendts = 0
@@ -48,7 +48,8 @@ class DebugexClient(object):
             ##### Run user cli input in a thread.
             def worker():
                 while run:
-                    self.cmdQ.put_nowait(sys.stdin.readline().replace('\n', ''))
+                    self.cmd_q.put_nowait(sys.stdin.readline().replace('\n', ''))
+
             threading.Thread(target=worker, daemon=True).start()
 
             ##### Forever loop #####
@@ -91,8 +92,8 @@ class DebugexClient(object):
                         self.reset()
 
                 ##### Anything to send? Check for user input. #####
-                while not self.cmdQ.empty():
-                    s = self.cmdQ.get()
+                while not self.cmd_q.empty():
+                    s = self.cmd_q.get()
 
                     if self.commif is not None:
                         self.commif.write(s)
@@ -164,8 +165,8 @@ class DebugexClient(object):
         # Reset watchdog.
         self.sendts = 0
         # Clear queue.
-        while not self.cmdQ.empty():
-            self.cmdQ.get()
+        while not self.cmd_q.empty():
+            self.cmd_q.get()
 
     def do_error(self, e):
         sys.stdout.write(f'{MSG_IND} Error: {e}\n')
