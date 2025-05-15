@@ -1,14 +1,13 @@
 --[[
 
 The guts of this is based on https://github.com/slembcke/debugger.lua.
-https://www.slembcke.net/blog/DebuggerLua   
-Copyright (c) 2024 Scott Lembcke and Howling Moon Software
+https://www.slembcke.net/blog/DebuggerLua
+MIT License  Copyright (c) 2024 Scott Lembcke and Howling Moon Software
 
-TODOD debug socket
 
-TODO don't allow step into the debugex module. Probably have to step in, see where we
+TODO Don't allow step into the debugex module. Probably have to step in, see where we
      are, step out. See hook_factory. User could supply list of other modules to ignore.
-TODO break on function/line entry? something like py tracer?
+TODO Break on function/line entry? Something like py tracer?
 
 ]]
 
@@ -26,7 +25,7 @@ local repl
 local _my_io
 local _commands
 
--- Port number if using sockets else local cli.
+-- Port number if using sockets else nil means use stdio.
 local _port = nil
 
 -- Cache.
@@ -35,7 +34,7 @@ local _last_cmd = false
 -- Location of the top of the stack outside of the debugger. Adjusted by some debugger entrypoints.
 local _stack_top = 0
 
--- The current stack frame index. Changed using the up/down commands
+-- The current stack frame index. Changed using the up/down commands.
 local _stack_inspect_offset = 0
 
 -- It's a cache for source code!
@@ -50,8 +49,10 @@ local ESC = string.char(27)
 -- The stack level that cmd_* functions use to access locals or info. The structure of the code very carefully ensures this.
 local CMD_STACK_LEVEL = 6
 
--- Category enum for writeln. The value is 256-color ansi. https://github.com/fidian/ansi/blob/master/images/color-codes.png.
-local Cat = {
+-- Category enum for writeln. The value is 256-color ansi. TODO make configurable.
+-- https://github.com/fidian/ansi/blob/master/images/color-codes.png.
+local Cat =
+{
     DEFAULT =  15, -- white
     FAINT   = 246, -- light gray
     ERROR   =   9, -- red
@@ -96,7 +97,8 @@ end
 
 -------------------------------------------------------------------------
 -- Local IO.
-local local_io = {
+local local_io =
+{
     flush = function() io.flush() end,
     write = function(str) io.write(str) end,
     read = function() return io.read() end,
@@ -119,7 +121,8 @@ local function ensure_connect()
 end
 
 -------------------------------------------------------------------------
-local socket_io = {
+local socket_io =
+{
     flush = function() end, -- Noop.
 
     write = function(str)
@@ -155,8 +158,6 @@ local socket_io = {
             ensure_connect()
             if _client then
                 res, msg = _client:receive()
-                print('rcv', res, msg)
-
                 if not res then
                     if msg == 'timeout' then
                         -- can happen, try again.
@@ -225,7 +226,6 @@ local function hook_factory(repl_threshold)
             elseif event == 'return' and offset > repl_threshold then
                 offset = offset - 1
             elseif event == 'line' and offset <= repl_threshold then
-                -- print('hook', offset, repl_threshold, origin)
                 origin = origin or ('line')
                 repl(origin)
             end
@@ -347,7 +347,6 @@ local function where(info, context_lines)
         _source_cache[info.source] = source
     end
 
-    -- write_line('In '..info.source:match('^@(.*)'), Cat.FOCUS)
     write_line('In: '..format_frame(info), Cat.FOCUS)
 
     if source and source[info.currentline] then
@@ -539,7 +538,7 @@ local function cmd_down()
 
     if info then
         _stack_inspect_offset = offset
-        write_line('Inspecting frame: '..format_frame(info))
+        -- write_line('Inspecting frame: '..format_frame(info))
         where(info)
     else
         info = debug.getinfo(_stack_inspect_offset + CMD_STACK_LEVEL)
@@ -562,7 +561,7 @@ local function cmd_up()
 
     if info then
         _stack_inspect_offset = offset
-        write_line('Inspecting frame: '..format_frame(info))
+        -- write_line('Inspecting frame: '..format_frame(info))
         where(info)
     else
         info = debug.getinfo(_stack_inspect_offset + CMD_STACK_LEVEL)
@@ -578,7 +577,7 @@ local function cmd_inspect(offset)
     local info = debug.getinfo(offset + CMD_STACK_LEVEL)
     if info then
         _stack_inspect_offset = offset
-        write_line('Inspecting frame: '..format_frame(info))
+        write_line('Inspecting: '..format_frame(info), Cat.FOCUS)
     else
         write_line('Invalid stack frame index', Cat.ERROR)
     end
@@ -596,7 +595,7 @@ end
 
 -------------------------------------------------------------------------
 local function cmd_stack()
-    write_line('Inspecting frame '..(_stack_inspect_offset - _stack_top))
+    -- write_line('Inspecting frame '..(_stack_inspect_offset - _stack_top))
     local i = 0; while true do
         local info = debug.getinfo(_stack_top + CMD_STACK_LEVEL + i)
         if not info then break end
@@ -658,7 +657,8 @@ end
 -------------------------------------------------------------------------
 
 -------------------------------------------------------------------------
-_commands = {
+_commands =
+{
     { "^c$",         cmd_continue,  'c continue execution' },
     { "^s$",         cmd_step,      's step - into functions' },
     { "^n$",         cmd_next,      'n step - over functions' },

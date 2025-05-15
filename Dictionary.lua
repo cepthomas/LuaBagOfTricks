@@ -76,10 +76,10 @@ function Dictionary.new(name)
     end
 
     -------------------------------------------------------------------------
-    --- How many.
+    --- How many. A bit expensive so maybe cache size?
     -- @return number of values
     function dict:count()
-        return tx.table_count(_data) -- TODO A bit expensive so maybe cache size?
+        return tx.table_count(_data)
     end
 
     -------------------------------------------------------------------------

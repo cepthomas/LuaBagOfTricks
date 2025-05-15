@@ -36,12 +36,13 @@ In general, all failures at this level are considered fatal and call `error()`.
 
 # Debugger
 
-`debugger.lua` is a slightly modified version of [debugger.lua](https://github.com/slembcke/debugger.lua).
+`debugex.lua` is an extensively modified version of [debugger.lua](https://github.com/slembcke/debugger.lua).
+The basic UI is the same but adds:
+- Support for breaking on `error()` by using `dbg.pcall()`.
+- Remote client via socket - useful for debugging embedded scripts. This requires the `socket` module installed.
+- Using in [Visul Studio projects](https://github.com/cepthomas/LuaInterop/tree/main/CppCli).
 
-`debugex.lua` is an extensively modified version of `debugger.lua`. It adds:
-- Support for breaking on `error()`.
-- Remote client via socket - useful for debugging embedded scripts. This needs `require('socket')`.
-- [complete example](https://github.com/cepthomas/LuaInterop/tree/main/CppCli).
+See `C:\Dev\Libs\LuaBagOfTricks\test\test_debugex.lua` for example.
 
 Caveats:
 - Plain lua 5.2+ only.

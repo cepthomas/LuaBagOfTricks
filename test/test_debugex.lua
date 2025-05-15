@@ -11,8 +11,8 @@ dbg.trace = false
 dbg.prompt = '# '
 
 -- Initialize it.
-dbg.init(59120)
--- dbg.init()
+-- dbg.init(59120)
+dbg.init()
 
 dbg.print('Loading test_debugex.lua')
 
