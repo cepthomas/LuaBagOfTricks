@@ -7,6 +7,26 @@ local tx = require("tableex")
 require('List')
 
 
+-- //---------------- TableEx --------------------------//
+-- /// TODO C - Add tableex type support similar to LuaEx.cs/TableEx.cs (see structinator).
+-- //  Also consider arrays of scalars or tableex.
+-- typedef struct tableex
+-- {
+--     int something;
+--     char* other;
+-- } tableex_t;
+
+-- /// Push a table onto lua stack.
+-- /// @param[in] l Internal lua state.
+-- /// @param[in] tbl The table.
+-- void luaex_pushtableex(lua_State* l, tableex_t* tbl);
+
+-- /// Make a TableEx from the lua table on the top of the stack.
+-- /// Note: Like other "to" functions except also does the pop.
+-- /// @param[in] l Internal lua state.
+-- /// @param[in] ind Where it is on the stack. Not implemented yet.
+-- /// @return The new table or NULL if invalid.
+-- tableex_t* luaex_totableex(lua_State* l, int ind);
 
 ---------------------------------------------------------------------------
 --[[  Simple objects.
