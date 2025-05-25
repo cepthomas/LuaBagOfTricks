@@ -3,7 +3,7 @@
 local sx = require("stringex")
 local tx = require('tableex')
 local List = require('List')
-local dbg = require('debugger')
+local dbg = require('debugex')
 
 
 local M = {}

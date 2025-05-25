@@ -19,8 +19,3 @@ set LUA_PATH=?.lua;..\?.lua;%APPDATA%\luarocks\share\lua\5.4\?.lua;;
 set LUA_CPATH=%APPDATA%\luarocks\lib\lua\5.4\?.dll;;
 lua test_debugex.lua
 
-
-rem :: Debugger tests.
-rem set TERM=1
-rem set LUA_PATH=.\?.lua;;
-rem lua test_debugger.lua
