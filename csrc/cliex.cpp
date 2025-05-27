@@ -1,11 +1,11 @@
 #include <windows.h>
 #include <wchar.h>
 #include <vcclr.h>
+#include <vector>
 extern "C" {
 #include "luaex.h"
 };
-#include "InteropCore.h"
-#include <vector>
+#include "cliex.h"
 
 
 using namespace System;
@@ -33,14 +33,14 @@ Scope::~Scope() { Collect(); LeaveCriticalSection(&_critsect); }
 //=============== Main class ==========================
 
 //--------------------------------------------------------//
-InteropCore::InteropCore()
+CliEx::CliEx()
 {
     InitializeCriticalSection(&_critsect);
     //Console::WriteLine("Core()");
 }
 
 //--------------------------------------------------------//
-InteropCore::~InteropCore()
+CliEx::~CliEx()
 {
     // Finished. Clean up resources and go home.
     DeleteCriticalSection(&_critsect);
@@ -53,13 +53,13 @@ InteropCore::~InteropCore()
 }
 
 //--------------------------------------------------------//
-//bool InteropCore::ScriptLoaded()
+//bool CliEx::ScriptLoaded()
 //{
 //    return _l != nullptr;
 //}
 
 //--------------------------------------------------------//
-void InteropCore::InitLua(String^ luaPath)
+void CliEx::InitLua(String^ luaPath)
 {
     SCOPE();
 
@@ -83,7 +83,7 @@ void InteropCore::InitLua(String^ luaPath)
 }
 
 //--------------------------------------------------------//
-void InteropCore::OpenScript(String^ fn)
+void CliEx::OpenScript(String^ fn)
 {
     SCOPE();
 
@@ -110,7 +110,7 @@ void InteropCore::OpenScript(String^ fn)
 //------------------- Privates ---------------------------//
 
 //--------------------------------------------------------//
-void InteropCore::EvalLuaStatus(int lstat, String^ info)
+void CliEx::EvalLuaStatus(int lstat, String^ info)
 {
     if (lstat == LUA_OK)
     {
@@ -146,7 +146,7 @@ void InteropCore::EvalLuaStatus(int lstat, String^ info)
 }
 
 //--------------------------------------------------------//
-void InteropCore::EvalLuaInteropStatus(const char* err, const char* info)
+void CliEx::EvalLuaInteropStatus(const char* err, const char* info)
 {
     if (err != NULL)
     {
@@ -156,7 +156,7 @@ void InteropCore::EvalLuaInteropStatus(const char* err, const char* info)
 }
 
 //--------------------------------------------------------//
-const char* InteropCore::ToCString(String^ input)
+const char* CliEx::ToCString(String^ input)
 {
     // https://learn.microsoft.com/en-us/cpp/dotnet/how-to-access-characters-in-a-system-string?view=msvc-170
     // not! const char* str4 = context->marshal_as<const char*>(input);

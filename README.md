@@ -17,7 +17,7 @@ A plethora of Lua odds and ends accumulated over the years.
 
 - `lua54` folder contains Lua reference for integration in other Lua projects. 64 bit Lua 5.4.2 from https://luabinaries.sourceforge.net/download.html.
 
- - 'csrc' folder contains some lua utilities implemented in C. Mainly useful for other Lua components (e.g. LuaInterop).
+ - 'csrc' folder contains some utilities implemented in C and C++. Mainly useful for internal Lua and interop components.
 
 
 # Libraries

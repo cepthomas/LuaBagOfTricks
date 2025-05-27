@@ -6,7 +6,7 @@ using namespace System::Collections::Generic;
 
 //------ Utilities ------//
 
-/// <summary>Exception used for all interop errors.</summary>
+/// <summary>Exception used for lua script errors.</summary>
 public ref struct LuaException : public System::Exception
 {
 public:
@@ -26,20 +26,20 @@ public:
 
 //------ Main class -------//
 
-public ref class InteropCore
+public ref class CliEx
 {
 protected:
     /// <summary>The lua thread.</summary>
     lua_State* _l = nullptr;
 
     /// <summary>Construct.</summary>
-    InteropCore();
+    CliEx();
 
     /// <summary>Clean up resources.</summary>
-    ~InteropCore();
+    ~CliEx();
 
     /// <summary>Initialize everything lua.</summary>
-    /// <param name="luaPath">LUA_PATH components</param>
+    /// <param name="luaPath">LUA_PATH</param>
     void InitLua(String^ luaPath);
 
     /// <summary>Load and process.</summary>
