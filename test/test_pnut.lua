@@ -78,15 +78,15 @@ function M.suite_basic(pn)
     -- pn.UT_RAISES(func_that_throws, {6, 1, 2, 3}, 'BOOM!')
     --function did not raise expected error() with [BOOM!].
 
-    -- Check summary. Cache values first.
+    -- Check summary. Cache values first. This is pertinent only if running this suite by itself.
     local num_suites_run = pn.num_suites_run
     local num_suites_failed = pn.num_suites_failed
     local num_cases_run = pn.num_cases_run
     local num_cases_failed = pn.num_cases_failed
     pn.UT_EQUAL(num_suites_run, 1)
     pn.UT_EQUAL(num_suites_failed, 1, "Info 6.")
-    pn.UT_EQUAL(num_cases_run, 36)
-    pn.UT_EQUAL(num_cases_failed, 17)
+    pn.UT_EQUAL(num_cases_run, 35)
+    pn.UT_EQUAL(num_cases_failed, 16)
 
 end
 

@@ -10,7 +10,7 @@ A plethora of Lua odds and ends accumulated over the years.
 
 - This is intended to be used in client projects by one of several means:
   - git submodule
-  - symlink: `mklink /d your_app\LBOT your_git_clone\LuaBagOfTricks`
+  - symlink: `mklink /d <current_folder>\LBOT <lbot_source_folder>\LuaBagOfTricks`
   - or just copy parts of interest
 
 - Code mostly follows [luarocks style guide](https://github.com/luarocks/lua-style-guide).
