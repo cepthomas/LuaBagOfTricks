@@ -200,7 +200,7 @@ end
 -- Return false for stack frames without source - C frames, Lua bytecode, and `loadstring` functions.
 local function frame_has_line(info)
     if not info then
-        write_line('frame_has_line() info is nil'..debug.traceback(), Cat.ERROR)
+        write_line('frame_has_line() info is nil: '..debug.traceback(), Cat.INFO)
     end
     return info.currentline >= 0
 end
