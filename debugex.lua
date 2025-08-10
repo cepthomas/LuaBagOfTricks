@@ -43,13 +43,13 @@ local _source_cache = {}
 -- When error some ops are limited.
 local _in_error = false
 
--- ANSI formatting.
+-- For ANSI formatting.
 local ESC = string.char(27)
 
 -- The stack level that cmd_* functions use to access locals or info. The structure of the code very carefully ensures this.
 local CMD_STACK_LEVEL = 6
 
--- Category enum for writeln. The value is 256-color ansi. TODO make configurable.
+-- Category enum for writeln. The value is 256-color ansi. Customize to taste.
 -- https://github.com/fidian/ansi/blob/master/images/color-codes.png.
 local Cat =
 {
@@ -123,8 +123,10 @@ end
 -------------------------------------------------------------------------
 local socket_io =
 {
-    flush = function() end, -- Noop.
+    -----------------------------------
+    flush = function() end, -- noop
 
+    -----------------------------------
     write = function(str)
         local done, res, msg
         while not done do
@@ -152,6 +154,7 @@ local socket_io =
         return true
     end,
 
+    -----------------------------------
     read = function()
         local done, res, msg, line
         while not done do
