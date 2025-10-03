@@ -134,14 +134,15 @@ void CliEx::EvalLuaStatus(int lstat, String^ info)
         lua_pop(_l, 1);
 
         String^ mmsg = gcnew String(smsg);
-        array<wchar_t>^ delims = { '\r', '\n' };
-        array<String^>^ parts = mmsg->Split(delims);
-        String^ s = String::Format(gcnew String("{0}: {1} [{2}]"), stat, info, parts[0]);
+        //array<wchar_t>^ delims = { '\r', '\n' };
+        //array<String^>^ parts = mmsg->Split(delims);
+        //String^ s = String::Format(gcnew String("{0}: {1} [{2}]"), stat, info, parts[0]);
+        String^ s = String::Format(gcnew String("{0}\n{1}\n{2}"), stat, info, mmsg);
         throw(gcnew LuaException(s));
     }
     else // simple
     {
-        throw(gcnew LuaException(String::Format(gcnew String("{0}: {1}"), stat, info)));
+        throw(gcnew LuaException(String::Format(gcnew String("{0} {1}"), stat, info)));
     }
 }
 
