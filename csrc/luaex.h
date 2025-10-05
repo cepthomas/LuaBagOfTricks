@@ -24,7 +24,7 @@ int luaex_DumpStack(lua_State *l, FILE* fout, const char* info);
 /// Make a readable string.
 /// @param status Specific Lua status.
 /// @return the string.
-const char* luaex_LuaStatusToString(int err);
+//const char* luaex_LuaStatusToString(int err);
 
 /// Dump the table at the top.
 /// @param l Lua state.

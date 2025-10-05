@@ -2,6 +2,7 @@
 #include <wchar.h>
 #include <vcclr.h>
 #include <vector>
+
 extern "C" {
 #include "luaex.h"
 };
@@ -30,7 +31,8 @@ Scope::Scope() { EnterCriticalSection(&_critsect); }
 Scope::~Scope() { Collect(); LeaveCriticalSection(&_critsect); }
 
 
-//=============== Main class ==========================
+
+//------------------ Main class --------------------------//
 
 //--------------------------------------------------------//
 CliEx::CliEx()
@@ -87,62 +89,47 @@ void CliEx::OpenScript(String^ fn)
 {
     SCOPE();
 
-    int lstat = LUA_OK;
+    LuaStatus lstat = LuaStatus::OK;
     int ret = 0;
 
     if (_l == nullptr)
     {
-        EvalLuaStatus(-1, "You forgot to call InitLua().");
+//TODO1 ??        EvalLuaStatus(-1, "You forgot to call InitLua().");
     }
 
     // Load the script into memory.
     // Pushes the compiled chunk as a lua function on top of the stack or pushes an error message.
-    lstat = luaL_loadfile(_l, ToCString(fn));
+    lstat = (LuaStatus)luaL_loadfile(_l, ToCString(fn));
     EvalLuaStatus(lstat, "Load script file failed.");
 
     // Execute the script to initialize it. This reports runtime syntax errors.
     // Do the protected call. Use extended version which adds a stacktrace.
-    lstat = luaex_docall(_l, 0, 0);
+    lstat = (LuaStatus)luaex_docall(_l, 0, 0);
     EvalLuaStatus(lstat, "Execute script failed.");
 }
 
-
-//------------------- Privates ---------------------------//
-
 //--------------------------------------------------------//
-void CliEx::EvalLuaStatus(int lstat, String^ info)
+void CliEx::EvalLuaStatus(LuaStatus lstat, String^ info)
 {
-    if (lstat == LUA_OK)
+    if (lstat == LuaStatus::OK)
     {
         return;
     }
 
-    // Translate between internal lua status and client status.
-    String^ stat;
-    switch (lstat)
-    {
-        case LUA_ERRSYNTAX: stat = "ScriptSyntaxError"; break;
-        case LUA_ERRFILE:   stat = "ScriptFileError";   break;
-        case LUA_ERRRUN:    stat = "ScriptRunError";    break;
-        default:            stat = "AppInteropError";   break;
-    }
+    //String^ stat = gcnew String(luaex_LuaStatusToString(lstat));
 
     // Maybe lua error message?
-    if (lstat <= LUA_ERRFILE && _l != NULL && lua_gettop(_l) > 0)
+    if (lstat <= LuaStatus::ERRFILE && _l != NULL && lua_gettop(_l) > 0)
     {
         const char* smsg = lua_tostring(_l, -1);
         lua_pop(_l, 1);
 
-        String^ mmsg = gcnew String(smsg);
-        //array<wchar_t>^ delims = { '\r', '\n' };
-        //array<String^>^ parts = mmsg->Split(delims);
-        //String^ s = String::Format(gcnew String("{0}: {1} [{2}]"), stat, info, parts[0]);
-        String^ s = String::Format(gcnew String("{0}\n{1}\n{2}"), stat, info, mmsg);
-        throw(gcnew LuaException(s));
+        //String^ s = String::Format(gcnew String("{0}\n{1}\n{2}"), stat, info, gcnew String(smsg));
+        throw(gcnew LuaException(lstat, info, gcnew String(smsg)));
     }
     else // simple
     {
-        throw(gcnew LuaException(String::Format(gcnew String("{0} {1}"), stat, info)));
+        throw(gcnew LuaException(lstat, info));
     }
 }
 
@@ -151,8 +138,8 @@ void CliEx::EvalLuaInteropStatus(const char* err, const char* info)
 {
     if (err != NULL)
     {
-        String^ s = String::Format(gcnew String("LuaInteropError: {0} [{1}]"), gcnew String(info), gcnew String(err));
-        throw(gcnew LuaException(s));
+        String^ s = String::Format(gcnew String("{0} {1}"), gcnew String(info), gcnew String(err));
+        throw(gcnew LuaException(LuaStatus::INTEROP, s));
     }
 }
 
