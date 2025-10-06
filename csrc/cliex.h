@@ -60,7 +60,7 @@ protected:
     /// <summary>Checks lua interop error and throws exception if it failed.</summary>
     /// <param name="err">Error message or NULL if ok</param>
     /// <param name="info">Extra info</param>
-    void EvalLuaInteropStatus(const char* err, const char* info);
+    void EvalInterop(const char* err, const char* info);
 
     /// <summary>Convert managed string to unmanaged. Only use within a SCOPE() context.</summary>
     const char* ToCString(String^ input);

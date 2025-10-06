@@ -7,8 +7,8 @@
 #include "lauxlib.h"
 
 
-/// Interface to lua_pcall() with error message function. Used to run all function chunks.
-/// Modeled after docall(...).
+/// Interface to lua_pcall(). If error occurs the traceback is added to the stack. 
+/// Used to run all function chunks. Modeled after docall(...).
 /// @param[in] l Internal lua state.
 /// @param[in] num_args Number of args.
 /// @param[in] num_ret Number of return values.
@@ -20,11 +20,6 @@ int luaex_docall(lua_State* l, int num_args, int num_ret);
 /// @param fout where to boss.
 /// @param info Extra info.
 int luaex_DumpStack(lua_State *l, FILE* fout, const char* info);
-
-/// Make a readable string.
-/// @param status Specific Lua status.
-/// @return the string.
-//const char* luaex_LuaStatusToString(int err);
 
 /// Dump the table at the top.
 /// @param l Lua state.

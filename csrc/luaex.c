@@ -102,24 +102,6 @@ int luaex_DumpStack(lua_State* l, FILE* fout, const char* info)
     return 0;
 }
 
-// //--------------------------------------------------------//
-// const char* luaex_LuaStatusToString(int stat)
-// {
-//     const char* sstat = "UNKNOWN";
-//     switch(stat)
-//     {
-//         case LUA_OK: sstat = "LUA_OK"; break; // no error
-//         case LUA_YIELD: sstat = "LUA_YIELD"; break; // not an error
-//         case LUA_ERRRUN: sstat = "LUA_ERRRUN"; break; // a runtime error (incl bad args)
-//         case LUA_ERRSYNTAX: sstat = "LUA_ERRSYNTAX"; break; // syntax error during pre-compilation (file load not runtime)
-//         case LUA_ERRMEM: sstat = "LUA_ERRMEM"; break; // memory allocation error
-//         case LUA_ERRERR: sstat = "LUA_ERRERR"; break; // error while running the error handler function
-//         case LUA_ERRFILE: sstat = "LUA_ERRFILE"; break; // couldn't open the given file
-//         default: break; // nothing else for now.
-//     }
-//     return sstat;
-// }
-
 //--------------------------------------------------------//
 int luaex_DumpTable(lua_State* l, FILE* fout, const char* name) // TODO make recursive like lua dump_table()?
 {

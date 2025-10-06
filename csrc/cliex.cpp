@@ -116,15 +116,12 @@ void CliEx::EvalLuaStatus(LuaStatus lstat, String^ info)
         return;
     }
 
-    //String^ stat = gcnew String(luaex_LuaStatusToString(lstat));
-
     // Maybe lua error message?
     if (lstat <= LuaStatus::ERRFILE && _l != NULL && lua_gettop(_l) > 0)
     {
         const char* smsg = lua_tostring(_l, -1);
         lua_pop(_l, 1);
 
-        //String^ s = String::Format(gcnew String("{0}\n{1}\n{2}"), stat, info, gcnew String(smsg));
         throw(gcnew LuaException(lstat, info, gcnew String(smsg)));
     }
     else // simple
@@ -134,7 +131,7 @@ void CliEx::EvalLuaStatus(LuaStatus lstat, String^ info)
 }
 
 //--------------------------------------------------------//
-void CliEx::EvalLuaInteropStatus(const char* err, const char* info)
+void CliEx::EvalInterop(const char* err, const char* info)
 {
     if (err != NULL)
     {
