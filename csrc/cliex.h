@@ -21,7 +21,7 @@ public enum class LuaStatus : int
     ERRERR = LUA_ERRERR,
     /// <summary>couldn't open the given file.</summary>
     ERRFILE = LUA_ERRFILE,
-    /// <summary>Script calls api function with invalid argument. TODO1 need lua file/line</summary>
+    /// <summary>Script calls api function with invalid argument.</summary>
     ERRARG = 10,
     /// <summary>Interop internal.</summary>
     INTEROP = 11,
@@ -69,12 +69,12 @@ protected:
 
 //------------------ Utilities ------------------//
 
-/// <summary>Exception used for lua script errors.</summary>
-// Come from:
-//  - lua code: the standard lua error codes
-//  - syntax: file load or runtime
-//  - 
-public ref struct LuaException : public System::Exception // TODO1 simplify/cleanup?
+/// <summary>Exception used for lua errors.
+///  - lua code: the standard lua error codes
+///  - syntax: file load or runtime
+///  - ???
+/// </summary>
+public ref struct LuaException : public System::Exception
 {
 private:
     LuaStatus _status;
@@ -89,12 +89,12 @@ public:
         _context = context;
     }
 
-    LuaException(LuaStatus status, String^ info) : Exception()
-    {
-        _status = status;
-        _info = info;
-        _context = "";
-    }
+    // LuaException(LuaStatus status, String^ info) : Exception()
+    // {
+    //     _status = status;
+    //     _info = info;
+    //     _context = "";
+    // }
 
     property LuaStatus Status { LuaStatus get() { return _status; } }
 

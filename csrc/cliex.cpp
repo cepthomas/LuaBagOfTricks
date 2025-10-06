@@ -126,7 +126,7 @@ void CliEx::EvalLuaStatus(LuaStatus lstat, String^ info)
     }
     else // simple
     {
-        throw(gcnew LuaException(lstat, info));
+        throw(gcnew LuaException(lstat, info, "TODO1 context"));
     }
 }
 
@@ -136,7 +136,7 @@ void CliEx::EvalInterop(const char* err, const char* info)
     if (err != NULL)
     {
         String^ s = String::Format(gcnew String("{0} {1}"), gcnew String(info), gcnew String(err));
-        throw(gcnew LuaException(LuaStatus::INTEROP, s));
+        throw(gcnew LuaException(LuaStatus::INTEROP, s, "TODO1 context"));
     }
 }
 
