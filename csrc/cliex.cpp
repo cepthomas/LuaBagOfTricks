@@ -94,7 +94,7 @@ void CliEx::OpenScript(String^ fn)
 
     if (_l == nullptr)
     {
-//TODO1 ??        EvalLuaStatus(-1, "You forgot to call InitLua().");
+        EvalLuaStatus(LuaStatus::ERRINTEROP, "You forgot to call InitLua().");
     }
 
     // Load the script into memory.
@@ -109,24 +109,47 @@ void CliEx::OpenScript(String^ fn)
 }
 
 //--------------------------------------------------------//
+void CliEx::OpenChunk(String^ code)
+{
+    SCOPE();
+
+    LuaStatus lstat = LuaStatus::OK;
+    int ret = 0;
+
+    if (_l == nullptr)
+    {
+        EvalLuaStatus(LuaStatus::ERRINTEROP, "You forgot to call InitLua().");
+    }
+
+    // Load the chunk into memory.
+    // Pushes the compiled chunk as a lua function on top of the stack or pushes an error message.
+    const char* chunk = ToCString(code);
+    lstat = (LuaStatus)luaL_loadbuffer(_l, chunk, strlen(chunk), "chunk");
+    EvalLuaStatus(lstat, "Load chunk failed.");
+
+    // Execute the chunk to initialize it. This reports runtime syntax errors.
+    // Do the protected call. Use extended version which adds a stacktrace.
+    lstat = (LuaStatus)luaex_docall(_l, 0, 0);
+    EvalLuaStatus(lstat, "Execute chunk failed.");
+}
+
+//--------------------------------------------------------//
 void CliEx::EvalLuaStatus(LuaStatus lstat, String^ info)
 {
-    if (lstat == LuaStatus::OK)
+    if (lstat >= LuaStatus::ERRRUN)
     {
-        return;
-    }
+        // Maybe lua error message?
+        if (_l != NULL && lua_gettop(_l) > 0)
+        {
+            const char* smsg = lua_tostring(_l, -1);
+            lua_pop(_l, 1);
 
-    // Maybe lua error message?
-    if (lstat <= LuaStatus::ERRFILE && _l != NULL && lua_gettop(_l) > 0)
-    {
-        const char* smsg = lua_tostring(_l, -1);
-        lua_pop(_l, 1);
-
-        throw(gcnew LuaException(lstat, info, gcnew String(smsg)));
-    }
-    else // simple
-    {
-        throw(gcnew LuaException(lstat, info, "TODO1 context"));
+            throw(gcnew LuaException(lstat, info, gcnew String(smsg)));
+        }
+        else // simple
+        {
+            throw(gcnew LuaException(lstat, info, "TODO1 context"));
+        }
     }
 }
 
@@ -136,7 +159,19 @@ void CliEx::EvalInterop(const char* err, const char* info)
     if (err != NULL)
     {
         String^ s = String::Format(gcnew String("{0} {1}"), gcnew String(info), gcnew String(err));
-        throw(gcnew LuaException(LuaStatus::INTEROP, s, "TODO1 context"));
+
+        // Maybe lua error message?
+        if (_l != NULL && lua_gettop(_l) > 0)
+        {
+            const char* smsg = lua_tostring(_l, -1);
+            lua_pop(_l, 1);
+
+            throw(gcnew LuaException(LuaStatus::ERRINTEROP, s, gcnew String(smsg)));
+        }
+        else // simple
+        {
+            throw(gcnew LuaException(LuaStatus::ERRINTEROP, s, "TODO1 ???"));
+        }
     }
 }
 

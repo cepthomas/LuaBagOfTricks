@@ -5,28 +5,30 @@ using namespace System::Collections::Generic;
 
 #include "lua.h"
 
+/// <summary>Managed version of lua codes plus some extras.</summary>
 public enum class LuaStatus : int
 {
-    /// <summary>no error.</summary>
+    /// <summary>No error.</summary>
     OK = LUA_OK,
-    /// <summary>not an error.</summary>
+    /// <summary>Not an error.</summary>
     YIELD = LUA_YIELD,
-    /// <summary>a runtime error e.g bad arg type.</summary>
+    /// <summary>Runtime error e.g bad arg type.</summary>
     ERRRUN = LUA_ERRRUN,
-    /// <summary>syntax error during pre-compilation (file load not runtime - e.g. language violation).</summary>
+    /// <summary>Syntax error during pre-compilation (file load not runtime - e.g. language violation).</summary>
     ERRSYNTAX = LUA_ERRSYNTAX,
-    /// <summary>memory allocation error.</summary>
+    /// <summary>Memory allocation error.</summary>
     ERRMEM = LUA_ERRMEM,
-    /// <summary>error while running the error handler function.</summary>
+    /// <summary>Error while running the error handler function.</summary>
     ERRERR = LUA_ERRERR,
-    /// <summary>couldn't open the given file.</summary>
+    /// <summary>Couldn't open the given file.</summary>
     ERRFILE = LUA_ERRFILE,
+    //============ added ==============//
     /// <summary>Script calls api function with invalid argument.</summary>
     ERRARG = 10,
     /// <summary>Interop internal.</summary>
-    INTEROP = 11,
+    ERRINTEROP = 11,
     /// <summary>Debug flag.</summary>
-    DEBUG = 12,
+    DEBUG = 99,
 };
 
 
@@ -48,9 +50,13 @@ protected:
     /// <param name="luaPath">LUA_PATH</param>
     void InitLua(String^ luaPath);
 
-    /// <summary>Load and process.</summary>
+    /// <summary>Load and execute a script file.</summary>
     /// <param name="fn">Full file path</param>
     void OpenScript(String^ fn);
+
+    /// <summary>Load and execute a string as lua code.</summary>
+    /// <param name="code">The code chunk</param>
+    void OpenChunk(String^ code);
 
     /// <summary>Checks lua status and throws exception if it failed.</summary>
     /// <param name="stat">Lua status</param>
