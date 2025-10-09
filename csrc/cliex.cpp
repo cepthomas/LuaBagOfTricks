@@ -144,11 +144,11 @@ void CliEx::EvalLuaStatus(LuaStatus lstat, String^ info)
             const char* smsg = lua_tostring(_l, -1);
             lua_pop(_l, 1);
 
-            throw(gcnew LuaException(lstat, info, gcnew String(smsg)));
+            throw(gcnew LuaException(lstat, info + "__100", gcnew String(smsg)));
         }
         else // simple
         {
-            throw(gcnew LuaException(lstat, info, "TODO1 context"));
+            throw(gcnew LuaException(lstat, info, "TODO1X-100 no context"));
         }
     }
 }
@@ -166,11 +166,11 @@ void CliEx::EvalInterop(const char* err, const char* info)
             const char* smsg = lua_tostring(_l, -1);
             lua_pop(_l, 1);
 
-            throw(gcnew LuaException(LuaStatus::ERRINTEROP, s, gcnew String(smsg)));
+            throw(gcnew LuaException(LuaStatus::ERRINTEROP, s + "__200", gcnew String(smsg)));
         }
         else // simple
         {
-            throw(gcnew LuaException(LuaStatus::ERRINTEROP, s, "TODO1 ???"));
+            throw(gcnew LuaException(LuaStatus::ERRINTEROP, s, "TODO1X-200 no context"));
         }
     }
 }

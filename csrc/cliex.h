@@ -95,13 +95,6 @@ public:
         _context = context;
     }
 
-    // LuaException(LuaStatus status, String^ info) : Exception()
-    // {
-    //     _status = status;
-    //     _info = info;
-    //     _context = "";
-    // }
-
     property LuaStatus Status { LuaStatus get() { return _status; } }
 
     property String^ Info { String^ get() { return _info; } }
