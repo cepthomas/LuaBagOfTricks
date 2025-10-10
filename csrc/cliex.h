@@ -22,13 +22,6 @@ public enum class LuaStatus : int
     ERRERR = LUA_ERRERR,
     /// <summary>Couldn't open the given file.</summary>
     ERRFILE = LUA_ERRFILE,
-    //============ added ==============//
-    /// <summary>Script calls api function with invalid argument.</summary>
-    ERRARG = 10,
-    /// <summary>Interop internal.</summary>
-    ERRINTEROP = 11,
-    /// <summary>Debug flag.</summary>
-    DEBUG = 99,
 };
 
 
@@ -58,20 +51,16 @@ protected:
     /// <param name="code">The code chunk</param>
     void OpenChunk(String^ code);
 
-    /// <summary>Checks lua status and throws exception if it failed.</summary>
-    /// <param name="stat">Lua status</param>
-    /// <param name="msg">Info</param>
-    void EvalLuaStatus(LuaStatus stat, String^ msg);
-
-    /// <summary>Checks lua interop error and throws exception if it failed.</summary>
-    /// <param name="err">Info message or NULL if ok</param>
-    /// <param name="err">Contexte or NULL if ok</param>
-    void EvalInterop(const char* info, const char* context);
-
     /// <summary>Convert managed string to unmanaged. Only use within a SCOPE() context.</summary>
     /// <param name="input">Managed string</param>
     /// <returns>Unmanaged string</returns>
     const char* ToCString(String^ input);
+
+private:
+    /// <summary>Checks lua status and throws exception if it failed.</summary>
+    /// <param name="stat">Lua status</param>
+    /// <param name="msg">Info</param>
+    void EvalLuaStatus(LuaStatus stat, String^ msg);
 };
 
 
@@ -81,7 +70,7 @@ protected:
 public ref struct LuaException : public System::Exception
 {
 private:
-    LuaStatus _status;
+   // LuaStatus _status;
     String^ _info;
     String^ _context;
 
@@ -90,15 +79,11 @@ public:
     /// <param name="status">Standard lua code</param>
     /// <param name="info">Error info string or NULL if OK</param>
     /// <param name="context">lua traceback or NULL if OK</param>
-    LuaException(LuaStatus status, String^ info, String^ context) : Exception()
+    LuaException(String^ info, String^ context) : Exception()
     {
-        _status = status;
         _info = info;
         _context = context;
     }
-
-    /// <summary>Standard lua code.</summary>
-    property LuaStatus Status { LuaStatus get() { return _status; } }
 
     /// <summary>Error info string or NULL if OK.</summary>
     property String^ Info { String^ get() { return _info; } }
@@ -106,7 +91,8 @@ public:
     /// <summary>lua traceback or NULL if OK.</summary>
     property String^ Context { String^ get() { return _context; } }
 
-    virtual property String^ Message { String^ get() override { return _status.ToString() + " " + _info; } }
+    /// <summary>Exception override.</summary>
+    virtual property String^ Message{ String ^ get() override { return _info; } }
 };
 
 

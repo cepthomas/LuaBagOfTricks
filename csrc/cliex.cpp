@@ -55,12 +55,6 @@ CliEx::~CliEx()
 }
 
 //--------------------------------------------------------//
-//bool CliEx::ScriptLoaded()
-//{
-//    return _l != nullptr;
-//}
-
-//--------------------------------------------------------//
 void CliEx::InitLua(String^ luaPath)
 {
     SCOPE();
@@ -89,21 +83,16 @@ void CliEx::OpenScript(String^ fn)
 {
     SCOPE();
 
-    LuaStatus lstat = LuaStatus::OK;
-    int ret = 0;
-
     if (_l == nullptr)
     {
-        EvalLuaStatus(LuaStatus::ERRINTEROP, "You forgot to call InitLua().");
+        throw(gcnew LuaException("You forgot to call InitLua()", ""));
     }
 
-    // Load the script into memory.
-    // Pushes the compiled chunk as a lua function on top of the stack or pushes an error message.
-    lstat = (LuaStatus)luaL_loadfile(_l, ToCString(fn));
+    // Load the script into memory. Pushes the compiled chunk as a lua function on top of the stack.
+    LuaStatus lstat = (LuaStatus)luaL_loadfile(_l, ToCString(fn));
     EvalLuaStatus(lstat, "Load script file failed.");
 
-    // Execute the script to initialize it. This reports runtime syntax errors.
-    // Do the protected call. Use extended version which adds a stacktrace.
+    // Execute the script to initialize it. This reports runtime syntax errors. Uses extended version which adds a stacktrace.
     lstat = (LuaStatus)luaex_docall(_l, 0, 0);
     EvalLuaStatus(lstat, "Execute script failed.");
 }
@@ -113,22 +102,17 @@ void CliEx::OpenChunk(String^ code)
 {
     SCOPE();
 
-    LuaStatus lstat = LuaStatus::OK;
-    int ret = 0;
-
     if (_l == nullptr)
     {
-        EvalLuaStatus(LuaStatus::ERRINTEROP, "You forgot to call InitLua().");
+        throw(gcnew LuaException("You forgot to call InitLua()", ""));
     }
 
-    // Load the chunk into memory.
-    // Pushes the compiled chunk as a lua function on top of the stack or pushes an error message.
+    // Load the chunk into memory. Pushes the compiled chunk as a lua function on top of the stack.
     const char* chunk = ToCString(code);
-    lstat = (LuaStatus)luaL_loadbuffer(_l, chunk, strlen(chunk), "chunk");
+    LuaStatus lstat = (LuaStatus)luaL_loadbuffer(_l, chunk, strlen(chunk), "chunk");
     EvalLuaStatus(lstat, "Load chunk failed.");
 
-    // Execute the chunk to initialize it. This reports runtime syntax errors.
-    // Do the protected call. Use extended version which adds a stacktrace.
+    // Execute the chunk to initialize it. This reports runtime syntax errors. Uses extended version which adds a stacktrace.
     lstat = (LuaStatus)luaex_docall(_l, 0, 0);
     EvalLuaStatus(lstat, "Execute chunk failed.");
 }
@@ -138,30 +122,14 @@ void CliEx::EvalLuaStatus(LuaStatus lstat, String^ info)
 {
     if (lstat >= LuaStatus::ERRRUN)
     {
+        String^ context = "";
         // Maybe lua error message?
         if (_l != NULL && lua_gettop(_l) > 0)
         {
-            const char* scontext = lua_tostring(_l, -1);
+            context = gcnew String(lua_tostring(_l, -1));
             lua_pop(_l, 1);
-
-            throw(gcnew LuaException(lstat, info, gcnew String(scontext)));
         }
-        else // simple
-        {
-            throw(gcnew LuaException(lstat, info, ""));
-        }
-    }
-}
-
-//--------------------------------------------------------//
-void CliEx::EvalInterop(const char* info, const char* context)
-{
-    String^ sinfo = gcnew String(info == NULL ? "" : info);
-    String^ scontext = gcnew String(context == NULL ? "" : context);
-
-    if (info != NULL)
-    {
-        throw(gcnew LuaException(LuaStatus::ERRINTEROP, gcnew String(info), gcnew String(context == NULL ? "" : context)));
+        throw(gcnew LuaException(info, gcnew String(context)));
     }
 }
 

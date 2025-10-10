@@ -19,21 +19,24 @@ int luaex_docall(lua_State* l, int num_args, int num_ret);
 /// @param l Lua state.
 /// @param fout where to boss.
 /// @param info Extra info.
+/// @return LUA_STATUS
 int luaex_DumpStack(lua_State *l, FILE* fout, const char* info);
 
 /// Dump the table at the top.
 /// @param l Lua state.
 /// @param fout where to boss.
 /// @param name visual.
+/// @return LUA_STATUS
 int luaex_DumpTable(lua_State* l, FILE* fout, const char* name);
 
 /// Dump the lua globals.
 /// @param l Lua state.
 /// @param fout where to boss.
+/// @return LUA_STATUS
 int luaex_DumpGlobals(lua_State* l, FILE* fout);
 
- /// Check stack.
- void luaex_EvalStack(lua_State* l, FILE* fout, int expected);
+/// Check stack.
+void luaex_EvalStack(lua_State* l, FILE* fout, int expected);
 
 /// Safe convert a string to double with bounds checking.
 /// @param[in] str to parse
