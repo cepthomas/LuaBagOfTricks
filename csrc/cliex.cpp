@@ -141,37 +141,27 @@ void CliEx::EvalLuaStatus(LuaStatus lstat, String^ info)
         // Maybe lua error message?
         if (_l != NULL && lua_gettop(_l) > 0)
         {
-            const char* smsg = lua_tostring(_l, -1);
+            const char* scontext = lua_tostring(_l, -1);
             lua_pop(_l, 1);
 
-            throw(gcnew LuaException(lstat, info + "__100", gcnew String(smsg)));
+            throw(gcnew LuaException(lstat, info, gcnew String(scontext)));
         }
         else // simple
         {
-            throw(gcnew LuaException(lstat, info, "TODO1X-100 no context"));
+            throw(gcnew LuaException(lstat, info, ""));
         }
     }
 }
 
 //--------------------------------------------------------//
-void CliEx::EvalInterop(const char* err, const char* info)
+void CliEx::EvalInterop(const char* info, const char* context)
 {
-    if (err != NULL)
+    String^ sinfo = gcnew String(info == NULL ? "" : info);
+    String^ scontext = gcnew String(context == NULL ? "" : context);
+
+    if (info != NULL)
     {
-        String^ s = String::Format(gcnew String("{0} {1}"), gcnew String(info), gcnew String(err));
-
-        // Maybe lua error message?
-        if (_l != NULL && lua_gettop(_l) > 0)
-        {
-            const char* smsg = lua_tostring(_l, -1);
-            lua_pop(_l, 1);
-
-            throw(gcnew LuaException(LuaStatus::ERRINTEROP, s + "__200", gcnew String(smsg)));
-        }
-        else // simple
-        {
-            throw(gcnew LuaException(LuaStatus::ERRINTEROP, s, "TODO1X-200 no context"));
-        }
+        throw(gcnew LuaException(LuaStatus::ERRINTEROP, gcnew String(info), gcnew String(context == NULL ? "" : context)));
     }
 }
 
