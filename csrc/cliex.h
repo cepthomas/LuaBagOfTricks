@@ -49,7 +49,8 @@ protected:
 
     /// <summary>Load and execute a string as lua code.</summary>
     /// <param name="code">The code chunk</param>
-    void OpenChunk(String^ code);
+    /// <param name="name">The lua ref name</param>
+    void OpenChunk(String^ code, String^ name);
 
     /// <summary>Convert managed string to unmanaged. Only use within a SCOPE() context.</summary>
     /// <param name="input">Managed string</param>
@@ -71,28 +72,24 @@ public ref struct LuaException : public System::Exception
 {
 private:
    // LuaStatus _status;
-    String^ _info;
-    String^ _context;
+    String^ _info = "";
+    String^ _context = "";
 
 public:
     /// <summary>Constructor.</summary>
     /// <param name="status">Standard lua code</param>
-    /// <param name="info">Error info string or NULL if OK</param>
-    /// <param name="context">lua traceback or NULL if OK</param>
-    LuaException(String^ info, String^ context) : Exception()
-    {
-        _info = info;
-        _context = context;
-    }
+    /// <param name="info">Error info string</param>
+    /// <param name="context">Lua traceback</param>
+    LuaException(String^ info, String^ context);
 
-    /// <summary>Error info string or NULL if OK.</summary>
+    /// <summary>Error info string - empty if OK.</summary>
     property String^ Info { String^ get() { return _info; } }
 
-    /// <summary>lua traceback or NULL if OK.</summary>
+    /// <summary>lua traceback - empty if OK.</summary>
     property String^ Context { String^ get() { return _context; } }
 
-    /// <summary>Exception override.</summary>
-    virtual property String^ Message{ String ^ get() override { return _info; } }
+    /// <summary>Consolidates various flavors into one common message. Exception override.</summary>
+    virtual property String^ Message { String^ get() override; }
 };
 
 

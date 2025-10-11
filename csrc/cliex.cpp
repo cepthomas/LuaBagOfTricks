@@ -25,20 +25,39 @@ static void Collect()
     _allocations.clear();
 }
 
-//=============== Critical section ====================
+// Critical section.
 static CRITICAL_SECTION _critsect;
 Scope::Scope() { EnterCriticalSection(&_critsect); }
 Scope::~Scope() { Collect(); LeaveCriticalSection(&_critsect); }
 
 
+//--------------------------------------------------------//
+LuaException::LuaException(String^ info, String^ context) : Exception()
+{
+    _info = String::IsNullOrEmpty(info) ? "" : info;
+    _context = String::IsNullOrEmpty(context) ? "" : context;
+    _context = context;
+}
 
-//------------------ Main class --------------------------//
+//--------------------------------------------------------//
+String^ LuaException::Message::get()
+{
+    if (String::IsNullOrEmpty(_context))
+    {
+        // No trace, use info.
+        return _info;
+    }
+    else
+    {
+        array<String^>^ parts = _context->Split('\n');
+        return parts[0];
+    }
+}
 
 //--------------------------------------------------------//
 CliEx::CliEx()
 {
     InitializeCriticalSection(&_critsect);
-    //Console::WriteLine("Core()");
 }
 
 //--------------------------------------------------------//
@@ -98,7 +117,7 @@ void CliEx::OpenScript(String^ fn)
 }
 
 //--------------------------------------------------------//
-void CliEx::OpenChunk(String^ code)
+void CliEx::OpenChunk(String^ code, String^ name)
 {
     SCOPE();
 
@@ -109,7 +128,7 @@ void CliEx::OpenChunk(String^ code)
 
     // Load the chunk into memory. Pushes the compiled chunk as a lua function on top of the stack.
     const char* chunk = ToCString(code);
-    LuaStatus lstat = (LuaStatus)luaL_loadbuffer(_l, chunk, strlen(chunk), "chunk");
+    LuaStatus lstat = (LuaStatus)luaL_loadbuffer(_l, chunk, strlen(chunk), ToCString(name));
     EvalLuaStatus(lstat, "Load chunk failed.");
 
     // Execute the chunk to initialize it. This reports runtime syntax errors. Uses extended version which adds a stacktrace.
