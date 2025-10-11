@@ -71,19 +71,18 @@ private:
 public ref struct LuaException : public System::Exception
 {
 private:
-   // LuaStatus _status;
-    String^ _info = "";
+    String^ _error = "";
     String^ _context = "";
 
 public:
     /// <summary>Constructor.</summary>
     /// <param name="status">Standard lua code</param>
-    /// <param name="info">Error info string</param>
+    /// <param name="error">Error info string</param>
     /// <param name="context">Lua traceback</param>
-    LuaException(String^ info, String^ context);
+    LuaException(String^ error, String^ context);
 
     /// <summary>Error info string - empty if OK.</summary>
-    property String^ Info { String^ get() { return _info; } }
+    property String^ Error { String^ get() { return _error; } }
 
     /// <summary>lua traceback - empty if OK.</summary>
     property String^ Context { String^ get() { return _context; } }

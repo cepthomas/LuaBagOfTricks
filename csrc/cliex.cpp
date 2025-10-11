@@ -32,11 +32,10 @@ Scope::~Scope() { Collect(); LeaveCriticalSection(&_critsect); }
 
 
 //--------------------------------------------------------//
-LuaException::LuaException(String^ info, String^ context) : Exception()
+LuaException::LuaException(String^ error, String^ context) : Exception()
 {
-    _info = String::IsNullOrEmpty(info) ? "" : info;
+    _error = String::IsNullOrEmpty(error) ? "" : error;
     _context = String::IsNullOrEmpty(context) ? "" : context;
-    _context = context;
 }
 
 //--------------------------------------------------------//
@@ -45,7 +44,7 @@ String^ LuaException::Message::get()
     if (String::IsNullOrEmpty(_context))
     {
         // No trace, use info.
-        return _info;
+        return _error;
     }
     else
     {
