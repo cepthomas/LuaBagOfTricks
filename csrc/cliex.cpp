@@ -25,10 +25,18 @@ static void Collect()
     _allocations.clear();
 }
 
-// Critical section.
+
+// Critical section. TODO1 opt lock?
 static CRITICAL_SECTION _critsect;
-Scope::Scope() { EnterCriticalSection(&_critsect); }
-Scope::~Scope() { Collect(); LeaveCriticalSection(&_critsect); }
+Scope::Scope()
+{
+    // EnterCriticalSection(&_critsect);
+}
+Scope::~Scope()
+{
+    Collect();
+    // LeaveCriticalSection(&_critsect);
+}
 
 
 //--------------------------------------------------------//
