@@ -25,18 +25,15 @@ static void Collect()
     _allocations.clear();
 }
 
-
-// Critical section. TODO1 opt lock?
+// Two flavors of this: w/wo lock. It's probably best to lock on the caller's side.
+#ifdef LOCK_HERE
 static CRITICAL_SECTION _critsect;
-Scope::Scope()
-{
-    // EnterCriticalSection(&_critsect);
-}
-Scope::~Scope()
-{
-    Collect();
-    // LeaveCriticalSection(&_critsect);
-}
+Scope::Scope() { EnterCriticalSection(&_critsect); }
+Scope::~Scope() { Collect(); LeaveCriticalSection(&_critsect); }
+#else
+Scope::Scope() {}
+Scope::~Scope() { Collect(); }
+#endif
 
 
 //--------------------------------------------------------//
@@ -64,14 +61,18 @@ String^ LuaException::Message::get()
 //--------------------------------------------------------//
 CliEx::CliEx()
 {
+#ifdef LOCK_HERE
     InitializeCriticalSection(&_critsect);
+#endif
 }
 
 //--------------------------------------------------------//
 CliEx::~CliEx()
 {
     // Finished. Clean up resources and go home.
+#ifdef LOCK_HERE
     DeleteCriticalSection(&_critsect);
+#endif
 
     if (_l != nullptr)
     {

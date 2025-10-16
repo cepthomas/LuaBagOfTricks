@@ -21,7 +21,7 @@ local dbg = {}
 -------------------------------------------------------------------------
 
 -- Forward refs.
-local repl
+local _repl
 local _my_io
 local _commands
 
@@ -230,7 +230,7 @@ local function hook_factory(repl_threshold)
                 offset = offset - 1
             elseif event == 'line' and offset <= repl_threshold then
                 origin = origin or ('line')
-                repl(origin)
+                _repl(origin)
             end
         end
     end
@@ -706,7 +706,7 @@ end
 
 -------------------------------------------------------------------------
 -- The human interface repl function. origin - what triggered this.
-repl = function(origin)
+_repl = function(origin)
 
     local info
     -- Skip frames without source info.

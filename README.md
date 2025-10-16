@@ -19,7 +19,7 @@ A plethora of Lua odds and ends accumulated over the years.
 
  - 'csrc\luaex.h/c' is some utilities implemented in C and C++, mainly for internal use.
  
- - 'csrc\cliex.h/cpp' is support for the LuaInterop project.
+ - 'csrc\cliex.h/cpp' is support for the LuaInterop project. Probably should be in that project but problems...
 
 
 # Libraries
