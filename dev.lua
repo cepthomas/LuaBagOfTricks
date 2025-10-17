@@ -8,7 +8,7 @@ require('List')
 
 
 -- //---------------- TableEx --------------------------//
--- /// TODO Add tableex type support similar to KeraLuaEx LuaEx.cs/TableEx.cs (see c_emb_lua\source_code\ structinator).
+-- /// TODO Add tableex type support similar to KeraLuaEx LuaEx.cs/TableEx.cs and/or C:\Dev\Misc\c_emb_lua\source_code\interop.c
 -- //  TODO Consider arrays of scalars or tableex.
 -- typedef struct tableex
 -- {
