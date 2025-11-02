@@ -7,26 +7,9 @@ local tx = require("tableex")
 require('List')
 
 
--- //---------------- TableEx --------------------------//
--- /// TODO Add tableex type support similar to KeraLuaEx LuaEx.cs/TableEx.cs and/or C:\Dev\Misc\c_emb_lua\source_code\interop.c
--- //  TODO Consider arrays of scalars or tableex.
--- typedef struct tableex
--- {
---     int something;
---     char* other;
--- } tableex_t;
+-- TODO Add tableex type support similar to KeraLuaEx LuaEx.cs/TableEx.cs and/or C:\Dev\Misc\c_emb_lua\source_code\interop.c
+-- TODO Consider arrays of scalars or tableex.
 
--- /// Push a table onto lua stack.
--- /// @param[in] l Internal lua state.
--- /// @param[in] tbl The table.
--- void luaex_pushtableex(lua_State* l, tableex_t* tbl);
-
--- /// Make a TableEx from the lua table on the top of the stack.
--- /// Note: Like other "to" functions except also does the pop.
--- /// @param[in] l Internal lua state.
--- /// @param[in] ind Where it is on the stack. Not implemented yet.
--- /// @return The new table or NULL if invalid.
--- tableex_t* luaex_totableex(lua_State* l, int ind);
 
 ---------------------------------------------------------------------------
 --[[  Simple objects.
