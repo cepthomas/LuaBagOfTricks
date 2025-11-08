@@ -52,10 +52,13 @@ protected:
     /// <param name="name">The lua ref name</param>
     void OpenChunk(String^ code, String^ name);
 
-    /// <summary>Convert managed string to unmanaged. Only use within a SCOPE() context.</summary>
+    /// <summary>Convert managed string to unmanaged. Allocation is tracked and automatically collected.</summary>
     /// <param name="input">Managed string</param>
     /// <returns>Unmanaged string</returns>
     const char* ToCString(String^ input);
+
+    /// <summary>Clean up allocations at end of function.</summary>
+    void Collect();
 
 private:
     /// <summary>Checks lua status and throws exception if it failed.</summary>
@@ -90,14 +93,3 @@ public:
     /// <summary>Consolidates various flavors into one common message. Exception override.</summary>
     virtual property String^ Message { String^ get() override; }
 };
-
-
-/// <summary>Critical section guard for interop functions. Also automatically frees any contained ToCstring() returns.</summary>
-public class Scope
-{
-public:
-    Scope();
-    virtual ~Scope();
-};
-#define SCOPE() Scope _scope;
-

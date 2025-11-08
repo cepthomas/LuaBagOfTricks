@@ -16,24 +16,8 @@ using namespace System::Text;
 // This struct decl makes a vestigial warning go away per https://github.com/openssl/openssl/issues/6166.
 struct lua_State {};
 
-// Poor man's garbage collection.
-std::vector<void*> _allocations = {};
-static void Collect()
-{
-    for (void* n : _allocations)
-        free(n);
-    _allocations.clear();
-}
-
-// Two flavors of this: w/wo lock. It's probably best to lock on the caller's side.
-#ifdef LOCK_HERE
-static CRITICAL_SECTION _critsect;
-Scope::Scope() { EnterCriticalSection(&_critsect); }
-Scope::~Scope() { Collect(); LeaveCriticalSection(&_critsect); }
-#else
-Scope::Scope() {}
-Scope::~Scope() { Collect(); }
-#endif
+/// <summary>Poor man's garbage collection.</summary>
+static std::vector<void*> _allocations = {};
 
 
 //--------------------------------------------------------//
@@ -61,19 +45,12 @@ String^ LuaException::Message::get()
 //--------------------------------------------------------//
 CliEx::CliEx()
 {
-#ifdef LOCK_HERE
-    InitializeCriticalSection(&_critsect);
-#endif
 }
 
 //--------------------------------------------------------//
 CliEx::~CliEx()
 {
     // Finished. Clean up resources and go home.
-#ifdef LOCK_HERE
-    DeleteCriticalSection(&_critsect);
-#endif
-
     if (_l != nullptr)
     {
         lua_close(_l);
@@ -84,8 +61,6 @@ CliEx::~CliEx()
 //--------------------------------------------------------//
 void CliEx::InitLua(String^ luaPath)
 {
-    SCOPE();
-
     // Init lua. Maybe clean up first.
     if (_l != nullptr)
     {
@@ -103,13 +78,13 @@ void CliEx::InitLua(String^ luaPath)
     lua_pushstring(_l, ToCString(luaPath));
     lua_setfield(_l, -2, "path");
     lua_pop(_l, 1);
+
+    Collect();
 }
 
 //--------------------------------------------------------//
 void CliEx::OpenScript(String^ fn)
 {
-    SCOPE();
-
     if (_l == nullptr)
     {
         throw(gcnew LuaException("You forgot to call InitLua()", ""));
@@ -122,13 +97,13 @@ void CliEx::OpenScript(String^ fn)
     // Execute the script to initialize it. This reports runtime syntax errors. Uses extended version which adds a stacktrace.
     lstat = (LuaStatus)luaex_docall(_l, 0, 0);
     EvalLuaStatus(lstat, "Execute script failed.");
+
+    Collect();
 }
 
 //--------------------------------------------------------//
 void CliEx::OpenChunk(String^ code, String^ name)
 {
-    SCOPE();
-
     if (_l == nullptr)
     {
         throw(gcnew LuaException("You forgot to call InitLua()", ""));
@@ -142,6 +117,8 @@ void CliEx::OpenChunk(String^ code, String^ name)
     // Execute the chunk to initialize it. This reports runtime syntax errors. Uses extended version which adds a stacktrace.
     lstat = (LuaStatus)luaex_docall(_l, 0, 0);
     EvalLuaStatus(lstat, "Execute chunk failed.");
+
+    Collect();
 }
 
 //--------------------------------------------------------//
@@ -181,4 +158,14 @@ const char* CliEx::ToCString(String^ input)
         _allocations.push_back(buff);
     }
     return buff;
+}
+
+//--------------------------------------------------------//
+void CliEx::Collect()
+{
+    for (void* n : _allocations)
+    {
+        free(n);
+    }
+    _allocations.clear();
 }
