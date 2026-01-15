@@ -25,7 +25,7 @@ local _repl
 local _my_io
 local _commands
 
--- Port number if using sockets else nil means use stdio.
+-- Port number if using sockets/tcp else nil means use stdio.
 local _port = nil
 
 -- Cache.
@@ -782,14 +782,17 @@ dbg.init = function(port)
             _server = mod.bind('*', _port) -- '127.0.0.1'
             _server:settimeout(1)
             local sel_ip, sel_port = _server:getsockname()
-            write_line('Using socket IO '..sel_ip..':'..sel_port)
+            write_line('debugex remote on '..sel_ip..':'..sel_port)
+        else
+            print('For remote access install socket module')
+            error('TODO1 should work For remote access install socket module')
         end
     end
 
     -- Otherwise use local/stdio.
     if _my_io == nil then
         _my_io = local_io
-        write_line('Using local IO')
+        write_line('debugex local')
     end
 end
 

@@ -41,10 +41,13 @@ In general, all failures at this level are considered fatal and call `error()`.
 
 # Debugger
 
-`debugex.lua` is an extensively modified version of [debugger.lua](https://github.com/slembcke/debugger.lua).
+`debugex.lua` is a very simple/limited debugger but does the trick when `print()` won't cut it.
+It's an extensively modified version of [debugger.lua](https://github.com/slembcke/debugger.lua).
+
 The basic UI is the same but adds:
 - Support for breaking on `error()` by using `dbg.pcall()`.
-- Remote client via socket - useful for debugging embedded scripts. This requires the `socket` module installed.
+- Remote client via socket/tcp - useful for debugging embedded scripts. This requires the `socket` module installed.
+  `luarocks install luasocket`
 - Using in [Visul Studio projects](https://github.com/cepthomas/LuaInterop/tree/main/CppCli).
 
 See `C:\Dev\Libs\LuaBagOfTricks\test\test_debugex.lua` for example.

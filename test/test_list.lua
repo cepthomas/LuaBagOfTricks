@@ -3,7 +3,6 @@
 local sx = require("stringex")
 local tx = require('tableex')
 local List = require('List')
-local dbg = require('debugex')
 
 
 local M = {}
@@ -19,8 +18,6 @@ local M = {}
 
 ---------------------------------------------------------------------------
 function M.suite_success(pn)
-    -- dbg()
-
     local res
 
     local list1 = List.new('pink bunny')
