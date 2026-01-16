@@ -249,19 +249,21 @@ local hook_finish = hook_factory(-1)
 
 -------------------------------------------------------------------------
 -- Create a table of all the locally accessible variables.
--- Globals are not included when running the locals command, but are when running the print command.
-local function local_bindings(offset, include_globals)
+-- Globals and upvalues are optional depending on caller context.
+local function local_bindings(offset, include_globals, include_upvalues)
     local level = offset + _stack_inspect_offset + CMD_STACK_LEVEL
     local func = debug.getinfo(level).func
     local bindings = {}
 
-    -- Retrieve the upvalues
-    do local i = 1; while true do
-        local name, value = debug.getupvalue(func, i)
-        if not name then break end
-        bindings[name] = value
-        i = i + 1
-    end end
+    if include_upvalues then
+        -- Retrieve the upvalues
+        do local i = 1; while true do
+            local name, value = debug.getupvalue(func, i)
+            if not name then break end
+            bindings[name] = value
+            i = i + 1
+        end end
+    end
 
     -- Retrieve the locals (overwriting any upvalues)
     do local i = 1; while true do
@@ -432,10 +434,49 @@ local function pretty(obj, name, depth)
     local s = table.concat(spretty, '\n')
     return s
 end
+-------------------------------------------------------------------------
+-- local function cmd_table(tbl_name, depth)
+--     -- tbl What to dump.
+--     -- depth How deep to go in recursion. 0 or nil means just this level.
+--     depth = depth or 1
+--     local level = 0
+--     bindings = local_bindings(1, true, true)
+--     tbl = bindings[tbl_name]
+
+--     -- Worker function.
+--     local function _dump_table(nm, tb, lvl)
+--         local sindent = string.rep('    ', lvl)
+--         write_line(sindent..'['..nm..']')
+
+--         -- Do contents.
+--         for k, v in pairs(tb) do
+--             if type(v) == 'table' then
+--                 if lvl < depth then
+--                     lvl = lvl + 1
+--                     _dump_table(k, v, lvl) -- recursive!
+--                     lvl = lvl - 1
+--                 else -- lowest
+--                     write_line(string.format('%s[%s]%s=[%s]%s', sindent, type(k), tostring(k), type(v), tostring(v)))
+--                 end
+--             else
+--                 write_line(string.format('%s[%s]%s=[%s]%s', sindent, type(k), tostring(k), type(v), tostring(v)))
+--             end
+--         end
+--     end
+
+--     -- Start here
+--     if type(tbl) == 'table' then
+--         _dump_table(tbl_name, tbl, level)
+--     else
+--         write_line('Not a table '..tbl_name)
+--     end
+
+--     return false
+-- end
 
 
 -------------------------------------------------------------------------
------------------------------ all the cmd_s -----------------------------
+----------------------------- all the cmd_xxx ---------------------------
 -------------------------------------------------------------------------
 
 -------------------------------------------------------------------------
@@ -485,7 +526,7 @@ end
 
 -------------------------------------------------------------------------
 local function cmd_print(expr)
-    local env = local_bindings(1, true)
+    local env = local_bindings(1, true, true)
     local chunk = compile_chunk('return '..expr, env, 'cmd_print')
     if chunk ~= nil then
         -- Call the chunk and collect the results.
@@ -510,7 +551,7 @@ end
 
 -------------------------------------------------------------------------
 local function cmd_eval(code)
-    local env = local_bindings(1, true)
+    local env = local_bindings(1, true, true)
     local mutable_env = setmetatable({},
     {
         __index = env,
@@ -528,6 +569,24 @@ local function cmd_eval(code)
 
     return false
 end
+
+
+-------------------------------------------------------------------------
+local function cmd_globals()
+
+    depth = depth or 0
+    local level = 0
+
+    local sindent = '    '
+    write_line('Globals')
+
+    for k, v in pairs(_G) do
+        write_line(k..':'..type(v))
+    end
+
+    return false
+end
+
 
 -------------------------------------------------------------------------
 local function cmd_down()
@@ -619,7 +678,7 @@ end
 
 -------------------------------------------------------------------------
 local function cmd_locals()
-    local bindings = local_bindings(1, false)
+    local bindings = local_bindings(1, false, false)
 
     -- Get all the variables. Skip the debugger object itself, '(*internal)' values, and _ENV object.
     local vis = {}
@@ -668,14 +727,17 @@ _commands =
     { "^f$",         cmd_finish,    'f step forward until exiting the current function' },
     { "^p%s+(.*)$",  cmd_print,     'p [expression] execute the expression and print the result' },
     { "^e%s+(.*)$",  cmd_eval,      'e [statement] execute the statement' },
+    -- { "^t%s+(.*)$", cmd_table,     't [tbl] dump table' },
+    -- { "^t%s+(.*)%s+(%d*)$", cmd_table,     't [tbl] (depth) dump table to TODO1 depth' },
     { "^u$",         cmd_up,        'u move up the stack by one frame' },
     { "^d$",         cmd_down,      'd move down the stack by one frame' },
     { "i%s*(%d+)",   cmd_inspect,   'i [index] move to and inspect a specific stack frame' },
     { "^w%s*(%d*)$", cmd_where,     'w (count) print source code around the current line' },
-    { "^t$",         cmd_stack,     't print the stack' },
-    { "^l$",         cmd_locals,    'l print the function arguments, locals and upvalues.' },
+    { "^k$",         cmd_stack,     'k print the stack' }, -- renamed from t:cmd_trace
+    { "^l$",         cmd_locals,    'l print the function arguments and locals.' }, -- upvalues now optional
+    { "^g$",         cmd_globals,   'g print globals' },
     { "^h$",         cmd_help,      'h print help' },
-    { "^q$",         cmd_quit,      'q halt execution' }
+    { "^q$",         cmd_quit,      'q halt execution' },
 }
 
 -------------------------------------------------------------------------
@@ -784,15 +846,14 @@ dbg.init = function(port)
             local sel_ip, sel_port = _server:getsockname()
             write_line('debugex remote on '..sel_ip..':'..sel_port)
         else
-            print('For remote access install socket module')
-            error('TODO1 should work For remote access install socket module')
+            error('For remote access install socket module')
         end
     end
 
     -- Otherwise use local/stdio.
     if _my_io == nil then
         _my_io = local_io
-        write_line('debugex local')
+        write_line('debugex running local')
     end
 end
 
@@ -819,7 +880,6 @@ function dbg.print(str)
     if _my_io == nil then error('You forgot to call debugex.init()') end
     write_line(str, Cat.PRINT)
 end
-
 
 -------------------------------------------------------------------------
 return dbg

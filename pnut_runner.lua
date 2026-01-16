@@ -37,10 +37,10 @@ function M.do_tests(...)
 
         if not load_ok then
             app_fail = true
-            pn.UT_ERROR("Failed to load file: "..scrfn)
+            pn.UT_ERROR("Failed to load file: "..scrfn.."\n    "..test_mod)
         elseif type(test_mod) ~= "table" then
             app_fail = true
-            pn.UT_ERROR("Not a valid test script: "..scrfn)
+            pn.UT_ERROR("Not a valid test script: "..scrfn.."\n    "..test_mod)
         else
             -- Dig out the test cases.
             for k, v in pairs(test_mod) do
