@@ -53,13 +53,11 @@ local CMD_STACK_LEVEL = 6
 -- https://github.com/fidian/ansi/blob/master/images/color-codes.png.
 local Cat =
 {
-    DEFAULT =  15, -- white
-    FAINT   = 246, -- light gray
-    ERROR   =   9, -- red
-    FOCUS   =  11, -- yellow
-    PRINT   =  40, -- green
-    TRACE   = 216, -- pink
-    INFO    =  39, -- blue
+    DEFAULT =  252, -- not-so-white
+    FAINT   = 246,  -- light gray
+    ERROR   =   9,  -- red
+    FOCUS   =  11,  -- yellow
+    SCRPRN  =  40,  -- green
 }
 setmetatable(Cat, { __index = function(_, key) error('Invalid category: '..key) end })
 
@@ -71,11 +69,11 @@ setmetatable(Cat, { __index = function(_, key) error('Invalid category: '..key) 
 -------------------------------------------------------------------------
 -- Common IO write function.
 local function write_line(str, cat)
-    if cat == Cat.TRACE and not dbg.trace then return end
+    -- if cat == Cat.TRACE and not dbg.trace then return end
 
     -- Tweak some lines.
     if cat == Cat.ERROR then str = 'ERROR '..str end
-    if cat == Cat.PRINT then str = 'SCR> '..str end
+    if cat == Cat.SCRPRN then str = 'SCR> '..str end
 
     if dbg.ansi_color then
         cat = cat or Cat.DEFAULT
@@ -203,7 +201,7 @@ end
 -- Return false for stack frames without source - C frames, Lua bytecode, and `loadstring` functions.
 local function frame_has_line(info)
     if not info then
-        write_line('frame_has_line() info is nil: '..debug.traceback(), Cat.INFO)
+        write_line('frame_has_line() info is nil: '..debug.traceback())
     end
     return info.currentline >= 0
 end
@@ -221,7 +219,7 @@ local function hook_factory(repl_threshold)
             local info = debug.getinfo(2)
             if not frame_has_line(info) then return end
 
-            -- write_line(event..': '..format_frame(info), Cat.INFO)
+            -- write_line(event..': '..format_frame(info))
 
             -- Tail calls are specifically ignored since they also will have tail returns to balance out.
             if event == 'call' then
@@ -255,16 +253,6 @@ local function local_bindings(offset, include_globals, include_upvalues)
     local func = debug.getinfo(level).func
     local bindings = {}
 
-    if include_upvalues then
-        -- Retrieve the upvalues
-        do local i = 1; while true do
-            local name, value = debug.getupvalue(func, i)
-            if not name then break end
-            bindings[name] = value
-            i = i + 1
-        end end
-    end
-
     -- Retrieve the locals (overwriting any upvalues)
     do local i = 1; while true do
         local name, value = debug.getlocal(level, i)
@@ -283,11 +271,22 @@ local function local_bindings(offset, include_globals, include_upvalues)
     end end
     if #varargs > 0 then bindings['...'] = varargs end
 
-    if include_globals then
-        return setmetatable(bindings, {__index = bindings._ENV or _G})
-    else
-        return bindings
+    -- Optionals.
+    if include_upvalues then
+        -- Retrieve the upvalues
+        do local i = 1; while true do
+            local name, value = debug.getupvalue(func, i)
+            if not name then break end
+            bindings[name] = value
+            i = i + 1
+        end end
     end
+
+    if include_globals then
+        bindings = setmetatable(bindings, {__index = bindings._ENV or _G})
+    end
+
+    return bindings
 end
 
 -------------------------------------------------------------------------
@@ -300,7 +299,7 @@ local function mutate_bindings(_, name, value)
     do local i = 1; repeat
         local var = debug.getlocal(level, i)
         if name == var then
-            write_line('Set local variable '..name)
+            -- write_line('Set local variable '..name)
             return debug.setlocal(level, i, value)
         end
         i = i + 1
@@ -311,14 +310,14 @@ local function mutate_bindings(_, name, value)
     do local i = 1; repeat
         local var = debug.getupvalue(func, i)
         if name == var then
-            write_line('Set upvalue '..name)
+            -- write_line('Set upvalue '..name)
             return debug.setupvalue(func, i, value)
         end
         i = i + 1
     until var == nil end
 
     -- Set a global.
-    write_line('Set global variable '..name)
+    -- write_line('Set global variable '..name)
     _G[name] = value
 end
 
@@ -329,7 +328,7 @@ local function compile_chunk(block, env, origin)
     local chunk = load(block, origin, 't', env)
     if not chunk then
         write_line('Could not compile block:', Cat.ERROR)
-        write_line(block)
+        write_line(block, Cat.ERROR)
     end
 
     return chunk
@@ -372,7 +371,7 @@ end
 
 -------------------------------------------------------------------------
 --- Format for humans. Returns the string.
-local function pretty(obj, name, depth)
+local function prettify(obj, name, depth)
 
     depth = depth or dbg.pretty_depth
     local spretty = {}
@@ -387,6 +386,7 @@ local function pretty(obj, name, depth)
     local function _worker(_obj, _name, _level)
         local sindent = string.rep('    ', _level)
 
+        -- Provide table tostring().
         if type(_obj) == "table" then
 
             if (getmetatable(_obj) and getmetatable(_obj).__tostring) then
@@ -426,7 +426,11 @@ local function pretty(obj, name, depth)
 
         elseif type(_obj) == "boolean" then
             table.insert(spretty, string.format('%s%s:%q', sindent, _name, _obj))
+
+        else -- stragglers
+            table.insert(spretty, string.format('%s%s:<%s>', sindent, _name, type(_obj)))
         end
+
     end
 
     -- Go.
@@ -434,45 +438,6 @@ local function pretty(obj, name, depth)
     local s = table.concat(spretty, '\n')
     return s
 end
--------------------------------------------------------------------------
--- local function cmd_table(tbl_name, depth)
---     -- tbl What to dump.
---     -- depth How deep to go in recursion. 0 or nil means just this level.
---     depth = depth or 1
---     local level = 0
---     bindings = local_bindings(1, true, true)
---     tbl = bindings[tbl_name]
-
---     -- Worker function.
---     local function _dump_table(nm, tb, lvl)
---         local sindent = string.rep('    ', lvl)
---         write_line(sindent..'['..nm..']')
-
---         -- Do contents.
---         for k, v in pairs(tb) do
---             if type(v) == 'table' then
---                 if lvl < depth then
---                     lvl = lvl + 1
---                     _dump_table(k, v, lvl) -- recursive!
---                     lvl = lvl - 1
---                 else -- lowest
---                     write_line(string.format('%s[%s]%s=[%s]%s', sindent, type(k), tostring(k), type(v), tostring(v)))
---                 end
---             else
---                 write_line(string.format('%s[%s]%s=[%s]%s', sindent, type(k), tostring(k), type(v), tostring(v)))
---             end
---         end
---     end
-
---     -- Start here
---     if type(tbl) == 'table' then
---         _dump_table(tbl_name, tbl, level)
---     else
---         write_line('Not a table '..tbl_name)
---     end
-
---     return false
--- end
 
 
 -------------------------------------------------------------------------
@@ -486,7 +451,7 @@ local function cmd_step()
         return true, hook_step
     end
 
-    write_line('Can\'t step: in error', Cat.INFO);
+    write_line('Can\'t step: in error');
     return false
 end
 
@@ -497,7 +462,7 @@ local function cmd_next()
         return true, hook_next
     end
 
-    write_line('Can\'t next: in error', Cat.INFO);
+    write_line('Can\'t next: in error');
     return false
 end
 
@@ -507,7 +472,7 @@ local function cmd_continue()
         return true
     end
 
-    write_line('Can\'t continue: in error', Cat.INFO);
+    write_line('Can\'t continue: in error');
     return false
 end
 
@@ -519,15 +484,17 @@ local function cmd_finish()
         return true, offset < 0 and hook_factory(offset - 1) or hook_finish
     end
 
-    write_line('Can\'t finish: in error', Cat.INFO);
+    write_line('Can\'t finish: in error');
     return false
 
 end
 
 -------------------------------------------------------------------------
 local function cmd_print(expr)
+     -- TODO Get depth from cli argument. Lua match() doesn't like optional captures.
     local env = local_bindings(1, true, true)
     local chunk = compile_chunk('return '..expr, env, 'cmd_print')
+
     if chunk ~= nil then
         -- Call the chunk and collect the results.
         local results = table.pack(pcall(chunk, table.unpack(rawget(env, '...') or {})))
@@ -538,7 +505,7 @@ local function cmd_print(expr)
         else
             local output = ''
             for i = 2, results.n do
-                output = output..(i ~= 2 and ', ' or '')..pretty(results[i], 'res'..tostring(i -1))
+                output = output..(i ~= 2 and ', ' or '')..prettify(results[i], 'res'..tostring(i -1))
             end
 
             if output == '' then output = 'no_result' end
@@ -569,24 +536,6 @@ local function cmd_eval(code)
 
     return false
 end
-
-
--------------------------------------------------------------------------
-local function cmd_globals()
-
-    depth = depth or 0
-    local level = 0
-
-    local sindent = '    '
-    write_line('Globals')
-
-    for k, v in pairs(_G) do
-        write_line(k..':'..type(v))
-    end
-
-    return false
-end
-
 
 -------------------------------------------------------------------------
 local function cmd_down()
@@ -656,7 +605,7 @@ local function cmd_where(context_lines)
 end
 
 -------------------------------------------------------------------------
-local function cmd_stack()
+local function cmd_trace()
     -- write_line('Inspecting frame '..(_stack_inspect_offset - _stack_top))
     local i = 0; while true do
         local info = debug.getinfo(_stack_top + CMD_STACK_LEVEL + i)
@@ -688,7 +637,7 @@ local function cmd_locals()
         end
     end
 
-    write_line(pretty(vis, 'locals'), Cat.INFO)
+    write_line(prettify(vis, 'locals'))
 
     return false
 end
@@ -722,20 +671,17 @@ end
 _commands =
 {
     { "^c$",         cmd_continue,  'c continue execution' },
-    { "^s$",         cmd_step,      's step - into functions' },
-    { "^n$",         cmd_next,      'n step - over functions' },
+    { "^s$",         cmd_step,      's step - into function' },
+    { "^n$",         cmd_next,      'n step - over function' },
     { "^f$",         cmd_finish,    'f step forward until exiting the current function' },
     { "^p%s+(.*)$",  cmd_print,     'p [expression] execute the expression and print the result' },
     { "^e%s+(.*)$",  cmd_eval,      'e [statement] execute the statement' },
-    -- { "^t%s+(.*)$", cmd_table,     't [tbl] dump table' },
-    -- { "^t%s+(.*)%s+(%d*)$", cmd_table,     't [tbl] (depth) dump table to TODO1 depth' },
     { "^u$",         cmd_up,        'u move up the stack by one frame' },
     { "^d$",         cmd_down,      'd move down the stack by one frame' },
     { "i%s*(%d+)",   cmd_inspect,   'i [index] move to and inspect a specific stack frame' },
     { "^w%s*(%d*)$", cmd_where,     'w (count) print source code around the current line' },
-    { "^k$",         cmd_stack,     'k print the stack' }, -- renamed from t:cmd_trace
-    { "^l$",         cmd_locals,    'l print the function arguments and locals.' }, -- upvalues now optional
-    { "^g$",         cmd_globals,   'g print globals' },
+    { "^t$",         cmd_trace,     'k print the stack' },
+    { "^l$",         cmd_locals,    'l print the function arguments and locals' }, -- upvalues now optional
     { "^h$",         cmd_help,      'h print help' },
     { "^q$",         cmd_quit,      'q halt execution' },
 }
@@ -805,7 +751,7 @@ end
 
 -- Default config settings. Host can override or change at runtime.
 dbg.pretty_depth = 2
-dbg.auto_where = 3
+dbg.auto_where = 5
 dbg.ansi_color = true
 dbg.trace = false
 dbg.prompt = '> '
@@ -875,10 +821,10 @@ dbg.pcall = function(func, ...)
 end
 
 -------------------------------------------------------------------------
--- Convenience for host/applicationn to add to write stream.
+-- Convenience for host/application to add to write stream.
 function dbg.print(str)
     if _my_io == nil then error('You forgot to call debugex.init()') end
-    write_line(str, Cat.PRINT)
+    write_line(str, Cat.SCRPRN)
 end
 
 -------------------------------------------------------------------------

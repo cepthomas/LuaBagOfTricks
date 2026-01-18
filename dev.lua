@@ -240,6 +240,88 @@ local function test_simple_objects()
 
 end
 
+---------------------------------------------------------------------------
+--[[ Play with lua regex ]]
+
+-- { "^p%s+(.*)$", 
+-- { "^p%s+(.*)%s+(%d*)$"
+
+-- arg = scmd:match(v[1])
+
+-- string.match (s, pattern [, init])
+
+-- Looks for the first match of the pattern (see §6.4.1) in the string s. If it finds one, then match returns the captures from the pattern; otherwise it returns fail. If pattern specifies no captures, then the whole match is returned. A third, optional numeric argument init specifies where to start the search; its default value is 1 and can be negative. 
+-- x: (where x is not one of the magic characters ^$()%.[]*+-?) represents the character x itself.
+-- .: (a dot) represents all characters.
+-- %a: represents all letters.
+-- %c: represents all control characters.
+-- %d: represents all digits.
+-- %g: represents all printable characters except space.
+-- %l: represents all lowercase letters.
+-- %p: represents all punctuation characters.
+-- %s: represents all space characters.
+-- %u: represents all uppercase letters.
+-- %w: represents all alphanumeric characters.
+-- %x: represents all hexadecimal digits.
+-- %x: (where x is any non-alphanumeric character) represents the character x. This is the standard way to escape the magic characters. Any non-alphanumeric character (including all punctuation characters, even the non-magical) can be preceded by a '%' to represent itself in a pattern.
+ -- A pattern item can be
+ --    a single character class, which matches any single character in the class;
+ --    a single character class followed by '*', which matches sequences of zero or more characters in the class. These repetition items will always match the longest possible sequence;
+ --    a single character class followed by '+', which matches sequences of one or more characters in the class. These repetition items will always match the longest possible sequence;
+ --    a single character class followed by '-', which also matches sequences of zero or more characters in the class. Unlike '*', these repetition items will always match the shortest possible sequence;
+ --    a single character class followed by '?', which matches zero or one occurrence of a character in the class. It always matches one occurrence if possible;
+ --    %n, for n between 1 and 9; such item matches a substring equal to the n-th captured string (see below);
+ --    %bxy, where x and y are two distinct characters; such item matches strings that start with x, end with y, and where the x and y are balanced. This means that, if one reads the string from left to right, counting +1 for an x and -1 for a y, the ending y is the first y where the count reaches 0. For instance, the item %b() matches expressions with balanced parentheses.
+
+
+
+local cmd1 = 'p abc'
+local cmd2 = 'p def 444'
+local cmd3 = 'p'
+
+local m1 = "^p%s+(.*)$"
+local m2 = "^p%s+(%g+)%s+(.*)$"
+-- local m2 = "^p%s+(.+)%s+(%d*)$"
+
+-- "(%u%l*)(%d*)"
+
+-- local res1, re2 = cmd1:match(m1)
+-- print(string.format('>>> cmd1 m1: [%s] [%s]', res1, res2))
+-- -- >>> cmd1 m1: [abc] [nil]
+
+-- res1, re2 = cmd1:match(m2)
+-- print(string.format('>>> cmd1 m2: [%s] [%s]', res1, res2))
+-- -- >>> cmd1 m2: [nil] [nil]
+
+-- res1, re2 = cmd2:match(m1)
+-- print(string.format('>>> cmd2 m1: [%s] [%s]', res1, res2))
+-- -- >>> cmd2 m1: [def 444] [nil]
+
+res1, res2 = cmd2:match(m2)
+print(string.format('>>> cmd2 m2: [%s] [%s]', res1, res2))
+-- >>> cmd2 m2: [def] [nil]
+
+res1, res2 = cmd1:match(m2)
+print(string.format('>>> cmd1 m2: [%s] [%s]', res1, res2))
+-- >>> cmd1 m2: [def] [nil]
+
+
+-- res1 = cmd2:match(m1)
+-- local scmd = 
+-- local first, last = res1:find(' ', 0, true)
+-- -- the indices of s where this occurrence starts and ends;
+-- if first ~= nil then
+-- end
+
+
+-- for res1 in string.gmatch(cmd2, "p%s+(.*)%s+(%d*)$") do
+--     print('>>>3', res1)
+-- end
+
+-- local ip_address = "192.168.0.1"
+-- local p1, p2, p3, p4 = string.match(ip_address, "(%d+)%.(%d+)%.(%d+)%.(%d+)")
+-- print('>>>9', p1, p2, p3, p4)
+
 
 ---------------------------------------------------------------------------
 --[[ Guarding against typos
