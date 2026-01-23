@@ -36,10 +36,9 @@ static int _handler(lua_State* l)
     }
 
     // Append and return a standard traceback.
-    luaL_traceback(l, l, msg, 1);  
+    luaL_traceback(l, l, msg, 1);
     return 1;
 }
-
 
 //--------------------------------------------------------//
 int luaex_docall(lua_State* l, int narg, int nres)
