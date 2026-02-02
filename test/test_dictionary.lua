@@ -75,7 +75,7 @@ function M.suite_fail(pn)
     -- Can't test this case easily:
     -- d1 = Dictionary.new()
     -- pn.UT_RAISES(d1.add_range, { self, { aa=100, bb=200, cc=300, dd=nil, ee=500 }}, 'Invalid value type: nil')
-    -- ! C:\Dev\Libs\LuaBagOfTricks\test\test_dictionary.lua:82 function did not raise expected error() with [Invalid value type: nil].
+    -- ! .\test_dictionary.lua:82 function did not raise expected error() with [Invalid value type: nil].
 end
 
 -----------------------------------------------------------------------------

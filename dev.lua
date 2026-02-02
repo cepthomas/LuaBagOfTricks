@@ -7,7 +7,7 @@ local tx = require("tableex")
 require('List')
 
 
--- TODO Add tableex type support similar to KeraLuaEx LuaEx.cs/TableEx.cs and/or C:\Dev\Misc\c_emb_lua\source_code\interop.c
+-- TODO Add tableex type support similar to KeraLuaEx LuaEx.cs/TableEx.cs and/or c_emb_lua\source_code\interop.c
 -- TODO Consider arrays of scalars or tableex.
 
 

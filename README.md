@@ -50,7 +50,7 @@ The basic UI is the same but adds:
   `luarocks install luasocket`
 - Using in [Visul Studio projects](https://github.com/cepthomas/LuaInterop/tree/main/CppCli).
 
-See `C:\Dev\Libs\LuaBagOfTricks\test\test_debugex.lua` for example.
+See `test\test_debugex.lua` for example.
 
 Caveats:
 - Plain lua 5.2+ only.
