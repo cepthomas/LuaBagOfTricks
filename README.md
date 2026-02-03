@@ -47,13 +47,17 @@ It's an extensively modified version of [debugger.lua](https://github.com/slembc
 The basic UI is the same but adds:
 - Support for breaking on `error()` by using `dbg.pcall()`.
 - Remote client via socket/tcp - useful for debugging embedded scripts. This requires the `socket` module installed.
-  `luarocks install luasocket`
-- Using in [Visul Studio projects](https://github.com/cepthomas/LuaInterop/tree/main/CppCli).
-
-See `test\test_debugex.lua` for example.
+  `luarocks install luasocket`. 
+- See `test\test_debugex.lua` for example.
 
 Caveats:
 - Plain lua 5.2+ only.
 - Apparently doesn't handle being reentrant due to coroutines.
 - You can't add breakpoints to a running program or remove them - must use dbg().
+- It's a bit clunky running debugex.lua run from an application in VS - it's easier to configure the project
+  like the following which gives you the lua debug console without requiring sockets:
+```
+<OutputType>Exe</OutputType>
+<UseWindowsForms>true</UseWindowsForms>
+```
 
