@@ -4,8 +4,7 @@ The guts of this is based on https://github.com/slembcke/debugger.lua.
 https://www.slembcke.net/blog/DebuggerLua
 MIT License  Copyright (c) 2024 Scott Lembcke and Howling Moon Software
 
-TODOs:
-1) To use as a remote debugger:
+1) TODO To use as a remote debugger:
     - Install luasocket using luarocks.
     - Fix path to luarocks for luasocket module. There are several ways to set LUA_PATH and LUA_CPATH:
       in the environment, in luaconf.h, from a start shell script, or in the main lua script like this:
@@ -13,10 +12,10 @@ TODOs:
         package.path = package.path..";"..adir.."\\luarocks\\share\\lua\\5.4\\?.lua"
         package.cpath = package.cpath..";"..adir.."\\luarocks\\lib\\lua\\5.4\\?.dll"
 
-2) Maybe don't allow stepping into the debugex module. Probably have to step in, see where we
+2) TODO Maybe don't allow stepping into the debugex module. Probably have to step in, see where we
      are, step out. See hook_factory. User could supply list of other modules to ignore.
 
-3) Break on function/line entry? Something like py tracer?
+3) TODO Break on function/line entry? Something like py tracer?
 
 ]]
 

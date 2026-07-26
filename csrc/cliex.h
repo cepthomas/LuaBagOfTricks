@@ -1,5 +1,7 @@
 #pragma once
 
+///// This file is part of LuaBagOfTricks project. /////
+
 using namespace System;
 using namespace System::Collections::Generic;
 

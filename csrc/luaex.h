@@ -1,6 +1,8 @@
 #ifndef LUAEX_H
 #define LUAEX_H
 
+///// This file is part of LuaBagOfTricks project. /////
+
 #include <stdbool.h>
 #include "lua.h"
 #include "lualib.h"

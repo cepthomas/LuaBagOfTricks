@@ -1,3 +1,5 @@
+///// This file is part of LuaBagOfTricks project. /////
+
 #include <windows.h>
 #include <wchar.h>
 #include <vcclr.h>
