@@ -16,6 +16,8 @@ M.num_suites_failed = 0
 M.num_cases_run = 0
 M.num_cases_failed = 0
 M.result_text = {}
+M.exp_error_text = nil
+
 
 -- Current states.
 local curr_suite_pass = true

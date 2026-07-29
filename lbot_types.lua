@@ -82,7 +82,7 @@ end
 function M.val_type(v, vt)
     if vt == 'integer' and M.is_integer(v) then return true end
     local ok = type(v) == vt
-    if not ok then error('Invalid type:'..type(v)) end
+    if not ok then error('Invalid type:'..type(v), 3) end
 end
 
 -----------------------------------------------------------------------------
@@ -94,7 +94,7 @@ function M.val_number(v, min, max)
     local ok = v ~= nil and type(v) == 'number'
     if ok and max ~= nil then ok = ok and v <= max end
     if ok and min ~= nil then ok = ok and v >= min end
-    if not ok then error('Invalid number:'..tostring(v)) end
+    if not ok then error('Invalid number:'..tostring(v), 3) end
 end
 
 -----------------------------------------------------------------------------
@@ -106,21 +106,21 @@ function M.val_integer(v, min, max)
     local ok = v ~= nil and math.type(v) == 'integer'
     if ok and max ~= nil then ok = ok and v <= max end
     if ok and min ~= nil then ok = ok and v >= min end
-    if not ok then error('Invalid integer:'..tostring(v)) end
+    if not ok then error('Invalid integer:'..tostring(v), 3) end
 end
 
 -----------------------------------------------------------------------------
 --- Validate a function value.
 -- @param f which function
 function M.val_function(f)
-    if f == nil or type(f) ~= 'function' then error('Invalid function:'..tostring(f)) end
+    if f == nil or type(f) ~= 'function' then error('Invalid function:'..tostring(f), 3) end
 end
 
 -----------------------------------------------------------------------------
 --- Validate a function value.
 -- @param s which
 function M.val_string(s)
-    if s == nil or type(s) ~= 'string' then error('Invalid string:'..tostring(s)) end
+    if s == nil or type(s) ~= 'string' then error('Invalid string:'..tostring(s), 3) end
 end
 
 -----------------------------------------------------------------------------
@@ -128,11 +128,11 @@ end
 -- @param t the table
 -- @param min_size optional check
 function M.val_table(t, min_size)
-    if t == nil or type(t) ~= 'table' then error('Not a valid table') end
+    if t == nil or type(t) ~= 'table' then error('Not a valid table', 3) end
     min_size = min_size or 0
     local num = 0
     for _, _ in pairs(t) do num = num + 1 end
-    if num < min_size then error('Not min size: '..tostring(min_size)) end
+    if num < min_size then error('Not min size: '..tostring(min_size), 3) end
 end
 
 -----------------------------------------------------------------------------
@@ -143,7 +143,7 @@ function M.val_sequence(t)
 
     local tnum = 0 -- total count
     for _, _ in pairs(t) do tnum = tnum + 1 end
-    if tnum ~= #t then error('Not sequence type') end
+    if tnum ~= #t then error('Not sequence type', 3) end
 
     -- local ind = 1
     -- for i, _ in ipairs(t) do
@@ -156,7 +156,7 @@ end
 --- Check nilness.
 -- @param v which value
 function M.val_not_nil(v)
-    if v == nil then error('Value is nil') end
+    if v == nil then error('Value is nil', 3) end
 end
 
 -----------------------------------------------------------------------------
@@ -164,7 +164,7 @@ end
 -- @param func a function or callable object
 function M.val_func(func)
     local ok = M.is_callable(func)
-    if not ok then error('Invalid function:'..type(func)) end
+    if not ok then error('Invalid function:'..type(func), 3) end
 end
 
 -----------------------------------------------------------------------------

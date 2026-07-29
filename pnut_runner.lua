@@ -6,6 +6,7 @@ Future opts maybe: write to file, junit/xml format.
 
 local pn = require("pnut")
 local ut = require("lbot_utils")
+local sx = require('stringex')
 
 -- Create the namespace/module.
 local M = {}
@@ -54,9 +55,15 @@ function M.do_tests(...)
                     -- Run the suite.
                     ok, result = xpcall(v, debug.traceback, pn)
                     if not ok then
-                        pn.UT_ERROR(result)
-                        script_fail = true
-                        -- goto done
+                        -- print('EEE\n', result, '\nEEE\n', pn.exp_error_text, '\nEEE')
+                        if pn.exp_error_text ~= nil and sx.contains(result, pn.exp_error_text) then
+                            pn.UT_INFO("Got expected error()")
+                            break -- must stop
+                        else
+                            pn.UT_ERROR(result)
+                            script_fail = true
+                            break
+                        end
                     end
 
                     -- Optional teardown().
