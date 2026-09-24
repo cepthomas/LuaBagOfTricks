@@ -39,7 +39,7 @@ String^ LuaException::Message::get()
     }
     else
     {
-        array<String^>^ parts = _context->Split('\n');
+        array<String^>^ parts = _context->Split(L'\n');
         return parts[0];
     }
 }
